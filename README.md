@@ -1,10 +1,8 @@
 ## Overview
 
-This is a Adafruit GFX compatible driver for a single chinese LED module and are commonly used for large-scale LED displays, e.g. see [aliexpress](https://www.aliexpress.com/item/outdoor-320-160mm-32-16pixels-3in1-SMD-1-2-scan-RGB-P10-full-color-LED-module/32707982524.html?spm=a2g0s.9042311.0.0.OMzudS). These modules come in diffent layouts and resolutions (32x16, 32x32, 32x32, 64x32, 64x64)
+This is a Adafruit GFX compatible driver for a single chinese LED module and are commonly used for large-scale LED displays, e.g. see [aliexpress](https://www.aliexpress.com/item/outdoor-320-160mm-32-16pixels-3in1-SMD-1-2-scan-RGB-P10-full-color-LED-module/32707982524.html?spm=a2g0s.9042311.0.0.OMzudS). These modules come in diffent layouts and resolutions (32x16, 32x32, 32x32, 64x32, 64x64) and are about EUR 15-25 a piece.
 
 ![P10](/images/P10_matrix.jpg)
-
-and are about EUR 15-25 a piece.
 
 This driver currently works with ESP8266 microcontrollers, however, it should be rather straightforward to port it to ESP32 or Atmel-based Arduinos.
 
@@ -12,11 +10,11 @@ This driver currently works with ESP8266 microcontrollers, however, it should be
 
 The display basically consists of 6 large shift register. On the input connector you will find the inputs to the shift register (two for each color - Rx,Gx,Bx), a 2 to 4 bit latch address input (A,B,C,D), a latch enable input (LAT/STB), a clock input (CLK) and the output enable input (OE).
 
-There are a few basic layouts/patterns: 4 row-step (4RS),  8 row-step (8RS), 16 row-step (16RS) or 32 row-step (32RS). You can enable the correct pattern for your display in the header file via #define PATTERN4, #define PATTERN8, #define PATTERN16 or #define PATTERN32.
+There are a few basic layouts/patterns: 4 row-step (4RS),  8 row-step (8RS), 16 row-step (16RS) or 32 row-step (32RS). You can enable the correct pattern for your display with display.begin(n) where n={4,8,16,32} defines the pattern.
 
-The 32x16 displays work like this (other varieties operate accordingly): Each of the shift register is 64(4RS)/32(8RS) bits long. R1 and R2 will together therefore cover 128(4RS)/64(8RS) bits or 4(4RS)/2(8RS) lines respectively. The rows are, however, not next to each other but have a spacing of 4(4RS)/8(8RS). In case of 4RS adjacent bytes also alternate between lines n and n+4.
+For example, the 32x16 displays work like this - other varieties operate accordingly: Each of the shift register is 64(4RS)/32(8RS) bits long. R1 and R2 will together therefore cover 128(4RS)/64(8RS) bits or 4(4RS)/2(8RS) lines respectively. The rows are, however, not next to each other but have a spacing of 4(4RS)/8(8RS). In case of 4RS adjacent bytes also alternate between lines n and n+4.
 
-Setting Rx to high, cycling CLK 64(4RS)/32(8RS) times, setting (A,B,C) to low and setting LAT/STB to low will light up rows 0,4,8,12(4RS)/0,8(8RS). Repeating the same experiment with A high, B and C low will light up rows 1,5,8,13(4RS)/1,9(8RS) and so forth. The same principle applies to the other colors. As the row spacing for 4RS is 4 we only need A and B for the latch address - C has no function. Only 8RS requires C. 16RS will also require a D signal.
+Setting Rx to high, cycling CLK 64(4RS)/32(8RS) times, setting (A,B,C) to low and setting LAT/STB to low will light up rows 0,4,8,12(4RS)/0,8(8RS). Repeating the same experiment with A high, B and C low will light up rows 1,5,8,13(4RS)/1,9(8RS) and so forth. The same principle applies to the other colors. As the row spacing for 4RS is 4 we only need A and B for the latch address - C has no function. 8RS requires a C, 16RS requires a D and 32RS requires an E signal.
 
 Such LED matrix are usually used as a sub-module for larger displays and therefore features an output connector for daisy chaining. On the output connector you will find the identical signals to the input connector where A,B,C,LAT,CLK are simply routed through and (R,G,B) pins are the outputs of the shift registers on the module.
 
