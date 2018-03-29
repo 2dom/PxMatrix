@@ -287,7 +287,7 @@ void PxMATRIX::latch(uint16_t show_time )
 }
 
 void PxMATRIX::display(uint16_t show_time) {
-
+  ESP.wdtFeed();
   for (uint8_t i=0;i<_pattern;i++)
 
   {

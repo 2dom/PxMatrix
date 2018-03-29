@@ -15,6 +15,7 @@ Ticker display_ticker;
 void display_updater()
 {
    //display.display(70);
+   
    display.displayTestPattern(70);
 }
 uint16_t myCYAN = display.color565(0, 255, 255);
