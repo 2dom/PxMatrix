@@ -42,6 +42,7 @@ uint8_t static weather_icons[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x20,0x00,0x0
 // ISR for display refresh
 void display_updater()
 {
+  ESP.wdtFeed();
   display.display(70);
 
 }
