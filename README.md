@@ -1,6 +1,6 @@
 ## Overview
 
-This driver controls a single chinese LED panel module that is commonly used for large-scale LED displays, e.g. see [aliexpress](https://www.aliexpress.com/item/outdoor-320-160mm-32-16pixels-3in1-SMD-1-2-scan-RGB-P10-full-color-LED-module/32707982524.html?spm=a2g0s.9042311.0.0.OMzudS). These modules come in diffent layouts and resolutions (32x16, 32x32, 32x32, 64x32, 64x64) and are about EUR 15-25 a piece. The driver is a Adafruit GFX compatible and currently works with ESP8266 microcontrollers. However, it should be rather straightforward to port it to ESP32 or Atmel-based Arduinos.
+This driver controls a single chinese LED panel module that is commonly used in large-scale LED displays, e.g. see [aliexpress](https://www.aliexpress.com/item/outdoor-320-160mm-32-16pixels-3in1-SMD-1-2-scan-RGB-P10-full-color-LED-module/32707982524.html?spm=a2g0s.9042311.0.0.OMzudS). These modules come in diffent layouts and resolutions (32x16, 32x32, 64x32, 64x64) and are about EUR 15-25 a piece. The driver is Adafruit GFX compatible and currently works with ESP8266 microcontrollers. However, it should be rather straightforward to port it to ESP32 or Atmel-based Arduinos.
 
 ![P10](/images/P10_matrix.jpg)
 
@@ -88,7 +88,7 @@ The number of color levels can be selected in the header file. The default (8 co
 ## Troubleshooting
 
   * Check you cabling with a multimeter (diode-test). You can measure the connection between the input/ouput panel connector and the NodeMCU/ESP8266 via the exposed SMD pads/legs.
-  * Your display may have a different scanning pattern. Make sure that you have selected the correct scanning pattern in the header file (#define PATTERN4 or #define PATTERN8)
+  * Your display may have a different scanning pattern. Make sure that you have selected the correct scanning pattern in the display.begin call
   * Run the "P10_pattern_test.ino" and check if the scanning pattern is appearing ok. For a 8 row-step display it should look like this (red then yellow then white line progressing):
   ![8step](/images/8step.gif)
 
