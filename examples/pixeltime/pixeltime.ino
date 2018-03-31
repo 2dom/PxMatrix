@@ -42,7 +42,7 @@ uint8_t static weather_icons[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x20,0x00,0x0
 // ISR for display refresh
 void display_updater()
 {
-  
+
   display.display(70);
 
 }
@@ -72,7 +72,7 @@ void setup() {
   delta_timer=micros()-start_timer;
   Serial.println(delta_timer);
 
-  display_ticker.attach(0.001, display_updater);
+  display_ticker.attach(0.002, display_updater);
   yield();
   delay(3000);
   display.clearDisplay();

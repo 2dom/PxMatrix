@@ -15,7 +15,7 @@ Ticker display_ticker;
 void display_updater()
 {
    //display.display(70);
-   
+
    display.displayTestPattern(70);
 }
 uint16_t myCYAN = display.color565(0, 255, 255);
@@ -28,7 +28,7 @@ Serial.begin(9600);
   display.setCursor(2,0);
   display.print("Pixel");
   Serial.println("hello");
-  display_ticker.attach(0.001, display_updater);
+  display_ticker.attach(0.002, display_updater);
   delay(1000);
 }
 
