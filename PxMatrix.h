@@ -59,6 +59,8 @@ void begin();
   uint16_t _row_offset[64];
 
   uint8_t _pattern;
+
+
   uint8_t _pattern_color_bytes;
   uint8_t _send_buffer_size;
 

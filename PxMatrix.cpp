@@ -309,7 +309,7 @@ void PxMATRIX::flushDisplay(void) {
 
 void PxMATRIX::displayTestPattern(uint16_t show_time) {
 
-  if ((millis()-_test_last_call)>100)
+  if ((millis()-_test_last_call)>500)
   {
 
     SPI.write(0xFF);
