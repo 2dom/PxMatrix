@@ -107,6 +107,6 @@ Animated weather clock from [here](https://2dom.github.io/PixelTime/)
 
 Animated picture frame from [here](https://2dom.github.io/PixelTimes/)
 
-Pixels from [eboy](http://hello.eboy.com/eboy/category/everything/explore/animations/).
-
 ![Example](/images/front_anim2.gif)
+
+Pixels from [eboy](http://hello.eboy.com/eboy/category/everything/explore/animations/)
