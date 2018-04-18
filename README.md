@@ -85,6 +85,12 @@ You should end up with something like this (VCC/supply not nonnected here yet):
 ## Colors
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.
 
+## Chaining
+Chaining a number of displays together horizontally is rather straightforward. Simply use a 1:1 flat band connector between the panels and then treat the entire chain as one display. For example, three 32x16 displays would result in one 96x16 display where we use the input connector (PI) on the first and the output connector (PO) on the last panel. Thanks to Jean Carlos Gomez Alvernia for testing the code!
+
+![Chaining](/images/chain.jpg)
+
+
 ## Troubleshooting
 
   * Check you cabling with a multimeter (diode-test). You can measure the connection between the input/ouput panel connector and the NodeMCU/ESP8266 via the exposed SMD pads/legs.
