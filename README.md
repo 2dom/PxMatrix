@@ -88,7 +88,7 @@ The number of color levels can be selected in the header file. The default (8 co
 ## Chaining
 Chaining a number of displays together horizontally is rather straightforward. Simply use a 1:1 flat band connector between the panels and then treat the entire chain as one display. For example, three 32x16 displays would result in one 96x16 display where we use the input connector (PI) on the first and the output connector (PO) on the last panel. Thanks to Jean Carlos Gomez Alvernia for testing the code!
 
-![Chaining](/images/chain.jpg)
+![Chaining](/images/chain.png)
 
 
 ## Troubleshooting
