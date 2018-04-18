@@ -12,7 +12,7 @@ The display basically consists of 6 large shift register. On the input connector
 
 There are a few basic layouts/scanning patterns: 1/4, 1/8, 1/16 and 1/32 scan. You can enable the correct pattern for your display with display.begin(n) where n={4,8,16,32} defines the pattern.
 
-For example, the 32x16 displays work like this (other varieties operate accordingly): Each of the shift register is 64(1/4 scan) / 32(1/8 scan) bits long. R1 and R2 will together therefore cover 128(1/4 scan) / 64(1/8 scan) bits or 4(1/4 scan) / 2(1/8 scan) lines respectively. The rows are, however, not next to each other but have a spacing of 4(1/4 scan) / 8(1/8 scan). In case of 4RS adjacent bytes also alternate between lines n and n+4.
+For example, the 32x16 displays work like this (other varieties operate accordingly): Each of the shift register is 64(1/4 scan) / 32(1/8 scan) bits long. R1 and R2 will together therefore cover 128(1/4 scan) / 64(1/8 scan) bits or 4(1/4 scan) / 2(1/8 scan) lines respectively. The rows are, however, not next to each other but have a spacing of 4(1/4 scan) / 8(1/8 scan). In case of 1/4 scan adjacent bytes also alternate between lines n and n+4.
 
 Setting Rx to high, cycling CLK 64(1/4 scan) / 32(1/8 scan) times, setting (A,B,C) to low and setting LAT/STB to low will light up rows 0,4,8,12(1/4 scan)/ 0,8(1/8 scan). Repeating the same experiment with A high, B and C low will light up rows 1,5,8,13(1/4 scan)/1,9(1/8 scan) and so forth. The same principle applies to the other colors. As the row spacing for 1/4 scan is 4 we only need A and B for the latch address - C has no function. 1/8 scan requires a C, 1/16 requires a D and 1/32 scan requires an E signal.
 
@@ -43,9 +43,9 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   STB/LAT |  16 - (D0)
   A   |  05 - (D1)
   B   |  04 - (D2)
-  C   |  15 - (D8) (only for 8RS, 16RS, 32RS)
-  D   |  12 - (D6) (only for 16RS, 32RS)
-  E   |  00 - (D3) (only for 32RS)
+  C   |  15 - (D8) (only for 1/8, 1/16, 1/32 scan)
+  D   |  12 - (D6) (only for 1/16, 1/32 scan)
+  E   |  00 - (D3) (only for 1/32 scan)
   P_OE|  02 - (D4)
   CLK |  14 - (D5)
   R1  |  13 - (D7)
@@ -71,9 +71,9 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   STB/LAT |  16 - (D0)
   A   |  05 - (D1)
   B   |  04 - (D2)
-  C   |  15 - (D8) (only for 8RS, 16RS, 32RS)
-  D   |  12 - (D6) (only for 16RS, 32RS)
-  E   |  00 - (D3) (only for 32RS)
+  C   |  15 - (D8) (only for 1/8, 1/16, 1/32 scan)
+  D   |  12 - (D6) (only for 1/16, 1/32 scan)
+  E   |  00 - (D3) (only for 1/32 scan)
   P_OE|  02 - (D4)
   CLK |  14 - (D5)
   R0  |  13 - (D7)
