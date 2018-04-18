@@ -8,7 +8,7 @@ This driver controls chinese RGB LED Matrix modules without any additional compo
 
 ## Display structure
 
-The display basically consists of 6 large shift register. On the input connector you will find the inputs to the shift register (two for each color - Rx,Gx,Bx), a 2 to 4 bit latch address input (A,B,C,D), a latch enable input (LAT/STB), a clock input (CLK) and the output enable input (OE).
+The display basically consists of 6 large shift register. On the input connector you will find the inputs to the shift register (two for each color - Rx,Gx,Bx), a 2 to 5 bit latch address input (A,B,C,D,E), a latch enable input (LAT/STB), a clock input (CLK) and the output enable input (OE).
 
 There are a few basic layouts/patterns: 4 row-step (4RS),  8 row-step (8RS), 16 row-step (16RS) or 32 row-step (32RS). You can enable the correct pattern for your display with display.begin(n) where n={4,8,16,32} defines the pattern.
 
