@@ -10,11 +10,11 @@ This driver controls chinese RGB LED Matrix modules without any additional compo
 
 The display basically consists of 6 large shift register. On the input connector you will find the inputs to the shift register (two for each color - Rx,Gx,Bx), a 2 to 5 bit latch address input (A,B,C,D,E), a latch enable input (LAT/STB), a clock input (CLK) and the output enable input (OE).
 
-There are a few basic layouts/patterns: 4 row-step (4RS),  8 row-step (8RS), 16 row-step (16RS) or 32 row-step (32RS). You can enable the correct pattern for your display with display.begin(n) where n={4,8,16,32} defines the pattern.
+There are a few basic layouts/scanning patterns: 1/4, 1/8, 1/16 and 1/32 scan. You can enable the correct pattern for your display with display.begin(n) where n={4,8,16,32} defines the pattern.
 
-For example, the 32x16 displays work like this (other varieties operate accordingly): Each of the shift register is 64(4RS)/32(8RS) bits long. R1 and R2 will together therefore cover 128(4RS)/64(8RS) bits or 4(4RS)/2(8RS) lines respectively. The rows are, however, not next to each other but have a spacing of 4(4RS)/8(8RS). In case of 4RS adjacent bytes also alternate between lines n and n+4.
+For example, the 32x16 displays work like this (other varieties operate accordingly): Each of the shift register is 64(1/4 scan) / 32(1/8 scan) bits long. R1 and R2 will together therefore cover 128(1/4 scan) / 64(1/8 scan) bits or 4(1/4 scan) / 2(1/8 scan) lines respectively. The rows are, however, not next to each other but have a spacing of 4(1/4 scan) / 8(1/8 scan). In case of 4RS adjacent bytes also alternate between lines n and n+4.
 
-Setting Rx to high, cycling CLK 64(4RS)/32(8RS) times, setting (A,B,C) to low and setting LAT/STB to low will light up rows 0,4,8,12(4RS)/0,8(8RS). Repeating the same experiment with A high, B and C low will light up rows 1,5,8,13(4RS)/1,9(8RS) and so forth. The same principle applies to the other colors. As the row spacing for 4RS is 4 we only need A and B for the latch address - C has no function. 8RS requires a C, 16RS requires a D and 32RS requires an E signal.
+Setting Rx to high, cycling CLK 64(1/4 scan) / 32(1/8 scan) times, setting (A,B,C) to low and setting LAT/STB to low will light up rows 0,4,8,12(1/4 scan)/ 0,8(1/8 scan). Repeating the same experiment with A high, B and C low will light up rows 1,5,8,13(1/4 scan)/1,9(1/8 scan) and so forth. The same principle applies to the other colors. As the row spacing for 1/4 scan is 4 we only need A and B for the latch address - C has no function. 1/8 scan requires a C, 1/16 requires a D and 1/32 scan requires an E signal.
 
 Such LED matrix are usually used as a sub-module for larger displays and therefore features an output connector for daisy chaining. On the output connector you will find the identical signals to the input connector where A,B,C,LAT,CLK are simply routed through and (R,G,B) pins are the outputs of the shift registers on the module.
 
