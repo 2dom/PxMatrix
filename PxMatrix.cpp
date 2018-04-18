@@ -118,7 +118,7 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
     if ((y>=8) && (y<12))
       total_offset_r=base_offset-_width/4;
     if (y>=12)
-      total_offset_r=base_offset-width/4-1;
+      total_offset_r=base_offset-_width/4-1;
 
     total_offset_g=total_offset_r-_pattern_color_bytes;
     total_offset_b=total_offset_g-_pattern_color_bytes;
