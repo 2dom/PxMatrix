@@ -86,7 +86,7 @@ You should end up with something like this (VCC/supply not nonnected here yet):
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.
 
 ## Chaining
-Chaining a number of displays together horizontally is rather straightforward. Simply use a 1:1 flat band connector between the panels and then treat the entire chain as one display. For example, three 32x16 displays would result in one 96x16 display where we use the input connector (PI) on the first and the output connector (PO) on the last panel. Thanks to Jean Carlos Gomez Alvernia for testing the code!
+Chaining a number of displays together horizontally is rather straightforward. Simply use a 1:1 flat band connector between the panels and then treat the entire chain as one display. For example, three 32x16 displays would result in one 96x16 display where we use the input connector (PI) on the first and the output connector (PO) on the last panel. Thanks to Jean Carlos for testing the code and sending me this picture!
 
 ![Chaining](/images/chain.png)
 
@@ -95,7 +95,7 @@ Chaining a number of displays together horizontally is rather straightforward. S
 
   * Check you cabling with a multimeter (diode-test). You can measure the connection between the input/ouput panel connector and the NodeMCU/ESP8266 via the exposed SMD pads/legs.
   * Your display may have a different scanning pattern. Make sure that you have selected the correct scanning pattern in the display.begin call
-  * Run the "P10_pattern_test.ino" and check if the scanning pattern is appearing ok. For a 8 row-step display it should look like this (red then yellow then white line progressing): 
+  * Run the "P10_pattern_test.ino" and check if the scanning pattern is appearing ok. For a 8 row-step display it should look like this (red then yellow then white line progressing):
   ![8step](/images/8step.gif)
 
   * It is possible that the LED multiplex chip is defective (this was the case with one of my modules). You can verify this by selecting a bit pattern on the A,B,C inputs and measuring that the corresponing row outputs are low , e.g. a 4 row-step display typically uses a ([PR4538](/docs/pr4538.pdf)) chip. Setting (A=1,B=0) should give you (LINE0=1,LINE1=0,LINE2=1,LINE3=1).  This chip can easily be replaced. Spare part available [here](https://www.aliexpress.com/item/Free-shipping-10pcs-lot-PR4538DW-SOP-20-original-authentic/32594044891.html?spm=a2g0s.9042311.0.0.bjr5BY).
