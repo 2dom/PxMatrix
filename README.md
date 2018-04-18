@@ -86,7 +86,7 @@ You should end up with something like this (VCC/supply not nonnected here yet):
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.
 
 ## Chaining
-Chaining any number of displays together horizontally is rather straightforward. Simply use the supplied flat band connector between the panels and then treat the entire chain as one display. For example, three 32x16 displays would result in one 96x16 display where we use the input connector (PI) on the first and the output connector (PO) on the last panel. Don't forget to specify the correct resolution in the constructor, i.e. PxMATRIX display(96,16,...). Thanks to Jean Carlos for testing the code and sending me this picture!
+Chaining any number of displays together horizontally is rather straightforward. Simply use the supplied flat band connector between the panels and then treat the entire chain as one display. For example, three 32x16 displays would result in one 96x16 display where we use the input connector (PI) on the first and the output connector (PO) on the last panel as explained above. Don't forget to specify the correct resolution in the constructor, i.e. PxMATRIX display(96,16,...). Thanks to Jean Carlos for testing the code and sending me this picture!
 
 ![Chaining](/images/chain.png)
 
