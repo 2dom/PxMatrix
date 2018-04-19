@@ -165,11 +165,7 @@ void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color) {
   uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
   uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
   uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
-
-  if (_rotate)
-    fillMatrixBuffer( x,  y, r, g,b);
-  else
-    fillMatrixBuffer( x,  y, r, g,b);
+  fillMatrixBuffer( x,  y, r, g,b);
 }
 
 
