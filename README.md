@@ -1,6 +1,6 @@
 ## Overview
 
-This driver controls chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in diffent layouts and resolutions (32x16, 32x32, 64x32, 64x64), e.g. see [aliexpress](https://www.aliexpress.com/item/outdoor-320-160mm-32-16pixels-3in1-SMD-1-2-scan-RGB-P10-full-color-LED-module/32707982524.html?spm=a2g0s.9042311.0.0.OMzudS). Chanels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 microcontrollers. However, it should be rather straightforward to port it to ESP32 or Atmel-based Arduinos.
+This driver controls chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in diffent layouts and resolutions (32x16, 32x32, 64x32, 64x64), e.g. see [aliexpress](https://www.aliexpress.com/item/outdoor-320-160mm-32-16pixels-3in1-SMD-1-2-scan-RGB-P10-full-color-LED-module/32707982524.html?spm=a2g0s.9042311.0.0.OMzudS). Chanels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos.
 
 ![P10](/images/P10_matrix.jpg)
 
@@ -38,17 +38,17 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   Connect panel input (PI) to the NodeMCU/ESP8266 (ESP) as follows:
 
-  PI  | ESP
-  ----|----
-  STB/LAT |  16 - (D0)
-  A   |  05 - (D1)
-  B   |  04 - (D2)
-  C   |  15 - (D8) (only for 1/8, 1/16, 1/32 scan)
-  D   |  12 - (D6) (only for 1/16, 1/32 scan)
-  E   |  00 - (D3) (only for 1/32 scan)
-  P_OE|  02 - (D4)
-  CLK |  14 - (D5)
-  R1  |  13 - (D7)
+  PI  | ESP8266 (NodeMCU) | ESP32
+  ----|----|----
+  STB/LAT |  16 - (D0) | 33
+  A   |  05 - (D1) | 34
+  B   |  04 - (D2) | 35
+  C   |  15 - (D8) | 25 (only for 1/8, 1/16, 1/32 scan)
+  D   |  12 - (D6) | 26 (only for 1/16, 1/32 scan)
+  E   |  00 - (D3) | 27 (only for 1/32 scan)
+  P_OE|  02 - (D4) | 14
+  CLK |  14 - (D5) | 18
+  R1  |  13 - (D7) | 23
 
 * If your panel input connector has "R0" in the top left corner:
 
@@ -66,17 +66,17 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   Connect panel input (PI) to the NodeMCU/ESP8266 (ESP) as follows:
 
-  PI  | ESP
-  ----|----
-  STB/LAT |  16 - (D0)
-  A   |  05 - (D1)
-  B   |  04 - (D2)
-  C   |  15 - (D8) (only for 1/8, 1/16, 1/32 scan)
-  D   |  12 - (D6) (only for 1/16, 1/32 scan)
-  E   |  00 - (D3) (only for 1/32 scan)
-  P_OE|  02 - (D4)
-  CLK |  14 - (D5)
-  R0  |  13 - (D7)
+  PI  | ESP8266 (NodeMCU) | ESP32
+  ----|----|----
+  STB/LAT |  16 - (D0) | 33
+  A   |  05 - (D1) | 34
+  B   |  04 - (D2) | 35
+  C   |  15 - (D8) | 25 (only for 1/8, 1/16, 1/32 scan)
+  D   |  12 - (D6) | 26  (only for 1/16, 1/32 scan)
+  E   |  00 - (D3) | 27  (only for 1/32 scan)
+  P_OE|  02 - (D4) | 14
+  CLK |  14 - (D5) | 18
+  R0  |  13 - (D7) | 32
 
 You should end up with something like this (VCC/supply not nonnected here yet):
 

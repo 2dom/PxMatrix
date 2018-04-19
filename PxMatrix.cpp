@@ -195,8 +195,12 @@ void PxMATRIX::begin(uint8_t pattern) {
   _pattern_color_bytes=(_height/_pattern)*(_width/8);
   _send_buffer_size=_pattern_color_bytes*3;
 
-
+#ifdef ESP8266
   SPI.begin();
+#endif
+#ifdef ESP32
+  SPI.begin(18, 19, 23, 5);
+#endif
 
   SPI.setDataMode(SPI_MODE0);
   SPI.setBitOrder(MSBFIRST);
@@ -285,7 +289,9 @@ void PxMATRIX::latch(uint16_t show_time )
 }
 
 void PxMATRIX::display(uint16_t show_time) {
+#ifdef ESP8266
   ESP.wdtFeed();
+#endif
   for (uint8_t i=0;i<_pattern;i++)
 
   {
