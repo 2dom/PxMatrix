@@ -38,14 +38,14 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   Connect panel input (PI) to the NodeMCU/ESP8266 (ESP) as follows:
 
-  PI  | ESP8266 (NodeMCU) | ESP32
-  ----|----|----
+  PI  | ESP8266 (NodeMCU) | ESP32 | NOTE
+  ----|----|----|----
   STB/LAT |  16 - (D0) | 33
   A   |  05 - (D1) | 34
   B   |  04 - (D2) | 35
-  C   |  15 - (D8) | 25 (only for 1/8, 1/16, 1/32 scan)
-  D   |  12 - (D6) | 26 (only for 1/16, 1/32 scan)
-  E   |  00 - (D3) | 27 (only for 1/32 scan)
+  C   |  15 - (D8) | 25 | only for 1/8, 1/16, 1/32 scan
+  D   |  12 - (D6) | 26 | only for 1/16, 1/32 scan
+  E   |  00 - (D3) | 27 | only for 1/32 scan
   P_OE|  02 - (D4) | 14
   CLK |  14 - (D5) | 18
   R1  |  13 - (D7) | 23
@@ -66,14 +66,14 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   Connect panel input (PI) to the NodeMCU/ESP8266 (ESP) as follows:
 
-  PI  | ESP8266 (NodeMCU) | ESP32
-  ----|----|----
+  PI  | ESP8266 (NodeMCU) | ESP32 | NOTE
+  ----|----|----|----
   STB/LAT |  16 - (D0) | 33
   A   |  05 - (D1) | 34
   B   |  04 - (D2) | 35
-  C   |  15 - (D8) | 25 (only for 1/8, 1/16, 1/32 scan)
-  D   |  12 - (D6) | 26  (only for 1/16, 1/32 scan)
-  E   |  00 - (D3) | 27  (only for 1/32 scan)
+  C   |  15 - (D8) | 25 | only for 1/8, 1/16, 1/32 scan
+  D   |  12 - (D6) | 26 | only for 1/16, 1/32 scan
+  E   |  00 - (D3) | 27 | only for 1/32 scan
   P_OE|  02 - (D4) | 14
   CLK |  14 - (D5) | 18
   R0  |  13 - (D7) | 32
