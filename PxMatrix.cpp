@@ -206,7 +206,8 @@ void PxMATRIX::begin(uint8_t pattern) {
   SPI.begin();
 #endif
 #ifdef ESP32
-  SPI.begin(18, 19, 23, 5);
+  //void begin(int8_t sck=-1, int8_t miso=-1, int8_t mosi=-1, int8_t ss=-1);
+  SPI.begin(14, 12, 13, 4);
 #endif
 
   SPI.setDataMode(SPI_MODE0);
