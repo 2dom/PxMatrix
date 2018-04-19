@@ -23,9 +23,9 @@ Ticker display_ticker;
 #define P_A 5
 #define P_B 4
 #define P_C 15
-#define P_D 15
-#define P_E 12
-#define P_OE 0
+#define P_D 12
+#define P_E 0
+#define P_OE 2
 
 #endif
 // Pins for LED MATRIX

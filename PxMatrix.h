@@ -23,12 +23,13 @@ BSD license, check license.txt for more information
 
 class PxMATRIX : public Adafruit_GFX {
  public:
+  PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
   PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C);
   PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D);
   PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
 
   void begin(uint8_t pattern);
-void begin();
+  void begin();
 
   void clearDisplay(void);
   void display(uint16_t show_time);
@@ -57,13 +58,10 @@ void begin();
   uint8_t _height;
 
   uint16_t _row_offset[64];
-
   uint8_t _pattern;
-
 
   uint8_t _pattern_color_bytes;
   uint8_t _send_buffer_size;
-
 
   bool _rotate;
 
@@ -72,8 +70,8 @@ void begin();
 
   unsigned long _test_last_call;
   void fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b);
-    // Init code common to both constructors
-  void init(uint8_t width, uint8_t height ,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C);
+  // Init code common to both constructors
+  void init(uint8_t width, uint8_t height ,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
 
   void latch(uint16_t show_time );
   void set_mux(uint8_t value);

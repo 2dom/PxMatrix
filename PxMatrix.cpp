@@ -44,13 +44,13 @@ uint16_t PxMATRIX::color565(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 // Init code common to both constructors
-void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C){
+void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A, uint8_t B){
   _LATCH_PIN = LATCH;
   _OE_PIN = OE;
-  _A_PIN= A;
-  _B_PIN = B;
-  _C_PIN = C;
   _display_color=0;
+
+  _A_PIN = A;
+  _B_PIN = B;
 
   _width = width;
   _height = height;
@@ -65,19 +65,30 @@ void PxMATRIX::setRotate(bool rotate) {
   _rotate=rotate;
 }
 
-PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C) : Adafruit_GFX(width+10, height) {
-    init( width,  height,LATCH, OE, A, B, C);
+PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B) : Adafruit_GFX(width+10, height)
+{
+  init(width, height, LATCH, OE, A, B);
 }
 
-PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D) : Adafruit_GFX(width+10, height) {
-init( width,  height,LATCH, OE, A, B, C);
+PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C) : Adafruit_GFX(width+10, height)
+{
+  _C_PIN = C;
+  init(width, height, LATCH, OE, A, B);
+}
+
+PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D) : Adafruit_GFX(width+10, height)
+{
+  _C_PIN = C;
   _D_PIN = D;
+  init(width, height, LATCH, OE, A, B);
 }
 
-PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D, uint8_t E) : Adafruit_GFX(width+10, height) {
- init( width,  height,LATCH, OE, A, B, C);
-   _D_PIN = D;
-   _E_PIN = E;
+PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D, uint8_t E) : Adafruit_GFX(width+10, height)
+{
+  _C_PIN = C;
+  _D_PIN = D;
+  _E_PIN = E;
+  init(width, height, LATCH, OE, A, B);
 }
 
 void PxMATRIX::drawPixel(int16_t x, int16_t y, uint16_t color) {
