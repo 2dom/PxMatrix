@@ -3,13 +3,13 @@
 
 #ifdef ESP32
 
-#define P_LAT 33
-#define P_A 34
-#define P_B 35
-#define P_C 25
-#define P_D 26
-#define P_E 27
-#define P_OE 14
+#define P_LAT 22
+#define P_A 19
+#define P_B 23
+#define P_C 18
+#define P_D 5
+#define P_E 15
+#define P_OE 2
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
