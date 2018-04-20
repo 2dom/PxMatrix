@@ -110,7 +110,7 @@ void setup() {
 #ifdef ESP32
   timer = timerBegin(0, 80, true);
   timerAttachInterrupt(timer, &display_updater, true);
-  timerAlarmWrite(timer, 1, true);
+  timerAlarmWrite(timer, 2000, true);
   timerAlarmEnable(timer);
 #endif
 

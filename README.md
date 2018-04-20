@@ -1,6 +1,6 @@
 ## Overview
 
-This driver controls chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in diffent layouts and resolutions (32x16, 32x32, 64x32, 64x64), e.g. see [aliexpress](https://www.aliexpress.com/item/outdoor-320-160mm-32-16pixels-3in1-SMD-1-2-scan-RGB-P10-full-color-LED-module/32707982524.html?spm=a2g0s.9042311.0.0.OMzudS). Chanels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 (beta) microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos.
+This driver controls chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in diffent layouts and resolutions (32x16, 32x32, 64x32, 64x64), e.g. see [aliexpress](https://www.aliexpress.com/item/outdoor-320-160mm-32-16pixels-3in1-SMD-1-2-scan-RGB-P10-full-color-LED-module/32707982524.html?spm=a2g0s.9042311.0.0.OMzudS). Chanels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos.
 
 ![P10](/images/P10_matrix.jpg)
 
@@ -36,7 +36,7 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   B1 | G2
   B2 | B1
 
-  Connect panel input (PI) to the NodeMCU/ESP8266 (ESP) as follows:
+  Connect panel input (PI) to the ESP8266 / ESP32 as follows:
 
   PI  | ESP8266 (NodeMCU) | ESP32 | NOTE
   ----|----|----|----
@@ -64,7 +64,7 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   B0 | G1
   B1 | B0
 
-  Connect panel input (PI) to the NodeMCU/ESP8266 (ESP) as follows:
+  Connect panel input (PI) to the ESP8266 / ESP32 as follows:
 
   PI  | ESP8266 (NodeMCU) | ESP32 | NOTE
   ----|----|----|----
