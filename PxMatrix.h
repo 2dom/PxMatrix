@@ -11,7 +11,7 @@ BSD license, check license.txt for more information
 
 // This is how many color levels the display shows - the more the slower the update
 #define color_depth 8
-
+//#define double_buffer
 
 #include "Adafruit_GFX.h"
   #include "Arduino.h"
@@ -31,22 +31,51 @@ class PxMATRIX : public Adafruit_GFX {
   void begin(uint8_t pattern);
   void begin();
 
+
   void clearDisplay(void);
+
+  // Updates the display
   void display(uint16_t show_time);
 
+  // Draw pixels
   void drawPixelRGB565(int16_t x, int16_t y, uint16_t color);
+  void drawPixelRGB565(int16_t x, int16_t y, uint16_t color, bool selected_buffer);
+
   void drawPixel(int16_t x, int16_t y, uint16_t color);
+  void drawPixel(int16_t x, int16_t y, uint16_t color, bool selected_buffer);
 
   void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b);
+  void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
+
+  // Does nothing for now
   uint8_t getPixel(int8_t x, int8_t y);
+
+  // Converts RGB888 to RGB565
   uint16_t color565(uint8_t r, uint8_t g, uint8_t b);
+
+  // Helpfull for debugging (place in display update loop)
   void displayTestPattern(uint16_t showtime);
+
+  // FLush the buffer of the display
   void flushDisplay();
+
+  // Rotate display
   void setRotate(bool rotate);
 
- private:
-  uint8_t _display_color;
+  // Helps to reduce display update latency on larger displays
+  void setFastUpdate(bool fast_update);
 
+  // Select active buffer to updare display from
+  void selectBuffer(bool selected_buffer);
+
+  // Control the minimum color values that result in an active pixel
+  void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
+
+
+ private:
+
+
+  // GPIO pins
   uint8_t _LATCH_PIN;
   uint8_t _OE_PIN;
   uint8_t _A_PIN;
@@ -57,23 +86,50 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _width;
   uint8_t _height;
 
-  uint16_t _row_offset[64];
+  // Color offset
+  uint8_t _color_R_offset;
+  uint8_t _color_G_offset;
+  uint8_t _color_B_offset;
+
+  // Color pattern that is pushed to the display
+  uint8_t _display_color;
+
+  // Holds some pre-computed values for faster pixel drawing
+  uint32_t _row_offset[64];
+
+  // Holds the display scan pattern type
   uint8_t _pattern;
 
+  // Number of bytes in one color
   uint8_t _pattern_color_bytes;
+
+  // Total number of bytes that is pushed to the display at a time
+  // 3 * _pattern_color_bytes
   uint8_t _send_buffer_size;
 
-  bool _rotate;
+  // This is for double buffering
+  bool _selected_buffer;
+  bool _active_buffer;
 
+  // Hols configuration
+  bool _rotate;
+  bool _fast_update;
+
+  // Used for test pattern
   uint16_t _test_pixel_counter;
   uint8_t _test_line_counter;
-
   unsigned long _test_last_call;
-  void fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b);
+
+  // Generic function that draw one pixel
+  void fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
+
   // Init code common to both constructors
   void init(uint8_t width, uint8_t height ,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
 
+  // Light up LEDs and hold for show_time microseconds
   void latch(uint16_t show_time );
+
+  // Set row multiplexer
   void set_mux(uint8_t value);
 };
 

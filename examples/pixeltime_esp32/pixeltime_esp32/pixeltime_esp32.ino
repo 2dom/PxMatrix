@@ -1,6 +1,9 @@
 
 #include <PxMatrix.h>
 
+
+
+
 #ifdef ESP32
 
 #define P_LAT 22
@@ -12,7 +15,7 @@
 #define P_OE 2
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
-
+static int taskCore = 0;
 #endif
 
 #ifdef ESP8266
@@ -30,15 +33,16 @@ Ticker display_ticker;
 #endif
 // Pins for LED MATRIX
 
-PxMATRIX display(32,16,P_LAT, P_OE,P_A,P_B,P_C);
+//PxMATRIX display(32,16,P_LAT, P_OE,P_A,P_B,P_C);
 //PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
-//PxMATRIX display(64,64,P_LAT, P_OE,P_A,P_B,P_C,P_D,P_E);
+PxMATRIX display(64,64,P_LAT, P_OE,P_A,P_B,P_C,P_D,P_E);
 
 // Some standard colors
 uint16_t myRED = display.color565(255, 0, 0);
 uint16_t myGREEN = display.color565(0, 255, 0);
 uint16_t myBLUE = display.color565(0, 0, 255);
 uint16_t myWHITE = display.color565(255, 255, 255);
+uint16_t myGRAY = display.color565(128, 128, 128);
 uint16_t myYELLOW = display.color565(255, 255, 0);
 uint16_t myCYAN = display.color565(0, 255, 255);
 uint16_t myMAGENTA = display.color565(255, 0, 255);
@@ -62,65 +66,22 @@ uint8_t static weather_icons[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x20,0x00,0x0
 // ISR for display refresh
 void display_updater()
 {
-  display.display(20);
+  display.display(70);
 }
 #endif
 
 #ifdef ESP32
+TaskHandle_t xTask1;
 void IRAM_ATTR display_updater(){
   // Increment the counter and set the time of ISR
-  portENTER_CRITICAL_ISR(&timerMux);
+  //portENTER_CRITICAL_ISR(&timerMux);
   display.display(70);
-  portEXIT_CRITICAL_ISR(&timerMux);
+  //portEXIT_CRITICAL_ISR(&timerMux);
 }
 #endif
 
-
-void display_update_enable(bool is_enable)
-{
-
-#ifdef ESP8266
-  if (is_enable)
-    display_ticker.attach(0.002, display_updater);
-  else
-    display_ticker.detach();
-#endif
-
-#ifdef ESP32
-  if (is_enable)
-  {
-    timer = timerBegin(0, 80, true);
-    timerAttachInterrupt(timer, &display_updater, true);
-    timerAlarmWrite(timer, 2000, true);
-    timerAlarmEnable(timer);
-  }
-  else
-  {
-    timerDetachInterrupt(timer);
-    timerAlarmDisable(timer);
-  }
-#endif
-
-
-}
-
-void pixel_time_test(uint8_t draw_time)
-{
-
-  Serial.print("Pixel draw latency in us: ");
-  unsigned long start_timer=micros();
-  display.drawPixel(1,1,0);
-  unsigned long delta_timer=micros()-start_timer;
-  Serial.println(delta_timer);
-
-  Serial.print("Display update latency in us: ");
-  start_timer=micros();
-  display.display(draw_time);
-  delta_timer=micros()-start_timer;
-  Serial.println(delta_timer);
-
-  display.setFastUpdate(true);
-  display.clearDisplay();
+void draw_test(void * pvParameters )
+{ display.fillRect(0,0,64,64,myBLACK);
   display.setTextColor(myCYAN);
   display.setCursor(2,0);
   display.print("Pixel");
@@ -128,31 +89,31 @@ void pixel_time_test(uint8_t draw_time)
   display.setCursor(2,8);
   display.print("Time");
 
-  display_update_enable(true);
+  delay(6000);
 
-  yield();
-  delay(3000);
-
-  display_update_enable(false);
+  Serial.println("Running task");
+  uint8_t icon_index=0;
+  while(1){
+    draw_weather_icon(icon_index);
+    icon_index++;
+    if (icon_index>10)
+      icon_index=0;
+  
+    for (int xx=0; xx<16;xx++)
+    {
+      display.drawLine(xx+16,0,xx+16,5,display.color565(xx*16,0,0));
+      display.drawLine(xx+16,6,xx+16,10,display.color565(0,xx*16,0));
+      display.drawLine(xx+16,11,xx+16,15,display.color565(0,0,xx*16));
+    }
+    
+    unsigned long start_time = millis();
+    while ((millis()-start_time)<3000)
+     yield();
+    //Serial.println("Task");
+  }
+  
 }
 
-
-void setup() {
- Serial.begin(9600);
-  // Define your display layout here, e.g. 1/8 step
-  display.begin(8);
-
-  Serial.println("Draw test without fast update");
-   pixel_time_test(70);
-  Serial.println("Draw test with fast update");
-  display.setFastUpdate(true);
-   pixel_time_test(70);
-
-  display.setFastUpdate(false);
-  display.clearDisplay();
-  display_update_enable(true);
-  //display.setColorOffset(15,15,0);
-}
 union single_double{
   uint8_t two[2];
   uint16_t one;
@@ -175,22 +136,49 @@ void draw_weather_icon (uint8_t icon)
   }
 }
 
+void setup() {
 
-uint8_t icon_index=0;
-void loop() {
+  Serial.begin(9600);
+  // Define your display layout here, e.g. 1/8 step
+  display.begin(32);
+  display.clearDisplay();
+  display.setFastUpdate(false);
 
+
+  
+  
+
+
+
+  Serial.print("Pixel draw latency in us: ");
+  unsigned long start_timer=micros();
+  display.drawPixel(1,1,0);
+  unsigned long delta_timer=micros()-start_timer;
+  Serial.println(delta_timer);
+
+  Serial.print("Display update latency in us: ");
+  start_timer=micros();
+  display.display(0);
+  delta_timer=micros()-start_timer;
+  Serial.println(delta_timer);
   display.clearDisplay();
 
-  draw_weather_icon(icon_index);
-  icon_index++;
-  if (icon_index>10)
-    icon_index=0;
+  xTaskCreatePinnedToCore(
+                    draw_test,   /* Function to implement the task */
+                    "draw_test", /* Name of the task */
+                    10000,      /* Stack size in words */
+                    NULL,       /* Task input parameter */
+                    1,          /* Priority of the task */
+                    &xTask1,       /* Task handle. */
+                    taskCore);  /* Core where the task should run */
+}
 
-  for (int xx=0; xx<16;xx++)
-  {
-    display.drawLine(xx+16,0,xx+16,5,display.color565(xx*16,0,0));
-    display.drawLine(xx+16,6,xx+16,10,display.color565(0,xx*16,0));
-    display.drawLine(xx+16,11,xx+16,15,display.color565(0,0,xx*16));
-  }
-  delay(3000);
+
+
+void loop() {
+  
+  yield();
+
+    
+  display.display(30);
 }
