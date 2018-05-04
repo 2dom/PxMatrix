@@ -359,12 +359,12 @@ void PxMATRIX::set_mux(uint8_t value)
 
 void PxMATRIX::latch(uint16_t show_time )
 {
-  digitalWrite(_OE_PIN,0); // <<< remove this
+  //digitalWrite(_OE_PIN,0); // <<< remove this
   digitalWrite(_LATCH_PIN,HIGH);
   //delayMicroseconds(10);
   digitalWrite(_LATCH_PIN,LOW);
   //delayMicroseconds(10);
- //digitalWrite(_OE_PIN,0); <<<< insert this
+ digitalWrite(_OE_PIN,0); //<<<< insert this
   delayMicroseconds(show_time);
   digitalWrite(_OE_PIN,1);
 
@@ -413,7 +413,7 @@ void PxMATRIX::display(uint16_t show_time) {
     else
     {
 
-      set_mux((i+_pattern-1)%_pattern);
+      set_mux(i);
 #ifdef double_buffer
       SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
 #else

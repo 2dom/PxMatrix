@@ -119,7 +119,7 @@ void pixel_time_test(uint8_t draw_time)
   delta_timer=micros()-start_timer;
   Serial.println(delta_timer);
 
-  display.setFastUpdate(true);
+
   display.clearDisplay();
   display.setTextColor(myCYAN);
   display.setCursor(2,0);
@@ -141,12 +141,13 @@ void setup() {
  Serial.begin(9600);
   // Define your display layout here, e.g. 1/8 step
   display.begin(8);
-
+  display.setFastUpdate(false);
   Serial.println("Draw test without fast update");
-   pixel_time_test(70);
+
+  pixel_time_test(50);
   Serial.println("Draw test with fast update");
   display.setFastUpdate(true);
-   pixel_time_test(70);
+  pixel_time_test(50);
 
   display.setFastUpdate(false);
   display.clearDisplay();
