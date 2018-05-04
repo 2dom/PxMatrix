@@ -30,6 +30,8 @@ Ticker display_ticker;
 #endif
 // Pins for LED MATRIX
 
+uint8_t display_draw_time=0;
+
 PxMATRIX display(32,16,P_LAT, P_OE,P_A,P_B,P_C);
 //PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
 //PxMATRIX display(64,64,P_LAT, P_OE,P_A,P_B,P_C,P_D,P_E);
@@ -62,7 +64,7 @@ uint8_t static weather_icons[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x20,0x00,0x0
 // ISR for display refresh
 void display_updater()
 {
-  display.display(70);
+  display.display(display_draw_time);
 }
 #endif
 
@@ -70,7 +72,7 @@ void display_updater()
 void IRAM_ATTR display_updater(){
   // Increment the counter and set the time of ISR
   portENTER_CRITICAL_ISR(&timerMux);
-  display.display(70);
+  display.display(display_draw_time);
   portEXIT_CRITICAL_ISR(&timerMux);
 }
 #endif
@@ -141,15 +143,19 @@ void setup() {
  Serial.begin(9600);
   // Define your display layout here, e.g. 1/8 step
   display.begin(8);
+
+  // Compare draw latency at similar display brightness for standard and fast drawing
   display.setFastUpdate(false);
   Serial.println("Draw test without fast update");
-
-  pixel_time_test(0);
+  display_draw_time=15;
+  pixel_time_test(display_draw_time);
   Serial.println("Draw test with fast update");
   display.setFastUpdate(true);
-  pixel_time_test(0);
+  display_draw_time=0;
+  pixel_time_test(display_draw_time);
 
   display.setFastUpdate(false);
+  display_draw_time=15;
   display.clearDisplay();
   display_update_enable(true);
   //display.setColorOffset(15,15,0);
