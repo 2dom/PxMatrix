@@ -311,12 +311,8 @@ void PxMATRIX::begin(uint8_t pattern) {
 
   // Precompute row offset values
   for (uint8_t yy=0; yy<_height;yy++)
-  {
-  //if (yy>0)
       _row_offset[yy]=((yy)%_pattern)*_send_buffer_size+_send_buffer_size-1;
-  //else
-  //      _row_offset[yy]=_send_buffer_size-1;
-  }
+
 
 }
 
@@ -378,9 +374,6 @@ void PxMATRIX::display(uint16_t show_time) {
   for (uint8_t i=0;i<_pattern;i++)
 
   {
-
-
-
     if (_fast_update){
       set_mux((i+_pattern-1)%_pattern);
       digitalWrite(_LATCH_PIN,HIGH);
@@ -397,18 +390,6 @@ void PxMATRIX::display(uint16_t show_time) {
       while ((micros()-start_time)<show_time)
         delayMicroseconds(1);
       digitalWrite(_OE_PIN,1);
-
-
-      // // works
-      // set_mux(i);
-      // delayMicroseconds(10);
-      // SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
-      // delayMicroseconds(3);
-      // digitalWrite(_OE_PIN,1);
-      // delayMicroseconds(3);
-      // digitalWrite(_LATCH_PIN,HIGH);
-      // digitalWrite(_OE_PIN,0);
-      // digitalWrite(_LATCH_PIN,LOW);
     }
     else
     {
