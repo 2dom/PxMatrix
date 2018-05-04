@@ -62,7 +62,7 @@ uint8_t static weather_icons[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x20,0x00,0x0
 // ISR for display refresh
 void display_updater()
 {
-  display.display(20);
+  display.display(70);
 }
 #endif
 
@@ -144,10 +144,10 @@ void setup() {
   display.setFastUpdate(false);
   Serial.println("Draw test without fast update");
 
-  pixel_time_test(50);
+  pixel_time_test(0);
   Serial.println("Draw test with fast update");
   display.setFastUpdate(true);
-  pixel_time_test(50);
+  pixel_time_test(0);
 
   display.setFastUpdate(false);
   display.clearDisplay();
