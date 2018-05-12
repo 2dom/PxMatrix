@@ -133,4 +133,4 @@ Animated picture frame from [here](https://2dom.github.io/PixelTimes/) (ESP8266 
 
 Decoding 10 FPS MJPEG on 64x64 RGB LED matrix (ESP32)
 
-![Example](/images/starwars.gif) ![Example](/images/starwars_back.jpeg)
+![Example](/images/starwars.gif)![Example](/images/starwars_back.jpeg)
