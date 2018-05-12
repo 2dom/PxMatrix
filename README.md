@@ -121,11 +121,11 @@ Chaining any number of displays together horizontally is rather straightforward.
 
 
 
-Animated weather clock from [here](https://2dom.github.io/PixelTime/)
+Animated weather clock from [here](https://2dom.github.io/PixelTime/)  (ESP8266)
 
 ![Example](/images/PixelTime_small.jpg)
 
-Animated picture frame from [here](https://2dom.github.io/PixelTimes/) (Pixels from [eboy](http://hello.eboy.com/eboy/category/everything/explore/animations/))
+Animated picture frame from [here](https://2dom.github.io/PixelTimes/) (ESP8266 - Pixels from [eboy](http://hello.eboy.com/eboy/category/everything/explore/animations/))
 
 ![Example](/images/front_anim2.gif)
 
@@ -133,4 +133,4 @@ Animated picture frame from [here](https://2dom.github.io/PixelTimes/) (Pixels f
 
 Decoding 10 FPS MJPEG on 64x64 RGB LED matrix (ESP32)
 
-![Colors](/images/starwars.gif)
+![Example](/images/starwars.gif) ![Example](/images/starwars_back.jpeg)
