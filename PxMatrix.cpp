@@ -373,6 +373,12 @@ void PxMATRIX::display(uint16_t show_time) {
   for (uint8_t i=0;i<_pattern;i++)
 
   {
+    // This will clock data into the display while the outputs are still
+    // latched (LEDs on). We therefore utilize SPI transfer latency as LED
+    // ON time and can reduce the waiting time (show_time). This is rather
+    // timing sensitive and may lead to flicker however promises reduced
+    // update times and increased brightness
+
     if (_fast_update){
       set_mux((i+_pattern-1)%_pattern);
       digitalWrite(_LATCH_PIN,HIGH);
