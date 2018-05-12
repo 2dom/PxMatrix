@@ -125,11 +125,11 @@ Animated weather clock from [here](https://2dom.github.io/PixelTime/)
 
 ![Example](/images/PixelTime_small.jpg)
 
-Animated picture frame from [here](https://2dom.github.io/PixelTimes/)
+Animated picture frame from [here](https://2dom.github.io/PixelTimes/) (Pixels from [eboy](http://hello.eboy.com/eboy/category/everything/explore/animations/))
 
 ![Example](/images/front_anim2.gif)
 
-Pixels from [eboy](http://hello.eboy.com/eboy/category/everything/explore/animations/)
+
 
 Decoding 10 FPS MJPEG on 64x64 RGB LED matrix (ESP32)
 
