@@ -2,7 +2,7 @@
 
 This driver controls chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in diffent layouts and resolutions:
 
-Pitch | Size | Resolution | Scan pattern
+Pitch (mm)| Size | Resolution | Scan pattern
 ----|----|----|----
 P6   | 192mmx96mm  | 32x16 | 1/4 or 1/8
 P10  | 320mmx160mm | 32x16 | 1/4 or 1/8
