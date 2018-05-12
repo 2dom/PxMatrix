@@ -119,9 +119,7 @@ Chaining any number of displays together horizontally is rather straightforward.
 
 ## Examples
 
-Test sketch with 16 levels per primary color
 
-![Colors](/images/P10_color_scroll.gif)
 
 Animated weather clock from [here](https://2dom.github.io/PixelTime/)
 
@@ -132,3 +130,7 @@ Animated picture frame from [here](https://2dom.github.io/PixelTimes/)
 ![Example](/images/front_anim2.gif)
 
 Pixels from [eboy](http://hello.eboy.com/eboy/category/everything/explore/animations/)
+
+64x64 RGB LED matrix - decoding 10 FPS MJPEG on ESP32 staight from flash
+
+![Colors](/images/starwars.gif)
