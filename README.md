@@ -131,6 +131,6 @@ Animated picture frame from [here](https://2dom.github.io/PixelTimes/)
 
 Pixels from [eboy](http://hello.eboy.com/eboy/category/everything/explore/animations/)
 
-64x64 RGB LED matrix - decoding 10 FPS MJPEG on ESP32 staight from flash
+Decoding 10 FPS MJPEG on 64x64 RGB LED matrix (ESP32)
 
 ![Colors](/images/starwars.gif)
