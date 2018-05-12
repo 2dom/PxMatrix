@@ -199,10 +199,9 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
     base_offset=_row_offset[y]-(x/8);
 #endif
 
-    if (y<_pattern)
-      total_offset_r=base_offset;
-    else
-      total_offset_r=base_offset-_pattern_color_bytes/2;
+    // relies on integer truncation, do not simplify
+    uint8_t vert_sector = y/_pattern;
+    total_offset_r=base_offset-vert_sector*_width/8;
 
     total_offset_g=total_offset_r-_pattern_color_bytes;
     total_offset_b=total_offset_g-_pattern_color_bytes;
