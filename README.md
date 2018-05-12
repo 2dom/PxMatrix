@@ -1,6 +1,22 @@
 ## Overview
 
-This driver controls chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in diffent layouts and resolutions (32x16, 32x32, 64x32, 64x64), e.g. see [aliexpress](https://www.aliexpress.com/item/outdoor-320-160mm-32-16pixels-3in1-SMD-1-2-scan-RGB-P10-full-color-LED-module/32707982524.html?spm=a2g0s.9042311.0.0.OMzudS). Chanels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos.
+This driver controls chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in diffent layouts and resolutions:
+
+Pitch | Size | Resolution | Scan pattern
+----|----|----|----
+P6   | 192mmx96mm  | 32x16 | 1/4 or 1/8
+P10  | 320mmx160mm | 32x16 | 1/4 or 1/8
+P4   | 128mmx128mm | 32x32 | 1/8 or 1/16
+P5   | 160mmx160mm | 32x32 | 1/8 or 1/16
+P6   | 192mmx192mm | 32x32 | 1/8 or 1/16
+P7.62| 244mmx244mm | 32x32 | 1/8 or 1/16
+P2.5 | 160mmx80mm  | 64x32 | 1/16
+P4   | 256mmx128mm | 64x32 | 1/16
+P5   | 320mmx160mm | 64x32 | 1/16
+P2.5 | 160mmx160mm | 64x64 | 1/32
+P3   | 192mmx192mm | 64x64 | 1/32
+
+Multiple panels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos.
 
 ![P10](/images/P10_matrix.jpg)
 
