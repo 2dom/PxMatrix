@@ -383,9 +383,9 @@ void PxMATRIX::set_mux(uint8_t value)
       digitalWrite(_C_PIN,HIGH);
 
     if (value ==3)
-      digitalWrite(_D_PIN,HIGH);
-    else
       digitalWrite(_D_PIN,LOW);
+    else
+      digitalWrite(_D_PIN,HIGH);
 
   }
 }
