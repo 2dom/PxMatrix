@@ -19,6 +19,7 @@ BSD license, check license.txt for more information
 
 #include <SPI.h>
 
+enum mux_patterns {BINARY, STRAIGHT};
 
 
 class PxMATRIX : public Adafruit_GFX {
@@ -71,6 +72,8 @@ class PxMATRIX : public Adafruit_GFX {
   // Control the minimum color values that result in an active pixel
   void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
 
+  // Set the multiplex pattern
+  void setMuxPattern(mux_patterns mux_pattern);
 
  private:
 
@@ -114,6 +117,10 @@ class PxMATRIX : public Adafruit_GFX {
   // Hols configuration
   bool _rotate;
   bool _fast_update;
+
+  // Holds multiplex pattern
+  mux_patterns _mux_pattern;
+
 
   // Used for test pattern
   uint16_t _test_pixel_counter;

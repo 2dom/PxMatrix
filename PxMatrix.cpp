@@ -73,7 +73,15 @@ void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uin
   _rotate=0;
   _fast_update=0;
 
+  _mux_pattern=BINARY;
+
 }
+
+void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
+{
+  _mux_pattern=mux_pattern;
+}
+
 void PxMATRIX::setRotate(bool rotate) {
   _rotate=rotate;
 }
@@ -317,38 +325,68 @@ void PxMATRIX::begin(uint8_t pattern) {
 
 void PxMATRIX::set_mux(uint8_t value)
 {
-  if (value & 0x01)
-    digitalWrite(_A_PIN,HIGH);
-  else
-    digitalWrite(_A_PIN,LOW);
 
-  if (value & 0x02)
-    digitalWrite(_B_PIN,HIGH);
-  else
-    digitalWrite(_B_PIN,LOW);
-
-  if (_pattern>=8)
+  if (_mux_pattern==BINARY)
   {
-    if (value & 0x04)
-    digitalWrite(_C_PIN,HIGH);
+    if (value & 0x01)
+      digitalWrite(_A_PIN,HIGH);
     else
-    digitalWrite(_C_PIN,LOW);
+      digitalWrite(_A_PIN,LOW);
+
+    if (value & 0x02)
+      digitalWrite(_B_PIN,HIGH);
+    else
+      digitalWrite(_B_PIN,LOW);
+
+    if (_pattern>=8)
+    {
+      if (value & 0x04)
+      digitalWrite(_C_PIN,HIGH);
+      else
+      digitalWrite(_C_PIN,LOW);
+    }
+
+    if (_pattern>=16)
+    {
+      if (value & 0x08)
+          digitalWrite(_D_PIN,HIGH);
+      else
+          digitalWrite(_D_PIN,LOW);
+    }
+
+    if (_pattern>=32)
+    {
+      if (value & 0x10)
+          digitalWrite(_E_PIN,HIGH);
+      else
+          digitalWrite(_E_PIN,LOW);
+    }
   }
 
-  if (_pattern>=16)
+  // This just pulls one of 4 pins low to address 4 rows
+  if (_mux_pattern==STRAIGHT)
   {
-    if (value & 0x08)
-        digitalWrite(_D_PIN,HIGH);
+    if (value==0)
+      digitalWrite(_A_PIN,LOW);
     else
-        digitalWrite(_D_PIN,LOW);
-  }
+      digitalWrite(_A_PIN,HIGH);
 
-  if (_pattern>=32)
-  {
-    if (value & 0x10)
-        digitalWrite(_E_PIN,HIGH);
+    if (value==1)
+      digitalWrite(_B_PIN,LOW);
     else
-        digitalWrite(_E_PIN,LOW);
+      digitalWrite(_B_PIN,HIGH);
+
+
+    if (value==2)
+      digitalWrite(_C_PIN,LOW);
+    else
+      digitalWrite(_C_PIN,HIGH);
+
+    if (value ==3)
+      digitalWrite(_D_PIN,HIGH);
+    else
+      digitalWrite(_D_PIN,LOW);
+
   }
 }
 
