@@ -299,21 +299,32 @@ void PxMATRIX::begin(uint8_t pattern) {
   digitalWrite(_A_PIN, LOW);
   digitalWrite(_B_PIN, LOW);
   digitalWrite(_OE_PIN, HIGH);
+  if (_mux_pattern==BINARY)
+  {
+    if (_pattern >=8)
+    {
+      pinMode(_C_PIN, OUTPUT);
+      digitalWrite(_C_PIN, LOW);
+    }
+    if (_pattern >=16)
+    {
+      pinMode(_D_PIN, OUTPUT);
+      digitalWrite(_D_PIN, LOW);
+    }
+    if (_pattern >=32)
+    {
+      pinMode(_E_PIN, OUTPUT);
+      digitalWrite(_E_PIN, LOW);
+    }
+  }
 
-  if (_pattern >=8)
+  if (_mux_pattern==STRAIGHT)
   {
     pinMode(_C_PIN, OUTPUT);
     digitalWrite(_C_PIN, LOW);
-  }
-  if (_pattern >=16)
-  {
     pinMode(_D_PIN, OUTPUT);
     digitalWrite(_D_PIN, LOW);
-  }
-  if (_pattern >=32)
-  {
-    pinMode(_E_PIN, OUTPUT);
-    digitalWrite(_E_PIN, LOW);
+
   }
 
   // Precompute row offset values
