@@ -80,6 +80,18 @@ void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uin
 void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
 {
   _mux_pattern=mux_pattern;
+
+  // We handle the multiplexing in the library and activate one of for
+  // row drivers --> need A,B,C,D pins
+  if (_mux_pattern==STRAIGHT)
+  {
+    pinMode(_C_PIN, OUTPUT);
+    digitalWrite(_C_PIN, LOW);
+    pinMode(_D_PIN, OUTPUT);
+    digitalWrite(_D_PIN, LOW);
+
+  }
+
 }
 
 void PxMATRIX::setRotate(bool rotate) {
@@ -299,32 +311,21 @@ void PxMATRIX::begin(uint8_t pattern) {
   digitalWrite(_A_PIN, LOW);
   digitalWrite(_B_PIN, LOW);
   digitalWrite(_OE_PIN, HIGH);
-  if (_mux_pattern==BINARY)
-  {
-    if (_pattern >=8)
-    {
-      pinMode(_C_PIN, OUTPUT);
-      digitalWrite(_C_PIN, LOW);
-    }
-    if (_pattern >=16)
-    {
-      pinMode(_D_PIN, OUTPUT);
-      digitalWrite(_D_PIN, LOW);
-    }
-    if (_pattern >=32)
-    {
-      pinMode(_E_PIN, OUTPUT);
-      digitalWrite(_E_PIN, LOW);
-    }
-  }
 
-  if (_mux_pattern==STRAIGHT)
+  if (_pattern >=8)
   {
     pinMode(_C_PIN, OUTPUT);
     digitalWrite(_C_PIN, LOW);
+  }
+  if (_pattern >=16)
+  {
     pinMode(_D_PIN, OUTPUT);
     digitalWrite(_D_PIN, LOW);
-
+  }
+  if (_pattern >=32)
+  {
+    pinMode(_E_PIN, OUTPUT);
+    digitalWrite(_E_PIN, LOW);
   }
 
   // Precompute row offset values
@@ -374,7 +375,7 @@ void PxMATRIX::set_mux(uint8_t value)
     }
   }
 
-  // This just pulls one of 4 pins low to address 4 rows
+
   if (_mux_pattern==STRAIGHT)
   {
     if (value==0)

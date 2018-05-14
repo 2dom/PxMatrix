@@ -19,6 +19,8 @@ BSD license, check license.txt for more information
 
 #include <SPI.h>
 
+// Either the panel handles the multiplexing and we feed BINARY to A-E
+// or we handle multiplexing in the library and activate one of A-D (STRAIGHT)
 enum mux_patterns {BINARY, STRAIGHT};
 
 
