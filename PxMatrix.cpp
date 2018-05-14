@@ -198,7 +198,7 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
     base_offset=_row_offset[y]-(x/8)*2;
 #endif
 
-    if (_mux_pattern==BINARY)
+    if (1)
     {
       // Weird shit access pattern
       if (y<4)
@@ -210,18 +210,18 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
       if (y>=12)
         total_offset_r=base_offset-_width/4-1;
     }
-    if (_mux_pattern==STRAIGHT)
-    {
-      // Weird shit access pattern
-      if (y<4)
-        total_offset_r=base_offset-1;
-      if ((y>=4) && (y<8))
-        total_offset_r=base_offset;
-      if ((y>=8) && (y<12))
-        total_offset_r=base_offset-_width/4-1;
-      if (y>=12)
-        total_offset_r=base_offset-_width/4;
-    }
+    // if (_mux_pattern==STRAIGHT)
+    // {
+    //   // Weird shit access pattern
+    //   if (y<4)
+    //     total_offset_r=base_offset-1;
+    //   if ((y>=4) && (y<8))
+    //     total_offset_r=base_offset;
+    //   if ((y>=8) && (y<12))
+    //     total_offset_r=base_offset-_width/4-1;
+    //   if (y>=12)
+    //     total_offset_r=base_offset-_width/4;
+    // }
 
 
     total_offset_g=total_offset_r-_pattern_color_bytes;
