@@ -19,7 +19,11 @@ BSD license, check license.txt for more information
 
 #include <SPI.h>
 
+// Sometimes some extra width needs to be passed to Adafruit GFX constructor
+// to render text close to the end of the display correctly
+#define ADAFRUIT_GFX_EXTRA 10
 
+// HW SPI PINS
 #define SPI_BUS_CLK 14
 #define SPI_BUS_MOSI 13
 #define SPI_BUS_MISO 12
