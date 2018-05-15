@@ -73,8 +73,8 @@ void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uin
   _rotate=0;
   _fast_update=0;
 
-  _mux_pattern=BINARY;
-
+  _row_pattern=BINARY;
+  _scan_pattern=LINE;
 }
 
 void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
@@ -92,6 +92,11 @@ void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
 
   }
 
+}
+
+void PxMATRIX::setScanPattern(scan_patterns scan_pattern)
+{
+  _scan_pattern=scan_pattern;
 }
 
 void PxMATRIX::setRotate(bool rotate) {
@@ -189,7 +194,7 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
   // This only applies to green 32x16, 4-step-displays
   // Not sure if other displays with alternating pattern exits?
   // ... maybe make this generic one day.
-  if (_pattern==4)
+  if (_row_pattern==4)
   {
     // Precomputed row offset values
 #ifdef double_buffer
@@ -198,7 +203,7 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
     base_offset=_row_offset[y]-(x/8)*2;
 #endif
 
-    if (1)
+    if (_scan_pattern==ZIGZAG)
     {
       // Weird shit access pattern
       if (y<4)
@@ -210,7 +215,21 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
       if (y>=12)
         total_offset_r=base_offset-_width/4-1;
     }
-    // if (_mux_pattern==STRAIGHT)
+
+    if (_scan_pattern==ZAGGIZ)
+    {
+      // Weird shit access pattern
+      if (y<4)
+        total_offset_r=base_offset-1;
+      if ((y>=4) && (y<8))
+        total_offset_r=base_offset;
+      if ((y>=8) && (y<12))
+        total_offset_r=base_offset-_width/4-1;
+      if (y>=12)
+        total_offset_r=base_offset-_width/4;
+    }
+
+    // if (_mux_row_pattern==STRAIGHT)
     // {
     //   // Weird shit access pattern
     //   if (y<4)
@@ -237,7 +256,7 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
 #endif
 
     // relies on integer truncation, do not simplify
-    uint8_t vert_sector = y/_pattern;
+    uint8_t vert_sector = y/_row_pattern;
     total_offset_r=base_offset-vert_sector*_width/8;
 
     total_offset_g=total_offset_r-_pattern_color_bytes;
@@ -245,25 +264,29 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
 
   }
 
+  uint16_t bit_select = x%8;
+  if ((_row_pattern==ZAGGIZ) && ((y%8)>4))
+      bit_select = 8-bit_select;
+
   //Color interlacing
   for (int this_color=0; this_color<color_depth; this_color++)
   {
     uint8_t color_tresh = this_color*color_step+color_half_step;
 
     if (r > color_tresh+_color_R_offset)
-      PxMATRIX_buffer[this_color][total_offset_r] |=_BV(x%8);
+      PxMATRIX_buffer[this_color][total_offset_r] |=_BV(bit_select);
     else
-      PxMATRIX_buffer[this_color][total_offset_r] &= ~_BV(x%8);
+      PxMATRIX_buffer[this_color][total_offset_r] &= ~_BV(bit_select);
 
     if (g > color_tresh+_color_G_offset)
-      PxMATRIX_buffer[(this_color+color_third_step)%color_depth][total_offset_g] |=_BV(x%8);
+      PxMATRIX_buffer[(this_color+color_third_step)%color_depth][total_offset_g] |=_BV(bit_select);
     else
-      PxMATRIX_buffer[(this_color+color_third_step)%color_depth][total_offset_g] &= ~_BV(x%8);
+      PxMATRIX_buffer[(this_color+color_third_step)%color_depth][total_offset_g] &= ~_BV(bit_select);
 
     if (b > color_tresh+_color_B_offset)
-      PxMATRIX_buffer[(this_color+color_two_third_step)%color_depth][total_offset_b] |=_BV(x%8);
+      PxMATRIX_buffer[(this_color+color_two_third_step)%color_depth][total_offset_b] |=_BV(bit_select);
     else
-      PxMATRIX_buffer[(this_color+color_two_third_step)%color_depth][total_offset_b] &= ~_BV(x%8);
+      PxMATRIX_buffer[(this_color+color_two_third_step)%color_depth][total_offset_b] &= ~_BV(bit_select);
   }
 }
 
@@ -301,12 +324,16 @@ uint8_t PxMATRIX::getPixel(int8_t x, int8_t y) {
 void PxMATRIX::begin()
 {
   begin(8);
+
 }
 
-void PxMATRIX::begin(uint8_t pattern) {
+void PxMATRIX::begin(uint8_t row_pattern) {
 
-  _pattern=pattern;
-  _pattern_color_bytes=(_height/_pattern)*(_width/8);
+  _row_pattern=row_pattern;
+  if (_row_pattern==4)
+    _scan_pattern=ZIGZAG;
+
+  _pattern_color_bytes=(_height/_row_pattern)*(_width/8);
   _send_buffer_size=_pattern_color_bytes*3;
 
 #ifdef ESP8266
@@ -328,17 +355,17 @@ void PxMATRIX::begin(uint8_t pattern) {
   digitalWrite(_B_PIN, LOW);
   digitalWrite(_OE_PIN, HIGH);
 
-  if (_pattern >=8)
+  if (_row_pattern >=8)
   {
     pinMode(_C_PIN, OUTPUT);
     digitalWrite(_C_PIN, LOW);
   }
-  if (_pattern >=16)
+  if (_row_pattern >=16)
   {
     pinMode(_D_PIN, OUTPUT);
     digitalWrite(_D_PIN, LOW);
   }
-  if (_pattern >=32)
+  if (_row_pattern >=32)
   {
     pinMode(_E_PIN, OUTPUT);
     digitalWrite(_E_PIN, LOW);
@@ -346,7 +373,7 @@ void PxMATRIX::begin(uint8_t pattern) {
 
   // Precompute row offset values
   for (uint8_t yy=0; yy<_height;yy++)
-      _row_offset[yy]=((yy)%_pattern)*_send_buffer_size+_send_buffer_size-1;
+      _row_offset[yy]=((yy)%_row_pattern)*_send_buffer_size+_send_buffer_size-1;
 
 
 }
@@ -354,7 +381,7 @@ void PxMATRIX::begin(uint8_t pattern) {
 void PxMATRIX::set_mux(uint8_t value)
 {
 
-  if (_mux_pattern==BINARY)
+  if (_row_pattern==BINARY)
   {
     if (value & 0x01)
       digitalWrite(_A_PIN,HIGH);
@@ -366,7 +393,7 @@ void PxMATRIX::set_mux(uint8_t value)
     else
       digitalWrite(_B_PIN,LOW);
 
-    if (_pattern>=8)
+    if (_row_pattern>=8)
     {
       if (value & 0x04)
       digitalWrite(_C_PIN,HIGH);
@@ -374,7 +401,7 @@ void PxMATRIX::set_mux(uint8_t value)
       digitalWrite(_C_PIN,LOW);
     }
 
-    if (_pattern>=16)
+    if (_row_pattern>=16)
     {
       if (value & 0x08)
           digitalWrite(_D_PIN,HIGH);
@@ -382,7 +409,7 @@ void PxMATRIX::set_mux(uint8_t value)
           digitalWrite(_D_PIN,LOW);
     }
 
-    if (_pattern>=32)
+    if (_row_pattern>=32)
     {
       if (value & 0x10)
           digitalWrite(_E_PIN,HIGH);
@@ -392,7 +419,7 @@ void PxMATRIX::set_mux(uint8_t value)
   }
 
 
-  if (_mux_pattern==STRAIGHT)
+  if (_row_pattern==STRAIGHT)
   {
     if (value==0)
       digitalWrite(_A_PIN,LOW);
@@ -436,7 +463,7 @@ void PxMATRIX::display(uint16_t show_time) {
 #ifdef ESP8266
   ESP.wdtFeed();
 #endif
-  for (uint8_t i=0;i<_pattern;i++)
+  for (uint8_t i=0;i<_row_pattern;i++)
 
   {
 
@@ -448,7 +475,7 @@ void PxMATRIX::display(uint16_t show_time) {
       // timing sensitive and may lead to flicker however promises reduced
       // update times and increased brightness
 
-      set_mux((i+_pattern-1)%_pattern);
+      set_mux((i+_row_pattern-1)%_row_pattern);
       digitalWrite(_LATCH_PIN,HIGH);
       digitalWrite(_OE_PIN,0);
       start_time = micros();

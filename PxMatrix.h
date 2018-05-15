@@ -29,6 +29,10 @@ BSD license, check license.txt for more information
 // or we handle the multiplexing and activate one of A-D pins (STRAIGHT)
 enum mux_patterns {BINARY, STRAIGHT};
 
+// This is how the scanning is implemented. LINE just scans it left to right,
+// ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
+enum scan_patterns {LINE, ZIGZAG, ZAGGIZ};
+
 
 class PxMATRIX : public Adafruit_GFX {
  public:
@@ -37,7 +41,7 @@ class PxMATRIX : public Adafruit_GFX {
   PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D);
   PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
 
-  void begin(uint8_t pattern);
+  void begin(uint8_t row_pattern);
   void begin();
 
 
@@ -86,6 +90,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Set the multiplex pattern
   void setMuxPattern(mux_patterns mux_pattern);
 
+  // Set the multiplex pattern
+  void setScanPattern(scan_patterns scan_pattern);
+
  private:
 
 
@@ -111,8 +118,8 @@ class PxMATRIX : public Adafruit_GFX {
   // Holds some pre-computed values for faster pixel drawing
   uint32_t _row_offset[64];
 
-  // Holds the display scan pattern type
-  uint8_t _pattern;
+  // Holds the display row pattern type
+  uint8_t _row_pattern;
 
   // Number of bytes in one color
   uint8_t _pattern_color_bytes;
@@ -131,6 +138,9 @@ class PxMATRIX : public Adafruit_GFX {
 
   // Holds multiplex pattern
   mux_patterns _mux_pattern;
+
+  // Holds the scan pattern
+  scan_patterns _scan_pattern;
 
 
   // Used for test pattern
