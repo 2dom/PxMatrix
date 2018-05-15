@@ -107,7 +107,7 @@ void PxMATRIX::setFastUpdate(bool fast_update) {
   _fast_update=fast_update;
 }
 
-PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B) : Adafruit_GFX(width, height)
+PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B) : Adafruit_GFX(width+10, height)
 {
   init(width, height, LATCH, OE, A, B);
 }
@@ -264,8 +264,8 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
 
   }
 
-  uint16_t bit_select = x%8;
-  if ((_row_pattern==ZAGGIZ) && ((y%8)>4))
+  uint8_t bit_select = x%8;
+  if ((_scan_pattern==ZAGGIZ) && ((y%8)>4))
       bit_select = 8-bit_select;
 
   //Color interlacing
@@ -381,7 +381,7 @@ void PxMATRIX::begin(uint8_t row_pattern) {
 void PxMATRIX::set_mux(uint8_t value)
 {
 
-  if (_row_pattern==BINARY)
+  if (_mux_pattern==BINARY)
   {
     if (value & 0x01)
       digitalWrite(_A_PIN,HIGH);
@@ -419,7 +419,7 @@ void PxMATRIX::set_mux(uint8_t value)
   }
 
 
-  if (_row_pattern==STRAIGHT)
+  if (_mux_pattern==STRAIGHT)
   {
     if (value==0)
       digitalWrite(_A_PIN,LOW);
