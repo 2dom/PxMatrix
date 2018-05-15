@@ -58,7 +58,7 @@ uint16_t myCYAN = display.color565(0, 255, 255);
 void setup() {
   // put your setup code here, to run once:
 Serial.begin(9600);
-  display.begin(8);
+  display.begin(4);
   display.flushDisplay();
   display.setTextColor(myCYAN);
   display.setCursor(2,0);
