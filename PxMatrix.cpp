@@ -313,8 +313,7 @@ void PxMATRIX::begin(uint8_t pattern) {
   SPI.begin();
 #endif
 #ifdef ESP32
-  //void begin(int8_t sck=-1, int8_t miso=-1, int8_t mosi=-1, int8_t ss=-1);
-  SPI.begin(14, 12, 13, 4);
+  SPI.begin(SPI_BUS_CLK, SPI_BUS_MISO, SPI_BUS_MOSI, SPI_BUS_SS);
 #endif
 
   SPI.setDataMode(SPI_MODE0);
@@ -509,6 +508,51 @@ void PxMATRIX::displayTestPattern(uint16_t show_time) {
     _test_line_counter++;
     flushDisplay();
   }
+
+  if (_test_line_counter> (_height/2))
+        _test_line_counter=0;
+
+  digitalWrite(_A_PIN,HIGH);
+  digitalWrite(_B_PIN,HIGH);
+  digitalWrite(_C_PIN,HIGH);
+  digitalWrite(_D_PIN,HIGH);
+  digitalWrite(_E_PIN,HIGH);
+
+  digitalWrite(_A_PIN,LOW);
+  digitalWrite(_B_PIN,LOW);
+  digitalWrite(_C_PIN,LOW);
+  digitalWrite(_D_PIN,LOW);
+  digitalWrite(_E_PIN,LOW);
+
+  set_mux(_test_line_counter);
+
+  latch(show_time);
+
+}
+
+void PxMATRIX::displayTestPixel(uint16_t show_time) {
+
+  if ((millis()-_test_last_call)>500)
+  {
+    flushDisplay();
+    uint16_t blanks = _test_pixel_counter/8;
+    SPI.write(1<<_test_pixel_counter%8);
+    while (blanks){
+      SPI.write(0x00);
+      blanks--;
+    }
+    _test_last_call=millis();
+    _test_pixel_counter++;
+
+  }
+
+  if (_test_pixel_counter>_send_buffer_size/3*8)
+
+  {
+    _test_pixel_counter=0;
+    _test_line_counter++;
+  }
+
 
   if (_test_line_counter> (_height/2))
         _test_line_counter=0;

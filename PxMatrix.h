@@ -19,6 +19,12 @@ BSD license, check license.txt for more information
 
 #include <SPI.h>
 
+
+#define SPI_BUS_CLK 14
+#define SPI_BUS_MOSI 13
+#define SPI_BUS_MISO 12
+#define SPI_BUS_SS 4
+
 // Either the panel handles the multiplexing and we feed BINARY to A-E pins
 // or we handle the multiplexing and activate one of A-D pins (STRAIGHT)
 enum mux_patterns {BINARY, STRAIGHT};
@@ -56,8 +62,11 @@ class PxMATRIX : public Adafruit_GFX {
   // Converts RGB888 to RGB565
   uint16_t color565(uint8_t r, uint8_t g, uint8_t b);
 
-  // Helpfull for debugging (place in display update loop)
+  // Helpful for debugging (place in display update loop)
   void displayTestPattern(uint16_t showtime);
+
+  // Helpful for debugging (place in display update loop)
+  void displayTestPixel(uint16_t show_time);
 
   // FLush the buffer of the display
   void flushDisplay();
@@ -110,7 +119,7 @@ class PxMATRIX : public Adafruit_GFX {
 
   // Total number of bytes that is pushed to the display at a time
   // 3 * _pattern_color_bytes
-  uint8_t _send_buffer_size;
+  uint16_t _send_buffer_size;
 
   // This is for double buffering
   bool _selected_buffer;
@@ -126,7 +135,7 @@ class PxMATRIX : public Adafruit_GFX {
 
   // Used for test pattern
   uint16_t _test_pixel_counter;
-  uint8_t _test_line_counter;
+  uint16_t _test_line_counter;
   unsigned long _test_last_call;
 
   // Generic function that draw one pixel
