@@ -2,7 +2,7 @@
 
 This driver controls chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in diffent layouts and resolutions:
 
-Pitch (mm)| Size | Resolution | Scan pattern
+Pitch (mm)| Size | Resolution | Rows-scan pattern
 ----|----|----|----
 P6   | 192mmx96mm  | 32x16 | 1/4 or 1/8
 P10  | 320mmx160mm | 32x16 | 1/4 or 1/8
@@ -26,14 +26,22 @@ Multiple panels may be chained together to build larger displays. The driver is 
 
 The display basically consists of 6 large shift register. On the input connector you will find the inputs to the shift register (two for each color - Rx,Gx,Bx), a 2 to 5 bit latch address input (A,B,C,D,E), a latch enable input (LAT/STB), a clock input (CLK) and the output enable input (OE).
 
-There are a few basic layouts/scanning patterns: 1/4, 1/8, 1/16 and 1/32 scan. You can enable the correct pattern for your display with display.begin(n) where n={4,8,16,32} defines the pattern.
+There are a few basic row scanning layouts: 1/4, 1/8, 1/16 and 1/32 row scan. You can enable the correct pattern for your display with display.begin(n) where n={4,8,16,32} defines the pattern.
 
-For example, the 32x16 displays work like this (other varieties operate accordingly): Each of the shift register is 64(1/4 scan) / 32(1/8 scan) bits long. R1 and R2 will together therefore cover 128(1/4 scan) / 64(1/8 scan) bits or 4(1/4 scan) / 2(1/8 scan) lines respectively. The rows are, however, not next to each other but have a spacing of 4(1/4 scan) / 8(1/8 scan). In case of 1/4 scan adjacent bytes also alternate between lines n and n+4.
+For example, the 32x16 displays work like this (other varieties operate accordingly): Each of the shift register is 64(1/4 row scan) / 32(1/8 row scan) bits long. R1 and R2 will together therefore cover 128(1/4 row scan) / 64(1/8 row scan) bits or 4(1/4 row scan) / 2(1/8 row scan) lines respectively. The rows are, however, not next to each other but have a spacing of 4(1/4 row scan) / 8(1/8 row scan). In case of 1/4 the row scan pattern may also alternate between rows or even reverse bit order.
 
-Setting Rx to high, cycling CLK 64(1/4 scan) / 32(1/8 scan) times, setting (A,B,C) to low and setting LAT/STB to low will light up rows 0,4,8,12(1/4 scan)/ 0,8(1/8 scan). Repeating the same experiment with A high, B and C low will light up rows 1,5,8,13(1/4 scan)/1,9(1/8 scan) and so forth. The same principle applies to the other colors. As the row spacing for 1/4 scan is 4 we only need A and B for the latch address - C has no function. 1/8 scan requires a C, 1/16 requires a D and 1/32 scan requires an E signal.
+Setting Rx to high, cycling CLK 64(1/4 row scan) / 32(1/8 row scan) times, setting (A,B,C) to low and setting LAT/STB to low will light up rows 0,4,8,12(1/4 row scan)/ 0,8(1/8 row scan). Repeating the same experiment with A high, B and C low will light up rows 1,5,8,13(1/4 row scan)/1,9(1/8 row scan) and so forth. The same principle applies to the other colors. As the row spacing for 1/4 row scan is 4 we only need A and B for the latch address - C has no function. 1/8 row scan requires a C, 1/16 requires a D and 1/32 row scan requires an E signal.
 
 Such LED matrix are usually used as a sub-module for larger displays and therefore features an output connector for daisy chaining. On the output connector you will find the identical signals to the input connector where A,B,C,LAT,CLK are simply routed through and (R,G,B) pins are the outputs of the shift registers on the module.
 
+## Configure the library for your panel
+There are three parameters that define how the panel works. The first one is the basic row scanning layout explained above. You can specify this in the `display.begin(x)` call where x={4,8,16,32} is the scanning layout. Secondly, you may have to specify a different scanning pattern to the default LINE scanning. This can be achieved by calling `display.setScanPattern(x)` where x={LINE, ZIGZAG, ZAGGIZ}. Finally, your panel may not handle BINARY row multiplexing by itself but we need to handle it in the library and select rows STRAIGHT via the A,B,C,D lines. This can be achieved by calling `display.setMuxPattern(x)` where x={BINARY, STRAIGHT}. So for some very strange displays you may have execute:
+
+```
+display.begin(4);
+display.setScanPattern(ZAGGIZ);
+display.setMuxPattern(STRAIGHT);
+```
 ## Set-up and cabling
 
 When driving a long chain of LED modules in a row, parallel color data lines make a lot of sense since it reduces the data rate. But since we are only driving a few modules here, we really don't need that. We can therefore use jumper wires between input connector (PI) and output connector (PO) to chain all shift registers together and create one big shift register. This has two advantages: it reduces the number of required GPIO pins on the microcontroller and we can use the hardware SPI interface to drive it.

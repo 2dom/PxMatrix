@@ -144,6 +144,12 @@ void setup() {
   // Define your display layout here, e.g. 1/8 step
   display.begin(8);
 
+  // Define your scan pattern here {LINE, ZIGZAG, ZAGGIZ} (default is LINE)
+  //display.setScanPattern(LINE);
+
+  // Define multiplex implemention here {BINARY, STRAIGHT} (default is STAIGHT)
+  //display.setMuxPattern(STRAIGHT);
+
   // Compare draw latency at similar display brightness for standard and fast drawing
   display.setFastUpdate(false);
   Serial.println("Draw test without fast update");
