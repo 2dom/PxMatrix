@@ -59,6 +59,10 @@ void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uin
 
   _width = width;
   _height = height;
+  _panels_width = 1;
+
+  _rows_per_buffer = _height/2;
+  _panel_width_bytes = (_width/_panels_width)/8;
 
   _selected_buffer=false;
   _active_buffer=false;
@@ -97,6 +101,11 @@ void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
 void PxMATRIX::setScanPattern(scan_patterns scan_pattern)
 {
   _scan_pattern=scan_pattern;
+}
+
+void PxMATRIX::setPanelsWidth(uint8_t panels) {
+  _panels_width=panels;
+  _panel_width_bytes = (_width/_panels_width)/8;
 }
 
 void PxMATRIX::setRotate(bool rotate) {
@@ -248,16 +257,20 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
   }
   else
   {
-    // Precomputed row offset values
+    // can only be non-zero when _height/(2 inputs per panel)/_row_pattern > 1
+    // i.e.: 32x32 panel with 1/8 scan (A/B/C lines) -> 32/2/8 = 2
+    uint8_t vert_index_in_buffer = (y%_rows_per_buffer)/_row_pattern; // which set of rows per buffer
+    // can only ever be 0/1 since there are only ever 2 separate input sets present for this variety of panels (R1G1B1/R2G2B2)
+    uint8_t which_buffer = y/_rows_per_buffer;
+    uint8_t x_byte = x/8;
+    // assumes panels are only ever chained for more width
+    uint8_t which_panel = x_byte/_panel_width_bytes;
+    uint8_t in_row_byte_offset = x_byte%_panel_width_bytes;
+    // this could be pretty easily extended to vertical stacking as well
+    total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
 #ifdef double_buffer
-    base_offset=buffer_size*selected_buffer+_row_offset[y]-(x/8);
-#else
-    base_offset=_row_offset[y]-(x/8);
+    total_offset_r += buffer_size*selected_buffer;
 #endif
-
-    // relies on integer truncation, do not simplify
-    uint8_t vert_sector = y/_row_pattern;
-    total_offset_r=base_offset-vert_sector*_width/8;
 
     total_offset_g=total_offset_r-_pattern_color_bytes;
     total_offset_b=total_offset_g-_pattern_color_bytes;
@@ -334,6 +347,7 @@ void PxMATRIX::begin(uint8_t row_pattern) {
     _scan_pattern=ZIGZAG;
 
   _pattern_color_bytes=(_height/_row_pattern)*(_width/8);
+  _row_sets_per_buffer = _rows_per_buffer/_row_pattern;
   _send_buffer_size=_pattern_color_bytes*3;
 
 #ifdef ESP8266
