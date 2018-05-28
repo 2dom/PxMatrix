@@ -86,10 +86,7 @@ void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
   if (_mux_pattern==STRAIGHT)
   {
     pinMode(_C_PIN, OUTPUT);
-    digitalWrite(_C_PIN, LOW);
     pinMode(_D_PIN, OUTPUT);
-    digitalWrite(_D_PIN, LOW);
-
   }
 
 }
@@ -441,6 +438,9 @@ void PxMATRIX::set_mux(uint8_t value)
       digitalWrite(_D_PIN,LOW);
     else
       digitalWrite(_D_PIN,HIGH);
+
+
+
 
   }
 }
