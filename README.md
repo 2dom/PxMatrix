@@ -96,8 +96,8 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   STB/LAT |  16 - (D0) | 22
   A   |  05 - (D1) | 19
   B   |  04 - (D2) | 23
-  C   |  15 - (D8) | 18 | only for 1/8, 1/16, 1/32 scan BINARY mux or 1/4 STRAIGHT mux
-  D   |  12 - (D6) | 5 | only for 1/16, 1/32 scan BINARY mux or 1/4 STRAIGHT mux
+  C   |  15 - (D8) | 18 | only for 1/8, 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
+  D   |  12 - (D6) | 5 | only for 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
   E   |  00 - (D3) | 15 | only for 1/32 scan
   P_OE|  02 - (D4) | 2
   CLK |  14 - (D5) | 14
