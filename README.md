@@ -41,7 +41,7 @@ display.begin(4);
 display.setScanPattern(ZAGGIZ);
 display.setMuxPattern(STRAIGHT);
 ```
-The number of required address lines (A,B,C ...) in the constructor depends on the row-scan pattern and the multiplex pattern. For example a 1/4 scan display with scan pattern BINARY will require A,B where a STRAIGHT display will require A,B,C,D.
+The number of required address lines (A,B,C ...) in the constructor depends on the row-scan pattern and the multiplex pattern. For example a 1/4 scan display with scan pattern BINARY will require A,B where a STRAIGHT display will require A,B,C,D. A good hint is usally the connector labeling on your matrix.
 
 ## Set-up and cabling
 
