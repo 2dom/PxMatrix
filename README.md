@@ -107,7 +107,7 @@ You should end up with something like this (VCC/supply not nonnected here yet):
 
 ![Cabling](/images/P10_cables.jpg)
 
-If you want it a bit more professional, Mike's got you covered. He created a [neat custom PCB](  https://github.com/mike-rankin/ESP8266_RGB_Matrix_Cable_Version) that gets rid of all those lose cables. 
+If you want it more professional, Mike's got you covered. He created a [neat custom PCB](  https://github.com/mike-rankin/ESP8266_RGB_Matrix_Cable_Version) that gets rid of all those lose cables. 
 
 ## Colors
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.
