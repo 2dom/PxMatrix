@@ -97,6 +97,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Set the multiplex pattern
   void setScanPattern(scan_patterns scan_pattern);
 
+  // Set the number of panels that make up the display area width
+  void setPanelsWidth(uint8_t panels);
+
  private:
 
 
@@ -110,6 +113,10 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _E_PIN;
   uint8_t _width;
   uint8_t _height;
+  uint8_t _panels_width;
+  uint8_t _rows_per_buffer;
+  uint8_t _row_sets_per_buffer;
+  uint8_t _panel_width_bytes;
 
   // Color offset
   uint8_t _color_R_offset;
