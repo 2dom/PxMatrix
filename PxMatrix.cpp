@@ -197,10 +197,9 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
   uint32_t total_offset_g=0;
   uint32_t total_offset_b=0;
 
-  // This only applies to green 32x16, 4-step-displays
-  // Not sure if other displays with alternating pattern exits?
-  // ... maybe make this generic one day.
-  if (_row_pattern==4)
+
+  // This only applies to 32x16 2-step-displays
+  if (_row_pattern<8)
   {
     // Precomputed row offset values
 #ifdef double_buffer
@@ -208,46 +207,13 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
 #else
     base_offset=_row_offset[y]-(x/8)*2;
 #endif
-
-    if (_scan_pattern==ZIGZAG)
+    for (uint8_t yy = 0; yy<_height; yy+=2*_row_pattern)
     {
-      // Weird shit access pattern
-      if (y<4)
-        total_offset_r=base_offset;
-      if ((y>=4) && (y<8))
-        total_offset_r=base_offset-1;
-      if ((y>=8) && (y<12))
-        total_offset_r=base_offset-_width/4;
-      if (y>=12)
-        total_offset_r=base_offset-_width/4-1;
+      if ((y>=yy) && (y<yy+_row_pattern))
+        total_offset_r=base_offset-yy-(_scan_pattern==ZAGGIZ ? 1: 0);
+      if ((y>=yy+_row_pattern) && (y<yy+2*_row_pattern))
+        total_offset_r=base_offset-yy-(_scan_pattern==ZIGZAG ? 1: 0);
     }
-
-    if (_scan_pattern==ZAGGIZ)
-    {
-      // Weird shit access pattern
-      if (y<4)
-        total_offset_r=base_offset-1;
-      if ((y>=4) && (y<8))
-        total_offset_r=base_offset;
-      if ((y>=8) && (y<12))
-        total_offset_r=base_offset-_width/4-1;
-      if (y>=12)
-        total_offset_r=base_offset-_width/4;
-    }
-
-    // if (_mux_row_pattern==STRAIGHT)
-    // {
-    //   // Weird shit access pattern
-    //   if (y<4)
-    //     total_offset_r=base_offset-1;
-    //   if ((y>=4) && (y<8))
-    //     total_offset_r=base_offset;
-    //   if ((y>=8) && (y<12))
-    //     total_offset_r=base_offset-_width/4-1;
-    //   if (y>=12)
-    //     total_offset_r=base_offset-_width/4;
-    // }
-
 
     total_offset_g=total_offset_r-_pattern_color_bytes;
     total_offset_b=total_offset_g-_pattern_color_bytes;

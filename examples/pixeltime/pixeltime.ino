@@ -147,8 +147,8 @@ void setup() {
   // Define your scan pattern here {LINE, ZIGZAG, ZAGGIZ} (default is LINE)
   //display.setScanPattern(LINE);
 
-  // Define multiplex implemention here {BINARY, STRAIGHT} (default is STAIGHT)
-  //display.setMuxPattern(STRAIGHT);
+  // Define multiplex implemention here {BINARY, STRAIGHT} (default is BINARY)
+  //display.setMuxPattern(BINARY);
 
   // Compare draw latency at similar display brightness for standard and fast drawing
   display.setFastUpdate(false);
