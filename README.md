@@ -16,7 +16,7 @@ P5   | 320mmx160mm | 64x32 | 1/16
 P2.5 | 160mmx160mm | 64x64 | 1/32
 P3   | 192mmx192mm | 64x64 | 1/32
 
-Multiple panels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos.
+Multiple panels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos. This readme gives an overview over the the library - for a more detailed guide you may consider witnessmenow's detailed [tutorial](http://www.instructables.com/id/RGB-LED-Matrix-With-an-ESP8266/).
 
 ![P10](/images/P10_matrix.jpg)
 
