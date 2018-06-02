@@ -199,7 +199,7 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
 
 
   // This only applies to 32x16 2-step-displays
-  if (_row_pattern<8)
+  if (_scan_pattern!=LINE)
   {
     // Precomputed row offset values
 #ifdef double_buffer
