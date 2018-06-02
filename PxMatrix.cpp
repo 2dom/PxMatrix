@@ -198,7 +198,8 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
   uint32_t total_offset_b=0;
 
 
-  // This only applies to 32x16 2-step-displays
+  // This code sections supports panels that have a row-changin scanning pattern
+  // It does support chaining however only of height/pattern=2
   if (_scan_pattern!=LINE)
   {
     // Precomputed row offset values
