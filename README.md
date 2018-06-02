@@ -4,8 +4,8 @@ This driver controls chinese RGB LED Matrix modules without any additional compo
 
 Pitch (mm)| Size | Resolution | Rows-scan pattern
 ----|----|----|----
-P6   | 192mmx96mm  | 32x16 | 1/4 or 1/8
-P10  | 320mmx160mm | 32x16 | 1/4 or 1/8
+P6   | 192mmx96mm  | 32x16 | 1/2, 1/4 or 1/8
+P10  | 320mmx160mm | 32x16 | 1/2, 1/4 or 1/8
 P4   | 128mmx128mm | 32x32 | 1/8 or 1/16
 P5   | 160mmx160mm | 32x32 | 1/8 or 1/16
 P6   | 192mmx192mm | 32x32 | 1/8 or 1/16
