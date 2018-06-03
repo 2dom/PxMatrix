@@ -62,12 +62,7 @@ enum scan_patterns {LINE, ZIGZAG, ZAGGIZ};
 #define color_third_step int(color_step / 3)
 #define color_two_third_step int(color_third_step*2)
 
-
 #define buffer_size max_matrix_width * max_matrix_height * 3 / 8
-
-
-
-
 
 class PxMATRIX : public Adafruit_GFX {
  public:
@@ -78,7 +73,6 @@ class PxMATRIX : public Adafruit_GFX {
 
   void begin(uint8_t row_pattern);
   void begin();
-
 
   void clearDisplay(void);
 
@@ -190,7 +184,6 @@ class PxMATRIX : public Adafruit_GFX {
   // Holds the scan pattern
   scan_patterns _scan_pattern;
 
-
   // Used for test pattern
   uint16_t _test_pixel_counter;
   uint16_t _test_line_counter;
@@ -260,7 +253,6 @@ void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
     pinMode(_C_PIN, OUTPUT);
     pinMode(_D_PIN, OUTPUT);
   }
-
 }
 
 void PxMATRIX::setScanPattern(scan_patterns scan_pattern)
@@ -323,8 +315,6 @@ void PxMATRIX::selectBuffer(bool selected_buffer)
 
 void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
 {
-
-
   if ((color_half_step+r)<0)
     r=-color_half_step;
   if ((color_half_step+r)>255)
@@ -343,8 +333,6 @@ void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
     _color_R_offset=r;
     _color_G_offset=g;
     _color_B_offset=b;
-
-
 }
 
 void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint8_t b,bool selected_buffer)
@@ -359,12 +347,10 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
   return;
   x =_width - 1 -x;
 
-
   uint32_t base_offset;
   uint32_t total_offset_r=0;
   uint32_t total_offset_g=0;
   uint32_t total_offset_b=0;
-
 
   // This code sections supports panels that have a row-changin scanning pattern
   // It does support chaining however only of height/pattern=2
@@ -457,14 +443,10 @@ void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_
   fillMatrixBuffer(x, y, r, g,b, 0);
 }
 
-
-
-
 // the most basic function, get a single pixel
 uint8_t PxMATRIX::getPixel(int8_t x, int8_t y) {
   return (0);//PxMATRIX_buffer[x+ (y/8)*LCDWIDTH] >> (y%8)) & 0x1;
 }
-
 
 void PxMATRIX::begin()
 {
@@ -521,7 +503,6 @@ void PxMATRIX::begin(uint8_t row_pattern) {
   for (uint8_t yy=0; yy<_height;yy++)
       _row_offset[yy]=((yy)%_row_pattern)*_send_buffer_size+_send_buffer_size-1;
 
-
 }
 
 void PxMATRIX::set_mux(uint8_t value)
@@ -564,7 +545,6 @@ void PxMATRIX::set_mux(uint8_t value)
     }
   }
 
-
   if (_mux_pattern==STRAIGHT)
   {
     if (value==0)
@@ -577,7 +557,6 @@ void PxMATRIX::set_mux(uint8_t value)
     else
       digitalWrite(_B_PIN,HIGH);
 
-
     if (value==2)
       digitalWrite(_C_PIN,LOW);
     else
@@ -587,10 +566,6 @@ void PxMATRIX::set_mux(uint8_t value)
       digitalWrite(_D_PIN,LOW);
     else
       digitalWrite(_D_PIN,HIGH);
-
-
-
-
   }
 }
 
@@ -604,7 +579,6 @@ void PxMATRIX::latch(uint16_t show_time )
  digitalWrite(_OE_PIN,0); //<<<< insert this
   delayMicroseconds(show_time);
   digitalWrite(_OE_PIN,1);
-
 }
 
 void PxMATRIX::display(uint16_t show_time) {
@@ -613,9 +587,7 @@ void PxMATRIX::display(uint16_t show_time) {
   ESP.wdtFeed();
 #endif
   for (uint8_t i=0;i<_row_pattern;i++)
-
   {
-
     if (_fast_update){
 
       // This will clock data into the display while the outputs are still
@@ -642,7 +614,6 @@ void PxMATRIX::display(uint16_t show_time) {
     }
     else
     {
-
       set_mux(i);
 #ifdef double_buffer
       SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
@@ -671,7 +642,6 @@ void PxMATRIX::displayTestPattern(uint16_t show_time) {
 
   if ((millis()-_test_last_call)>500)
   {
-
     SPI.write(0xFF);
     _test_last_call=millis();
     _test_pixel_counter++;
@@ -703,7 +673,6 @@ void PxMATRIX::displayTestPattern(uint16_t show_time) {
   set_mux(_test_line_counter);
 
   latch(show_time);
-
 }
 
 void PxMATRIX::displayTestPixel(uint16_t show_time) {
@@ -719,7 +688,6 @@ void PxMATRIX::displayTestPixel(uint16_t show_time) {
     }
     _test_last_call=millis();
     _test_pixel_counter++;
-
   }
 
   if (_test_pixel_counter>_send_buffer_size/3*8)
@@ -728,7 +696,6 @@ void PxMATRIX::displayTestPixel(uint16_t show_time) {
     _test_pixel_counter=0;
     _test_line_counter++;
   }
-
 
   if (_test_line_counter> (_height/2))
         _test_line_counter=0;
@@ -748,7 +715,6 @@ void PxMATRIX::displayTestPixel(uint16_t show_time) {
   set_mux(_test_line_counter);
 
   latch(show_time);
-
 }
 
 // clear everything
@@ -756,11 +722,5 @@ void PxMATRIX::clearDisplay(void) {
   for(int this_color=0;this_color<color_depth;this_color++)
   for (int j=0;j<(_width*_height*3)/8;j++)
     PxMATRIX_buffer[this_color][j]=0;
-
 }
-
-
-
-
-
 #endif
