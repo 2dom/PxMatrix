@@ -245,6 +245,8 @@ void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uin
 
   _row_pattern=BINARY;
   _scan_pattern=LINE;
+
+  clearDisplay();
 }
 
 void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
