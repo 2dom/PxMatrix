@@ -375,25 +375,42 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
   }
   else
   {
-    // can only be non-zero when _height/(2 inputs per panel)/_row_pattern > 1
-    // i.e.: 32x32 panel with 1/8 scan (A/B/C lines) -> 32/2/8 = 2
-    uint8_t vert_index_in_buffer = (y%_rows_per_buffer)/_row_pattern; // which set of rows per buffer
-    // can only ever be 0/1 since there are only ever 2 separate input sets present for this variety of panels (R1G1B1/R2G2B2)
-    uint8_t which_buffer = y/_rows_per_buffer;
-    uint8_t x_byte = x/8;
-    // assumes panels are only ever chained for more width
-    uint8_t which_panel = x_byte/_panel_width_bytes;
-    uint8_t in_row_byte_offset = x_byte%_panel_width_bytes;
-    // this could be pretty easily extended to vertical stacking as well
-    total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
+
+    if (_panels_width>1)
+    {
+      // can only be non-zero when _height/(2 inputs per panel)/_row_pattern > 1
+      // i.e.: 32x32 panel with 1/8 scan (A/B/C lines) -> 32/2/8 = 2
+      uint8_t vert_index_in_buffer = (y%_rows_per_buffer)/_row_pattern; // which set of rows per buffer
+      // can only ever be 0/1 since there are only ever 2 separate input sets present for this variety of panels (R1G1B1/R2G2B2)
+      uint8_t which_buffer = y/_rows_per_buffer;
+      uint8_t x_byte = x/8;
+      // assumes panels are only ever chained for more width
+      uint8_t which_panel = x_byte/_panel_width_bytes;
+      uint8_t in_row_byte_offset = x_byte%_panel_width_bytes;
+      // this could be pretty easily extended to vertical stacking as well
+      total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
 #ifdef double_buffer
-    total_offset_r += buffer_size*selected_buffer;
+      total_offset_r += buffer_size*selected_buffer;
+#endif
+    }
+    else
+    {
+      // Precomputed row offset values
+      base_offset=_row_offset[y]-(x/8);
+
+#ifdef double_buffer
+      base_offset-=buffer_size*selected_buffer;
 #endif
 
-    total_offset_g=total_offset_r-_pattern_color_bytes;
-    total_offset_b=total_offset_g-_pattern_color_bytes;
+      // relies on integer truncation, do not simplify
+      uint8_t vert_sector = y/_row_pattern;
+      total_offset_r=base_offset-vert_sector*_width/8;
 
+    }
   }
+
+  total_offset_g=total_offset_r-_pattern_color_bytes;
+  total_offset_b=total_offset_g-_pattern_color_bytes;
 
   uint8_t bit_select = x%8;
   if ((_scan_pattern==ZAGGIZ) && ((y%8)<4))
