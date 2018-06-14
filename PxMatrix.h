@@ -66,28 +66,28 @@ enum scan_patterns {LINE, ZIGZAG, ZAGGIZ};
 
 class PxMATRIX : public Adafruit_GFX {
  public:
-  PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
-  PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C);
-  PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D);
-  PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
+  inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
+  inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C);
+  inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D);
+  inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
 
-  void begin(uint8_t row_pattern);
-  void begin();
+  inline void begin(uint8_t row_pattern);
+  inline void begin();
 
-  void clearDisplay(void);
+  inline void clearDisplay(void);
 
   // Updates the display
-  void display(uint16_t show_time);
+  inline void display(uint16_t show_time);
 
   // Draw pixels
-  void drawPixelRGB565(int16_t x, int16_t y, uint16_t color);
-  void drawPixelRGB565(int16_t x, int16_t y, uint16_t color, bool selected_buffer);
+  inline void drawPixelRGB565(int16_t x, int16_t y, uint16_t color);
+  inline void drawPixelRGB565(int16_t x, int16_t y, uint16_t color, bool selected_buffer);
 
-  void drawPixel(int16_t x, int16_t y, uint16_t color);
-  void drawPixel(int16_t x, int16_t y, uint16_t color, bool selected_buffer);
+  inline void drawPixel(int16_t x, int16_t y, uint16_t color);
+  inline void drawPixel(int16_t x, int16_t y, uint16_t color, bool selected_buffer);
 
-  void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b);
-  void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
+  inline void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b);
+  inline void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
 
   // Does nothing for now
   uint8_t getPixel(int8_t x, int8_t y);
@@ -96,34 +96,34 @@ class PxMATRIX : public Adafruit_GFX {
   uint16_t color565(uint8_t r, uint8_t g, uint8_t b);
 
   // Helpful for debugging (place in display update loop)
-  void displayTestPattern(uint16_t showtime);
+  inline void displayTestPattern(uint16_t showtime);
 
   // Helpful for debugging (place in display update loop)
-  void displayTestPixel(uint16_t show_time);
+  inline void displayTestPixel(uint16_t show_time);
 
   // FLush the buffer of the display
-  void flushDisplay();
+  inline void flushDisplay();
 
   // Rotate display
-  void setRotate(bool rotate);
+  inline void setRotate(bool rotate);
 
   // Helps to reduce display update latency on larger displays
-  void setFastUpdate(bool fast_update);
+  inline void setFastUpdate(bool fast_update);
 
   // Select active buffer to updare display from
-  void selectBuffer(bool selected_buffer);
+  inline void selectBuffer(bool selected_buffer);
 
   // Control the minimum color values that result in an active pixel
-  void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
+  inline void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
 
   // Set the multiplex pattern
-  void setMuxPattern(mux_patterns mux_pattern);
+  inline void setMuxPattern(mux_patterns mux_pattern);
 
   // Set the multiplex pattern
-  void setScanPattern(scan_patterns scan_pattern);
+  inline void setScanPattern(scan_patterns scan_pattern);
 
   // Set the number of panels that make up the display area width
-  void setPanelsWidth(uint8_t panels);
+  inline void setPanelsWidth(uint8_t panels);
 
  private:
 
@@ -190,16 +190,16 @@ class PxMATRIX : public Adafruit_GFX {
   unsigned long _test_last_call;
 
   // Generic function that draw one pixel
-  void fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
+inline void fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
 
   // Init code common to both constructors
-  void init(uint8_t width, uint8_t height ,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
+inline void init(uint8_t width, uint8_t height ,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
 
   // Light up LEDs and hold for show_time microseconds
-  void latch(uint16_t show_time );
+inline void latch(uint16_t show_time );
 
   // Set row multiplexer
-  void set_mux(uint8_t value);
+inline void set_mux(uint8_t value);
 };
 
 // Pass 8-bit (each) R,G,B, get back 16-bit packed color
