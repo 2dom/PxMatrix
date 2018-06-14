@@ -203,12 +203,12 @@ class PxMATRIX : public Adafruit_GFX {
 };
 
 // Pass 8-bit (each) R,G,B, get back 16-bit packed color
-uint16_t PxMATRIX::color565(uint8_t r, uint8_t g, uint8_t b) {
+inline uint16_t PxMATRIX::color565(uint8_t r, uint8_t g, uint8_t b) {
   return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 }
 
 // Init code common to both constructors
-void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A, uint8_t B){
+inline void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A, uint8_t B){
   _LATCH_PIN = LATCH;
   _OE_PIN = OE;
   _display_color=0;
@@ -242,7 +242,7 @@ void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uin
   clearDisplay();
 }
 
-void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
+inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
 {
   _mux_pattern=mux_pattern;
 
@@ -255,43 +255,43 @@ void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
   }
 }
 
-void PxMATRIX::setScanPattern(scan_patterns scan_pattern)
+inline void PxMATRIX::setScanPattern(scan_patterns scan_pattern)
 {
   _scan_pattern=scan_pattern;
 }
 
-void PxMATRIX::setPanelsWidth(uint8_t panels) {
+inline void PxMATRIX::setPanelsWidth(uint8_t panels) {
   _panels_width=panels;
   _panel_width_bytes = (_width/_panels_width)/8;
 }
 
-void PxMATRIX::setRotate(bool rotate) {
+inline void PxMATRIX::setRotate(bool rotate) {
   _rotate=rotate;
 }
 
-void PxMATRIX::setFastUpdate(bool fast_update) {
+inline void PxMATRIX::setFastUpdate(bool fast_update) {
   _fast_update=fast_update;
 }
 
-PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
+inline PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
 {
   init(width, height, LATCH, OE, A, B);
 }
 
-PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
+inline PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
 {
   _C_PIN = C;
   init(width, height, LATCH, OE, A, B);
 }
 
-PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
+inline PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
 {
   _C_PIN = C;
   _D_PIN = D;
   init(width, height, LATCH, OE, A, B);
 }
 
-PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D, uint8_t E) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
+inline PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D, uint8_t E) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
 {
   _C_PIN = C;
   _D_PIN = D;
@@ -299,21 +299,21 @@ PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint
   init(width, height, LATCH, OE, A, B);
 }
 
-void PxMATRIX::drawPixel(int16_t x, int16_t y, uint16_t color) {
+inline void PxMATRIX::drawPixel(int16_t x, int16_t y, uint16_t color) {
   drawPixelRGB565( x,  y,  color,0 );
 }
 
-void PxMATRIX::drawPixel(int16_t x, int16_t y, uint16_t color, bool selected_buffer) {
+inline void PxMATRIX::drawPixel(int16_t x, int16_t y, uint16_t color, bool selected_buffer) {
   drawPixelRGB565( x,  y,  color, selected_buffer);
 }
 
-void PxMATRIX::selectBuffer(bool selected_buffer)
+inline void PxMATRIX::selectBuffer(bool selected_buffer)
 {
 
   _selected_buffer=selected_buffer;
 }
 
-void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
+inline void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
 {
   if ((color_half_step+r)<0)
     r=-color_half_step;
@@ -335,7 +335,7 @@ void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
     _color_B_offset=b;
 }
 
-void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint8_t b,bool selected_buffer)
+inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint8_t b,bool selected_buffer)
 {
   if (_rotate){
     uint16_t temp_x=x;
@@ -438,34 +438,34 @@ void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint
   }
 }
 
-void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color, bool selected_buffer) {
+inline void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color, bool selected_buffer) {
   uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
   uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
   uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
   fillMatrixBuffer( x,  y, r, g,b, selected_buffer);
 }
 
-void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color) {
+inline void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color) {
   uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
   uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
   uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
   fillMatrixBuffer( x,  y, r, g,b, 0);
 }
 
-void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer) {
+inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer) {
   fillMatrixBuffer(x, y, r, g,b, selected_buffer);
 }
 
-void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b) {
+inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b) {
   fillMatrixBuffer(x, y, r, g,b, 0);
 }
 
 // the most basic function, get a single pixel
-uint8_t PxMATRIX::getPixel(int8_t x, int8_t y) {
+inline uint8_t PxMATRIX::getPixel(int8_t x, int8_t y) {
   return (0);//PxMATRIX_buffer[x+ (y/8)*LCDWIDTH] >> (y%8)) & 0x1;
 }
 
-void PxMATRIX::begin()
+inline void PxMATRIX::begin()
 {
   begin(8);
 
