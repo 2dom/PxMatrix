@@ -413,7 +413,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   total_offset_b=total_offset_g-_pattern_color_bytes;
 
   uint8_t bit_select = x%8;
-  if ((_scan_pattern==ZAGGIZ) && ((y%8)<4))
+  if ((_scan_pattern==ZAGGIZ) && ((y%(_row_pattern*2))<_row_pattern))
       bit_select = 7-bit_select;
 
   //Color interlacing
