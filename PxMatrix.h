@@ -362,12 +362,15 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
 #else
     base_offset=_row_offset[y]-(x/8)*2;
 #endif
+    uint8_t row_sector=0;
+    uint16_t row_sector__offset=_width/4;
     for (uint8_t yy = 0; yy<_height; yy+=2*_row_pattern)
     {
-      if ((y>=yy) && (y<yy+_row_pattern))
-        total_offset_r=base_offset-yy-(_scan_pattern==ZAGGIZ ? 1: 0);
-      if ((y>=yy+_row_pattern) && (y<yy+2*_row_pattern))
-        total_offset_r=base_offset-yy-(_scan_pattern==ZIGZAG ? 1: 0);
+      if ((yy<=y) && (y<yy+_row_pattern))
+        total_offset_r=base_offset-row_sector__offset*row_sector-(_scan_pattern==ZAGGIZ ? 1: 0);
+      if ((yy+_row_pattern<=y) && (y<yy+2*_row_pattern))
+        total_offset_r=base_offset-row_sector__offset*row_sector-(_scan_pattern==ZIGZAG ? 1: 0);
+      row_sector++;
     }
 
     total_offset_g=total_offset_r-_pattern_color_bytes;
