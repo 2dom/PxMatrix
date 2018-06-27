@@ -1,9 +1,9 @@
 /*********************************************************************
-This is a library for Chinese LED matrix displays
-
-Written by Dominic Buchstaller.
-BSD license, check license.txt for more information
-*********************************************************************/
+ This is a library for Chinese LED matrix displays
+ 
+ Written by Dominic Buchstaller.
+ BSD license, check license.txt for more information
+ *********************************************************************/
 
 
 #ifndef _PxMATRIX_H
@@ -34,6 +34,14 @@ BSD license, check license.txt for more information
 
 #include <stdlib.h>
 
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
 
 // Sometimes some extra width needs to be passed to Adafruit GFX constructor
 // to render text close to the end of the display correctly
@@ -57,687 +65,1007 @@ enum scan_patterns {LINE, ZIGZAG, ZAGGIZ};
 
 #define max_matrix_width 64
 #define max_matrix_height 64
-#define color_step 256 / color_depth
+#define color_step (256 / color_depth)
 #define color_half_step int(color_step / 2)
-#define color_third_step int(color_step / 3)
+#define color_third_step int(color_depth / 3)  // color_step -> color_depth
 #define color_two_third_step int(color_third_step*2)
 
 #define buffer_size max_matrix_width * max_matrix_height * 3 / 8
 
 class PxMATRIX : public Adafruit_GFX {
- public:
-  inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
-  inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C);
-  inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D);
-  inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
+    
+public:
+    inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
+    inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C);
+    inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D);
+    inline PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
+    
+    inline void begin(uint8_t row_pattern);
+    inline void begin();
+    
+    inline void clearDisplay(void);
+    
+    // Updates the display
+    inline void display(uint16_t show_time);
+    
+    // Draw pixels
+    inline void drawPixelRGB565(int16_t x, int16_t y, uint16_t color);
+    inline void drawPixelRGB565(int16_t x, int16_t y, uint16_t color, bool selected_buffer);
+    
+    inline void drawPixel(int16_t x, int16_t y, uint16_t color);
+    inline void drawPixel(int16_t x, int16_t y, uint16_t color, bool selected_buffer);
+    
+    inline void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b);
+    inline void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
+    
+    // Does nothing for now
+    uint8_t getPixel(int8_t x, int8_t y);
+    
+    // Converts RGB888 to RGB565
+    uint16_t color565(uint8_t r, uint8_t g, uint8_t b);
+    
+    // Helpful for debugging (place in display update loop)
+    inline void displayTestPattern(uint16_t showtime);
+    
+    // Helpful for debugging (place in display update loop)
+    inline void displayTestPixel(uint16_t show_time);
+    
+    // FLush the buffer of the display
+    inline void flushDisplay();
+    
+    // Rotate display
+    inline void setRotate(bool rotate);
+    
+    // Helps to reduce display update latency on larger displays
+    inline void setFastUpdate(bool fast_update);
+    
+    // Select active buffer to updare display from
+    inline void selectBuffer(bool selected_buffer);
+    
+    // Control the minimum color values that result in an active pixel
+    inline void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
+    
+    // Set the multiplex pattern
+    inline void setMuxPattern(mux_patterns mux_pattern);
+    
+    // Set the multiplex pattern
+    inline void setScanPattern(scan_patterns scan_pattern);
+    
+    // Set the number of panels that make up the display area width
+    inline void setPanelsWidth(uint8_t panels);
+    
+    // Adafruit virtuals
+    virtual inline void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+    virtual inline void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+    virtual inline void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 
-  inline void begin(uint8_t row_pattern);
-  inline void begin();
-
-  inline void clearDisplay(void);
-
-  // Updates the display
-  inline void display(uint16_t show_time);
-
-  // Draw pixels
-  inline void drawPixelRGB565(int16_t x, int16_t y, uint16_t color);
-  inline void drawPixelRGB565(int16_t x, int16_t y, uint16_t color, bool selected_buffer);
-
-  inline void drawPixel(int16_t x, int16_t y, uint16_t color);
-  inline void drawPixel(int16_t x, int16_t y, uint16_t color, bool selected_buffer);
-
-  inline void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b);
-  inline void drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
-
-  // Does nothing for now
-  uint8_t getPixel(int8_t x, int8_t y);
-
-  // Converts RGB888 to RGB565
-  uint16_t color565(uint8_t r, uint8_t g, uint8_t b);
-
-  // Helpful for debugging (place in display update loop)
-  inline void displayTestPattern(uint16_t showtime);
-
-  // Helpful for debugging (place in display update loop)
-  inline void displayTestPixel(uint16_t show_time);
-
-  // FLush the buffer of the display
-  inline void flushDisplay();
-
-  // Rotate display
-  inline void setRotate(bool rotate);
-
-  // Helps to reduce display update latency on larger displays
-  inline void setFastUpdate(bool fast_update);
-
-  // Select active buffer to updare display from
-  inline void selectBuffer(bool selected_buffer);
-
-  // Control the minimum color values that result in an active pixel
-  inline void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
-
-  // Set the multiplex pattern
-  inline void setMuxPattern(mux_patterns mux_pattern);
-
-  // Set the multiplex pattern
-  inline void setScanPattern(scan_patterns scan_pattern);
-
-  // Set the number of panels that make up the display area width
-  inline void setPanelsWidth(uint8_t panels);
-
- private:
-
- // the display buffer for the LED matrix
+private:
+    
+    // the display buffer for the LED matrix
 #ifdef double_buffer
-  uint8_t PxMATRIX_buffer[color_depth][2*buffer_size];// = {0x00 };
+    uint8_t PxMATRIX_buffer[color_depth][2*buffer_size];// = {0x00 };
 #else
-  uint8_t PxMATRIX_buffer[color_depth][buffer_size];// = {0x00 };
+    uint8_t PxMATRIX_buffer[color_depth][buffer_size];// = {0x00 };
 #endif
-
-  // GPIO pins
-  uint8_t _LATCH_PIN;
-  uint8_t _OE_PIN;
-  uint8_t _A_PIN;
-  uint8_t _B_PIN;
-  uint8_t _C_PIN;
-  uint8_t _D_PIN;
-  uint8_t _E_PIN;
-  uint8_t _width;
-  uint8_t _height;
-  uint8_t _panels_width;
-  uint8_t _rows_per_buffer;
-  uint8_t _row_sets_per_buffer;
-  uint8_t _panel_width_bytes;
-
-  // Color offset
-  uint8_t _color_R_offset;
-  uint8_t _color_G_offset;
-  uint8_t _color_B_offset;
-
-  // Color pattern that is pushed to the display
-  uint8_t _display_color;
-
-  // Holds some pre-computed values for faster pixel drawing
-  uint32_t _row_offset[64];
-
-  // Holds the display row pattern type
-  uint8_t _row_pattern;
-
-  // Number of bytes in one color
-  uint8_t _pattern_color_bytes;
-
-  // Total number of bytes that is pushed to the display at a time
-  // 3 * _pattern_color_bytes
-  uint16_t _send_buffer_size;
-
-  // This is for double buffering
-  bool _selected_buffer;
-  bool _active_buffer;
-
-  // Hols configuration
-  bool _rotate;
-  bool _fast_update;
-
-  // Holds multiplex pattern
-  mux_patterns _mux_pattern;
-
-  // Holds the scan pattern
-  scan_patterns _scan_pattern;
-
-  // Used for test pattern
-  uint16_t _test_pixel_counter;
-  uint16_t _test_line_counter;
-  unsigned long _test_last_call;
-
-  // Generic function that draw one pixel
-inline void fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
-
-  // Init code common to both constructors
-inline void init(uint8_t width, uint8_t height ,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
-
-  // Light up LEDs and hold for show_time microseconds
-inline void latch(uint16_t show_time );
-
-  // Set row multiplexer
-inline void set_mux(uint8_t value);
+    
+    // GPIO pins
+    uint8_t _LATCH_PIN;
+    uint8_t _OE_PIN;
+    uint8_t _A_PIN;
+    uint8_t _B_PIN;
+    uint8_t _C_PIN;
+    uint8_t _D_PIN;
+    uint8_t _E_PIN;
+    uint8_t _width;
+    uint8_t _height;
+    uint8_t _panels_width;
+    uint8_t _rows_per_buffer;
+    uint8_t _row_sets_per_buffer;
+    uint8_t _panel_width_bytes;
+    
+    // Color offset
+    uint8_t _color_R_offset;
+    uint8_t _color_G_offset;
+    uint8_t _color_B_offset;
+    
+    // Color pattern that is pushed to the display
+    uint8_t _display_color;
+    
+    // Holds some pre-computed values for faster pixel drawing
+    uint32_t _row_offset[max_matrix_height];
+    uint32_t _total_offset[max_matrix_height];
+    
+    // Holds the display row pattern type
+    uint8_t _row_pattern;
+    
+    // Number of bytes in one color
+    uint8_t _pattern_color_bytes;
+    
+    // Total number of bytes that is pushed to the display at a time
+    // 3 * _pattern_color_bytes
+    uint16_t _send_buffer_size;
+    
+    // This is for double buffering
+    bool _selected_buffer;
+    bool _active_buffer;
+    
+    // Hols configuration
+    bool _rotate;
+    bool _fast_update;
+    
+    // Holds multiplex pattern
+    mux_patterns _mux_pattern;
+    
+    // Holds the scan pattern
+    scan_patterns _scan_pattern;
+    
+    // Used for test pattern
+    uint16_t _test_pixel_counter;
+    uint16_t _test_line_counter;
+    unsigned long _test_last_call;
+    
+    inline uint32_t totalOffsetR(int16_t x, int16_t y, bool selected_buffer);
+    
+    // Generic function that draw one pixel
+    inline void fillMatrixBuffer_Slow(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
+    inline void fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer);
+    inline void setMatrixBufferByte(uint32_t offset_r, uint16_t r, uint16_t g, uint16_t b, uint8_t setmask, uint8_t clearmask);
+    
+    // PxMatrix specific optimizations
+    inline void optimized_drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+    inline void optimized_drawFastHLineRGB888(int16_t x, int16_t y, int16_t w, uint8_t r, uint8_t g, uint8_t b);
+    inline void optimized_drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+    inline void optimized_drawFastVLineRGB888(int16_t x, int16_t y, int16_t h, uint8_t r, uint8_t g, uint8_t b);
+    inline void optimized_fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+    inline void optimized_fillRectRGB888(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t r, uint8_t g, uint8_t b);
+    
+    // Init code common to both constructors
+    inline void init(uint8_t width, uint8_t height ,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B);
+    
+    // Light up LEDs and hold for show_time microseconds
+    inline void latch(uint16_t show_time );
+    
+    // Set row multiplexer
+    inline void set_mux(uint8_t value);
 };
 
 // Pass 8-bit (each) R,G,B, get back 16-bit packed color
 inline uint16_t PxMATRIX::color565(uint8_t r, uint8_t g, uint8_t b) {
-  return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+    return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 }
 
 // Init code common to both constructors
 inline void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A, uint8_t B){
-  _LATCH_PIN = LATCH;
-  _OE_PIN = OE;
-  _display_color=0;
-
-  _A_PIN = A;
-  _B_PIN = B;
-
-  _width = width;
-  _height = height;
-  _panels_width = 1;
-
-  _rows_per_buffer = _height/2;
-  _panel_width_bytes = (_width/_panels_width)/8;
-
-  _selected_buffer=false;
-  _active_buffer=false;
-
-  _color_R_offset=0;
-  _color_G_offset=0;
-  _color_B_offset=0;
-
-  _test_last_call=0;
-  _test_pixel_counter=0;
-  _test_line_counter=0;
-  _rotate=0;
-  _fast_update=0;
-
-  _row_pattern=BINARY;
-  _scan_pattern=LINE;
-
-  clearDisplay();
+    _LATCH_PIN = LATCH;
+    _OE_PIN = OE;
+    _display_color=0;
+    
+    _A_PIN = A;
+    _B_PIN = B;
+    
+    _width = width;
+    _height = height;
+    _panels_width = 1;
+    
+    _rows_per_buffer = _height/2;
+    _panel_width_bytes = (_width/_panels_width)/8;
+    
+    _selected_buffer=false;
+    _active_buffer=false;
+    
+    _color_R_offset=0;
+    _color_G_offset=0;
+    _color_B_offset=0;
+    
+    _test_last_call=0;
+    _test_pixel_counter=0;
+    _test_line_counter=0;
+    _rotate=0;
+    _fast_update=0;
+    
+    _row_pattern=BINARY;
+    _scan_pattern=LINE;
+    
+    clearDisplay();
 }
 
 inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
 {
-  _mux_pattern=mux_pattern;
-
-  // We handle the multiplexing in the library and activate one of for
-  // row drivers --> need A,B,C,D pins
-  if (_mux_pattern==STRAIGHT)
-  {
-    pinMode(_C_PIN, OUTPUT);
-    pinMode(_D_PIN, OUTPUT);
-  }
+    _mux_pattern=mux_pattern;
+    
+    // We handle the multiplexing in the library and activate one of for
+    // row drivers --> need A,B,C,D pins
+    if (_mux_pattern==STRAIGHT)
+    {
+        pinMode(_C_PIN, OUTPUT);
+        pinMode(_D_PIN, OUTPUT);
+    }
 }
 
 inline void PxMATRIX::setScanPattern(scan_patterns scan_pattern)
 {
-  _scan_pattern=scan_pattern;
+    _scan_pattern=scan_pattern;
 }
 
 inline void PxMATRIX::setPanelsWidth(uint8_t panels) {
-  _panels_width=panels;
-  _panel_width_bytes = (_width/_panels_width)/8;
+    _panels_width=panels;
+    _panel_width_bytes = (_width/_panels_width)/8;
 }
 
 inline void PxMATRIX::setRotate(bool rotate) {
-  _rotate=rotate;
+    _rotate=rotate;
 }
 
 inline void PxMATRIX::setFastUpdate(bool fast_update) {
-  _fast_update=fast_update;
+    _fast_update=fast_update;
 }
 
 inline PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
 {
-  init(width, height, LATCH, OE, A, B);
+    init(width, height, LATCH, OE, A, B);
 }
 
 inline PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
 {
-  _C_PIN = C;
-  init(width, height, LATCH, OE, A, B);
+    _C_PIN = C;
+    init(width, height, LATCH, OE, A, B);
 }
 
 inline PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
 {
-  _C_PIN = C;
-  _D_PIN = D;
-  init(width, height, LATCH, OE, A, B);
+    _C_PIN = C;
+    _D_PIN = D;
+    init(width, height, LATCH, OE, A, B);
 }
 
 inline PxMATRIX::PxMATRIX(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D, uint8_t E) : Adafruit_GFX(width+ADAFRUIT_GFX_EXTRA, height)
 {
-  _C_PIN = C;
-  _D_PIN = D;
-  _E_PIN = E;
-  init(width, height, LATCH, OE, A, B);
+    _C_PIN = C;
+    _D_PIN = D;
+    _E_PIN = E;
+    init(width, height, LATCH, OE, A, B);
 }
 
 inline void PxMATRIX::drawPixel(int16_t x, int16_t y, uint16_t color) {
-  drawPixelRGB565( x,  y,  color,0 );
+    drawPixelRGB565( x,  y,  color,0 );
 }
 
 inline void PxMATRIX::drawPixel(int16_t x, int16_t y, uint16_t color, bool selected_buffer) {
-  drawPixelRGB565( x,  y,  color, selected_buffer);
+    drawPixelRGB565( x,  y,  color, selected_buffer);
 }
 
 inline void PxMATRIX::selectBuffer(bool selected_buffer)
 {
-
-  _selected_buffer=selected_buffer;
+    
+    _selected_buffer=selected_buffer;
 }
 
 inline void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
 {
-  if ((color_half_step+r)<0)
-    r=-color_half_step;
-  if ((color_half_step+r)>255)
-      r=255-color_half_step;
-
-  if ((color_half_step+g)<0)
-    g=-color_half_step;
-  if ((color_half_step+g)>255)
-      g=255-color_half_step;
-
-  if ((color_half_step+b)<0)
-    b=-color_half_step;
-  if ((color_half_step+b)>255)
-      b=255-color_half_step;
-
+    if ((color_half_step+r)<0)
+        r=-color_half_step;
+    if ((color_half_step+r)>255)
+        r=255-color_half_step;
+    
+    if ((color_half_step+g)<0)
+        g=-color_half_step;
+    if ((color_half_step+g)>255)
+        g=255-color_half_step;
+    
+    if ((color_half_step+b)<0)
+        b=-color_half_step;
+    if ((color_half_step+b)>255)
+        b=255-color_half_step;
+    
     _color_R_offset=r;
     _color_G_offset=g;
     _color_B_offset=b;
 }
 
-inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint8_t b,bool selected_buffer)
+inline uint32_t PxMATRIX::totalOffsetR(int16_t x, int16_t y, bool selected_buffer)
 {
-  if (_rotate){
-    uint16_t temp_x=x;
-    x=y;
-    y=_height-1-temp_x;
-  }
-
-  if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
-  return;
-  x =_width - 1 -x;
-
-  uint32_t base_offset;
-  uint32_t total_offset_r=0;
-  uint32_t total_offset_g=0;
-  uint32_t total_offset_b=0;
-
-  // This code sections supports panels that have a row-changin scanning pattern
-  // It does support chaining however only of height/pattern=2
-  if (_scan_pattern!=LINE)
-  {
-    // Precomputed row offset values
+    uint32_t base_offset;
+    uint32_t total_offset_r=0;
+    
+    // This code sections supports panels that have a row-changin scanning pattern
+    // It does support chaining however only of height/pattern=2
+    if (_scan_pattern!=LINE)
+    {
+        // Precomputed row offset values
 #ifdef double_buffer
-    base_offset=buffer_size*selected_buffer+_row_offset[y]-(x/8)*2;
+        base_offset=buffer_size*selected_buffer+_row_offset[y]-(x/8)*2;
 #else
-    base_offset=_row_offset[y]-(x/8)*2;
+        base_offset=_row_offset[y]-(x/8)*2;
 #endif
-    for (uint8_t yy = 0; yy<_height; yy+=2*_row_pattern)
-    {
-      if ((y>=yy) && (y<yy+_row_pattern))
-        total_offset_r=base_offset-yy-(_scan_pattern==ZAGGIZ ? 1: 0);
-      if ((y>=yy+_row_pattern) && (y<yy+2*_row_pattern))
-        total_offset_r=base_offset-yy-(_scan_pattern==ZIGZAG ? 1: 0);
+        for (uint8_t yy = 0; yy<_height; yy+=2*_row_pattern)
+        {
+            if ((y>=yy) && (y<yy+_row_pattern))
+                total_offset_r=base_offset-yy-(_scan_pattern==ZAGGIZ ? 1: 0);
+            if ((y>=yy+_row_pattern) && (y<yy+2*_row_pattern))
+                total_offset_r=base_offset-yy-(_scan_pattern==ZIGZAG ? 1: 0);
+        }
     }
-
-    total_offset_g=total_offset_r-_pattern_color_bytes;
-    total_offset_b=total_offset_g-_pattern_color_bytes;
-  }
-  else
-  {
-
-    if (_panels_width>1)
+    else
     {
-      // can only be non-zero when _height/(2 inputs per panel)/_row_pattern > 1
-      // i.e.: 32x32 panel with 1/8 scan (A/B/C lines) -> 32/2/8 = 2
-      uint8_t vert_index_in_buffer = (y%_rows_per_buffer)/_row_pattern; // which set of rows per buffer
-      // can only ever be 0/1 since there are only ever 2 separate input sets present for this variety of panels (R1G1B1/R2G2B2)
-      uint8_t which_buffer = y/_rows_per_buffer;
-      uint8_t x_byte = x/8;
-      // assumes panels are only ever chained for more width
-      uint8_t which_panel = x_byte/_panel_width_bytes;
-      uint8_t in_row_byte_offset = x_byte%_panel_width_bytes;
-      // this could be pretty easily extended to vertical stacking as well
-      total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
+        if (_panels_width>1)
+        {
+            // can only be non-zero when _height/(2 inputs per panel)/_row_pattern > 1
+            // i.e.: 32x32 panel with 1/8 scan (A/B/C lines) -> 32/2/8 = 2
+            uint8_t vert_index_in_buffer = (y%_rows_per_buffer)/_row_pattern; // which set of rows per buffer
+            // can only ever be 0/1 since there are only ever 2 separate input sets present for this variety of panels (R1G1B1/R2G2B2)
+            uint8_t which_buffer = y/_rows_per_buffer;
+            uint8_t x_byte = x/8;
+            // assumes panels are only ever chained for more width
+            uint8_t which_panel = x_byte/_panel_width_bytes;
+            uint8_t in_row_byte_offset = x_byte%_panel_width_bytes;
+            // this could be pretty easily extended to vertical stacking as well
+            total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
 #ifdef double_buffer
-      total_offset_r += buffer_size*selected_buffer;
+            total_offset_r += buffer_size*selected_buffer;
 #endif
-    }
-    else
-    {
-      // Precomputed row offset values
-      base_offset=_row_offset[y]-(x/8);
-
+        }
+        else
+        {
+            // Precomputed row offset values
+            base_offset=_row_offset[y]-(x/8);
+            
 #ifdef double_buffer
-      base_offset-=buffer_size*selected_buffer;
+            base_offset-=buffer_size*selected_buffer;
 #endif
-
-      // relies on integer truncation, do not simplify
-      uint8_t vert_sector = y/_row_pattern;
-      total_offset_r=base_offset-vert_sector*_width/8;
-
+            
+            // relies on integer truncation, do not simplify
+            uint8_t vert_sector = y/_row_pattern;
+            total_offset_r=base_offset-vert_sector*_width/8;
+            
+        }
     }
-  }
-
-  total_offset_g=total_offset_r-_pattern_color_bytes;
-  total_offset_b=total_offset_g-_pattern_color_bytes;
-
-  uint8_t bit_select = x%8;
-  if ((_scan_pattern==ZAGGIZ) && ((y%8)<4))
-      bit_select = 7-bit_select;
-
-  //Color interlacing
-  for (int this_color=0; this_color<color_depth; this_color++)
-  {
-    uint8_t color_tresh = this_color*color_step+color_half_step;
-
-    if (r > color_tresh+_color_R_offset)
-      PxMATRIX_buffer[this_color][total_offset_r] |=_BV(bit_select);
-    else
-      PxMATRIX_buffer[this_color][total_offset_r] &= ~_BV(bit_select);
-
-    if (g > color_tresh+_color_G_offset)
-      PxMATRIX_buffer[(this_color+color_third_step)%color_depth][total_offset_g] |=_BV(bit_select);
-    else
-      PxMATRIX_buffer[(this_color+color_third_step)%color_depth][total_offset_g] &= ~_BV(bit_select);
-
-    if (b > color_tresh+_color_B_offset)
-      PxMATRIX_buffer[(this_color+color_two_third_step)%color_depth][total_offset_b] |=_BV(bit_select);
-    else
-      PxMATRIX_buffer[(this_color+color_two_third_step)%color_depth][total_offset_b] &= ~_BV(bit_select);
-  }
+    return total_offset_r;
 }
 
+
+inline void PxMATRIX::fillMatrixBuffer_Slow(int16_t x, int16_t y, uint8_t r, uint8_t g, uint8_t b,bool selected_buffer)
+{
+    if (_rotate){
+        uint16_t temp_x=x;
+        x=y;
+        y=_height-1-temp_x;
+    }
+    
+    if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
+        return;
+    x =_width - 1 -x;
+    
+    uint32_t base_offset;
+    uint32_t total_offset_r=0;
+    uint32_t total_offset_g=0;
+    uint32_t total_offset_b=0;
+    
+    // This code sections supports panels that have a row-changin scanning pattern
+    // It does support chaining however only of height/pattern=2
+    if (_scan_pattern!=LINE)
+    {
+        // Precomputed row offset values
+#ifdef double_buffer
+        base_offset=buffer_size*selected_buffer+_row_offset[y]-(x/8)*2;
+#else
+        base_offset=_row_offset[y]-(x/8)*2;
+#endif
+        uint8_t row_sector=0;
+        uint16_t row_sector__offset=_width/4;
+        for (uint8_t yy = 0; yy<_height; yy+=2*_row_pattern)
+        {
+            if ((yy<=y) && (y<yy+_row_pattern))
+                total_offset_r=base_offset-row_sector__offset*row_sector-(_scan_pattern==ZAGGIZ ? 1: 0);
+            if ((yy+_row_pattern<=y) && (y<yy+2*_row_pattern))
+                total_offset_r=base_offset-row_sector__offset*row_sector-(_scan_pattern==ZIGZAG ? 1: 0);
+            row_sector++;
+        }
+        
+        total_offset_g=total_offset_r-_pattern_color_bytes;
+        total_offset_b=total_offset_g-_pattern_color_bytes;
+    }
+    else
+    {
+        
+        if (_panels_width>1)
+        {
+            // can only be non-zero when _height/(2 inputs per panel)/_row_pattern > 1
+            // i.e.: 32x32 panel with 1/8 scan (A/B/C lines) -> 32/2/8 = 2
+            uint8_t vert_index_in_buffer = (y%_rows_per_buffer)/_row_pattern; // which set of rows per buffer
+            // can only ever be 0/1 since there are only ever 2 separate input sets present for this variety of panels (R1G1B1/R2G2B2)
+            uint8_t which_buffer = y/_rows_per_buffer;
+            uint8_t x_byte = x/8;
+            // assumes panels are only ever chained for more width
+            uint8_t which_panel = x_byte/_panel_width_bytes;
+            uint8_t in_row_byte_offset = x_byte%_panel_width_bytes;
+            // this could be pretty easily extended to vertical stacking as well
+            total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
+#ifdef double_buffer
+            total_offset_r += buffer_size*selected_buffer;
+#endif
+        }
+        else
+        {
+            // Precomputed row offset values
+            base_offset=_row_offset[y]-(x/8);
+            
+#ifdef double_buffer
+            base_offset-=buffer_size*selected_buffer;
+#endif
+            
+            // relies on integer truncation, do not simplify
+            uint8_t vert_sector = y/_row_pattern;
+            total_offset_r=base_offset-vert_sector*_width/8;
+            
+        }
+    }
+    
+    total_offset_g=total_offset_r-_pattern_color_bytes;
+    total_offset_b=total_offset_g-_pattern_color_bytes;
+    
+    uint8_t bit_select = x%8;
+    if ((_scan_pattern==ZAGGIZ) && ((y%(_row_pattern*2))<_row_pattern))
+        bit_select = 7-bit_select;
+    
+    //Color interlacing
+    for (int this_color=0; this_color<color_depth; this_color++)
+    {
+        uint8_t color_tresh = this_color*color_step+color_half_step;
+        
+        if (r > color_tresh+_color_R_offset)
+            PxMATRIX_buffer[this_color][total_offset_r] |=_BV(bit_select);
+        else
+            PxMATRIX_buffer[this_color][total_offset_r] &= ~_BV(bit_select);
+        
+        if (g > color_tresh+_color_G_offset)
+            PxMATRIX_buffer[(this_color+color_third_step)%color_depth][total_offset_g] |=_BV(bit_select);
+        else
+            PxMATRIX_buffer[(this_color+color_third_step)%color_depth][total_offset_g] &= ~_BV(bit_select);
+        
+        if (b > color_tresh+_color_B_offset)
+            PxMATRIX_buffer[(this_color+color_two_third_step)%color_depth][total_offset_b] |=_BV(bit_select);
+        else
+            PxMATRIX_buffer[(this_color+color_two_third_step)%color_depth][total_offset_b] &= ~_BV(bit_select);
+    }
+}
+
+
+inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint8_t b,bool selected_buffer)
+{
+    if (_rotate){
+        uint16_t temp_x=x;
+        x=y;
+        y=_height-1-temp_x;
+    }
+    
+    if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
+        return;
+    x =_width - 1 -x;
+    
+    //uint32_t total_offset_r = totalOffsetR(0, y, selected_buffer);
+    uint32_t total_offset_r = _total_offset[y] - (x/8);
+#ifdef double_buffer
+    total_offset_r -= buffer_size*selected_buffer;
+#endif
+
+    uint8_t bit_select = x%8;
+    if ((_scan_pattern==ZAGGIZ) && ((y%8)<4))
+        bit_select = 7-bit_select;
+    
+    setMatrixBufferByte(total_offset_r, r, g, b, _BV(bit_select), ~_BV(bit_select));
+}
+
+inline void PxMATRIX::setMatrixBufferByte(uint32_t offset_r, uint16_t r, uint16_t g, uint16_t b, uint8_t setmask, uint8_t clearmask)
+{
+    uint32_t offset_g = offset_r-_pattern_color_bytes;;
+    uint32_t offset_b = offset_g-_pattern_color_bytes;
+    
+    // TODO: add color offsets
+    uint16_t bits_r = (r+color_half_step)/(color_step);
+    uint16_t bits_g = (g+color_half_step)/(color_step);
+    uint16_t bits_b = (b+color_half_step)/(color_step);
+
+    // RED
+    for(int i=0; i<bits_r; i++) {
+        PxMATRIX_buffer[i][offset_r] |= setmask;
+    }
+
+    for(int i=bits_r; i<color_depth; i++) {
+        PxMATRIX_buffer[i][offset_r] &= clearmask;
+    }
+    
+    // GREEN
+    for(int i=0; i<bits_g; i++) {
+        PxMATRIX_buffer[(i+color_third_step)%color_depth][offset_g] |= setmask;
+    }
+    
+    for(int i=bits_g; i<color_depth; i++) {
+        PxMATRIX_buffer[(i+color_third_step)%color_depth][offset_g] &= clearmask;
+    }
+
+    // BLUE
+    for(int i=0; i<bits_b; i++) {
+        PxMATRIX_buffer[(i+color_two_third_step)%color_depth][offset_b] |= setmask;
+    }
+    
+    for(int i=bits_b; i<color_depth; i++) {
+        PxMATRIX_buffer[(i+color_two_third_step)%color_depth][offset_b] &= clearmask;
+    }
+}
+
+
 inline void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color, bool selected_buffer) {
-  uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
-  uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
-  uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
-  fillMatrixBuffer( x,  y, r, g,b, selected_buffer);
+    uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
+    uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
+    uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
+    fillMatrixBuffer( x,  y, r, g,b, selected_buffer);
 }
 
 inline void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color) {
-  uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
-  uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
-  uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
-  fillMatrixBuffer( x,  y, r, g,b, 0);
+    uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
+    uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
+    uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
+    fillMatrixBuffer( x,  y, r, g,b, 0);
 }
 
 inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer) {
-  fillMatrixBuffer(x, y, r, g,b, selected_buffer);
+    fillMatrixBuffer(x, y, r, g,b, selected_buffer);
 }
 
 inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b) {
-  fillMatrixBuffer(x, y, r, g,b, 0);
+    fillMatrixBuffer(x, y, r, g,b, 0);
 }
 
 // the most basic function, get a single pixel
 inline uint8_t PxMATRIX::getPixel(int8_t x, int8_t y) {
-  return (0);//PxMATRIX_buffer[x+ (y/8)*LCDWIDTH] >> (y%8)) & 0x1;
+    return (0);//PxMATRIX_buffer[x+ (y/8)*LCDWIDTH] >> (y%8)) & 0x1;
 }
 
 inline void PxMATRIX::begin()
 {
-  begin(8);
-
+    begin(8);
+    
 }
 
 void PxMATRIX::begin(uint8_t row_pattern) {
-
-  _row_pattern=row_pattern;
-  if (_row_pattern==4)
-    _scan_pattern=ZIGZAG;
-
-  _pattern_color_bytes=(_height/_row_pattern)*(_width/8);
-  _row_sets_per_buffer = _rows_per_buffer/_row_pattern;
-  _send_buffer_size=_pattern_color_bytes*3;
-
+    
+    _row_pattern=row_pattern;
+    if (_row_pattern==4)
+        _scan_pattern=ZIGZAG;
+    
+    _pattern_color_bytes=(_height/_row_pattern)*(_width/8);
+    _row_sets_per_buffer = _rows_per_buffer/_row_pattern;
+    _send_buffer_size=_pattern_color_bytes*3;
+    
 #ifdef ESP8266
-  SPI.begin();
+    SPI.begin();
 #endif
 #ifdef ESP32
-  SPI.begin(SPI_BUS_CLK, SPI_BUS_MISO, SPI_BUS_MOSI, SPI_BUS_SS);
+    SPI.begin(SPI_BUS_CLK, SPI_BUS_MISO, SPI_BUS_MOSI, SPI_BUS_SS);
 #endif
-
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setFrequency(20000000);
-
-  pinMode(_OE_PIN, OUTPUT);
-  pinMode(_LATCH_PIN, OUTPUT);
-  pinMode(_A_PIN, OUTPUT);
-  pinMode(_B_PIN, OUTPUT);
-  digitalWrite(_A_PIN, LOW);
-  digitalWrite(_B_PIN, LOW);
-  digitalWrite(_OE_PIN, HIGH);
-
-  if (_row_pattern >=8)
-  {
-    pinMode(_C_PIN, OUTPUT);
-    digitalWrite(_C_PIN, LOW);
-  }
-  if (_row_pattern >=16)
-  {
-    pinMode(_D_PIN, OUTPUT);
-    digitalWrite(_D_PIN, LOW);
-  }
-  if (_row_pattern >=32)
-  {
-    pinMode(_E_PIN, OUTPUT);
-    digitalWrite(_E_PIN, LOW);
-  }
-
-  // Precompute row offset values
-  for (uint8_t yy=0; yy<_height;yy++)
-      _row_offset[yy]=((yy)%_row_pattern)*_send_buffer_size+_send_buffer_size-1;
-
+    
+    SPI.setDataMode(SPI_MODE0);
+    SPI.setBitOrder(MSBFIRST);
+    SPI.setFrequency(40000000);
+    
+    pinMode(_OE_PIN, OUTPUT);
+    pinMode(_LATCH_PIN, OUTPUT);
+    pinMode(_A_PIN, OUTPUT);
+    pinMode(_B_PIN, OUTPUT);
+    digitalWrite(_A_PIN, LOW);
+    digitalWrite(_B_PIN, LOW);
+    digitalWrite(_OE_PIN, HIGH);
+    
+    if (_row_pattern >=8)
+    {
+        pinMode(_C_PIN, OUTPUT);
+        digitalWrite(_C_PIN, LOW);
+    }
+    if (_row_pattern >=16)
+    {
+        pinMode(_D_PIN, OUTPUT);
+        digitalWrite(_D_PIN, LOW);
+    }
+    if (_row_pattern >=32)
+    {
+        pinMode(_E_PIN, OUTPUT);
+        digitalWrite(_E_PIN, LOW);
+    }
+    
+    // Precompute row offset values
+    for (uint8_t yy=0; yy<_height; yy++)
+        _row_offset[yy]=((yy)%_row_pattern)*_send_buffer_size+_send_buffer_size-1;
+    
+    for (int8_t yy=0; yy<_height; yy++)
+        _total_offset[yy]=totalOffsetR(0, yy, 0);
 }
 
 void PxMATRIX::set_mux(uint8_t value)
 {
-
-  if (_mux_pattern==BINARY)
-  {
-    if (value & 0x01)
-      digitalWrite(_A_PIN,HIGH);
-    else
-      digitalWrite(_A_PIN,LOW);
-
-    if (value & 0x02)
-      digitalWrite(_B_PIN,HIGH);
-    else
-      digitalWrite(_B_PIN,LOW);
-
-    if (_row_pattern>=8)
+    
+    if (_mux_pattern==BINARY)
     {
-      if (value & 0x04)
-      digitalWrite(_C_PIN,HIGH);
-      else
-      digitalWrite(_C_PIN,LOW);
+        if (value & 0x01)
+            digitalWrite(_A_PIN,HIGH);
+        else
+            digitalWrite(_A_PIN,LOW);
+        
+        if (value & 0x02)
+            digitalWrite(_B_PIN,HIGH);
+        else
+            digitalWrite(_B_PIN,LOW);
+        
+        if (_row_pattern>=8)
+        {
+            if (value & 0x04)
+                digitalWrite(_C_PIN,HIGH);
+            else
+                digitalWrite(_C_PIN,LOW);
+        }
+        
+        if (_row_pattern>=16)
+        {
+            if (value & 0x08)
+                digitalWrite(_D_PIN,HIGH);
+            else
+                digitalWrite(_D_PIN,LOW);
+        }
+        
+        if (_row_pattern>=32)
+        {
+            if (value & 0x10)
+                digitalWrite(_E_PIN,HIGH);
+            else
+                digitalWrite(_E_PIN,LOW);
+        }
     }
-
-    if (_row_pattern>=16)
+    
+    if (_mux_pattern==STRAIGHT)
     {
-      if (value & 0x08)
-          digitalWrite(_D_PIN,HIGH);
-      else
-          digitalWrite(_D_PIN,LOW);
+        if (value==0)
+            digitalWrite(_A_PIN,LOW);
+        else
+            digitalWrite(_A_PIN,HIGH);
+        
+        if (value==1)
+            digitalWrite(_B_PIN,LOW);
+        else
+            digitalWrite(_B_PIN,HIGH);
+        
+        if (value==2)
+            digitalWrite(_C_PIN,LOW);
+        else
+            digitalWrite(_C_PIN,HIGH);
+        
+        if (value==3)
+            digitalWrite(_D_PIN,LOW);
+        else
+            digitalWrite(_D_PIN,HIGH);
     }
-
-    if (_row_pattern>=32)
-    {
-      if (value & 0x10)
-          digitalWrite(_E_PIN,HIGH);
-      else
-          digitalWrite(_E_PIN,LOW);
-    }
-  }
-
-  if (_mux_pattern==STRAIGHT)
-  {
-    if (value==0)
-      digitalWrite(_A_PIN,LOW);
-    else
-      digitalWrite(_A_PIN,HIGH);
-
-    if (value==1)
-      digitalWrite(_B_PIN,LOW);
-    else
-      digitalWrite(_B_PIN,HIGH);
-
-    if (value==2)
-      digitalWrite(_C_PIN,LOW);
-    else
-      digitalWrite(_C_PIN,HIGH);
-
-    if (value==3)
-      digitalWrite(_D_PIN,LOW);
-    else
-      digitalWrite(_D_PIN,HIGH);
-  }
 }
 
 void PxMATRIX::latch(uint16_t show_time )
 {
-  //digitalWrite(_OE_PIN,0); // <<< remove this
-  digitalWrite(_LATCH_PIN,HIGH);
-  //delayMicroseconds(10);
-  digitalWrite(_LATCH_PIN,LOW);
-  //delayMicroseconds(10);
- digitalWrite(_OE_PIN,0); //<<<< insert this
-  delayMicroseconds(show_time);
-  digitalWrite(_OE_PIN,1);
+    //digitalWrite(_OE_PIN,0); // <<< remove this
+    digitalWrite(_LATCH_PIN,HIGH);
+    //delayMicroseconds(10);
+    digitalWrite(_LATCH_PIN,LOW);
+    //delayMicroseconds(10);
+    digitalWrite(_OE_PIN,0); //<<<< insert this
+    delayMicroseconds(show_time);
+    digitalWrite(_OE_PIN,1);
 }
 
 void PxMATRIX::display(uint16_t show_time) {
-  unsigned long start_time=0;
+    unsigned long start_time=0;
 #ifdef ESP8266
-  ESP.wdtFeed();
+    ESP.wdtFeed();
 #endif
-  for (uint8_t i=0;i<_row_pattern;i++)
-  {
-    if (_fast_update){
-
-      // This will clock data into the display while the outputs are still
-      // latched (LEDs on). We therefore utilize SPI transfer latency as LED
-      // ON time and can reduce the waiting time (show_time). This is rather
-      // timing sensitive and may lead to flicker however promises reduced
-      // update times and increased brightness
-
-      set_mux((i+_row_pattern-1)%_row_pattern);
-      digitalWrite(_LATCH_PIN,HIGH);
-      digitalWrite(_OE_PIN,0);
-      start_time = micros();
-      digitalWrite(_LATCH_PIN,LOW);
-      delayMicroseconds(1);
-
-#ifdef double_buffer
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
-#else
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
-#endif
-      while ((micros()-start_time)<show_time)
-        delayMicroseconds(1);
-      digitalWrite(_OE_PIN,1);
-    }
-    else
+    for (uint8_t i=0;i<_row_pattern;i++)
     {
-      set_mux(i);
+        if (_fast_update){
+            
+            // This will clock data into the display while the outputs are still
+            // latched (LEDs on). We therefore utilize SPI transfer latency as LED
+            // ON time and can reduce the waiting time (show_time). This is rather
+            // timing sensitive and may lead to flicker however promises reduced
+            // update times and increased brightness
+            
+            set_mux((i+_row_pattern-1)%_row_pattern);
+            digitalWrite(_LATCH_PIN,HIGH);
+            digitalWrite(_OE_PIN,0);
+            start_time = micros();
+            digitalWrite(_LATCH_PIN,LOW);
+            delayMicroseconds(1);
+            
 #ifdef double_buffer
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
+            SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
 #else
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
+            SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
 #endif
-      latch(show_time);
-    }
-  }
-  _display_color++;
-  if (_display_color>=color_depth)
-  {
-    _display_color=0;
+            while ((micros()-start_time)<show_time)
+                delayMicroseconds(1);
+            digitalWrite(_OE_PIN,1);
+        }
+        else
+        {
+            set_mux(i);
 #ifdef double_buffer
-    _active_buffer=_selected_buffer;
+            SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
+#else
+            SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
 #endif
-  }
+            latch(show_time);
+        }
+    }
+    _display_color++;
+    if (_display_color>=color_depth)
+    {
+        _display_color=0;
+#ifdef double_buffer
+        _active_buffer=_selected_buffer;
+#endif
+    }
 }
 
 void PxMATRIX::flushDisplay(void) {
-  for (int ii=0;ii<_send_buffer_size;ii++)
-    SPI.write(0x00);
+    for (int ii=0;ii<_send_buffer_size;ii++)
+        SPI.write(0x00);
 }
 
 void PxMATRIX::displayTestPattern(uint16_t show_time) {
-
-  if ((millis()-_test_last_call)>500)
-  {
-    SPI.write(0xFF);
-    _test_last_call=millis();
-    _test_pixel_counter++;
-  }
-
-  if (_test_pixel_counter>_send_buffer_size)
-
-  {
-    _test_pixel_counter=0;
-    _test_line_counter++;
-    flushDisplay();
-  }
-
-  if (_test_line_counter> (_height/2))
+    
+    if ((millis()-_test_last_call)>500)
+    {
+        SPI.write(0xFF);
+        _test_last_call=millis();
+        _test_pixel_counter++;
+    }
+    
+    if (_test_pixel_counter>_send_buffer_size)
+        
+    {
+        _test_pixel_counter=0;
+        _test_line_counter++;
+        flushDisplay();
+    }
+    
+    if (_test_line_counter> (_height/2))
         _test_line_counter=0;
-
-  digitalWrite(_A_PIN,HIGH);
-  digitalWrite(_B_PIN,HIGH);
-  digitalWrite(_C_PIN,HIGH);
-  digitalWrite(_D_PIN,HIGH);
-  digitalWrite(_E_PIN,HIGH);
-
-  digitalWrite(_A_PIN,LOW);
-  digitalWrite(_B_PIN,LOW);
-  digitalWrite(_C_PIN,LOW);
-  digitalWrite(_D_PIN,LOW);
-  digitalWrite(_E_PIN,LOW);
-
-  set_mux(_test_line_counter);
-
-  latch(show_time);
+    
+    digitalWrite(_A_PIN,HIGH);
+    digitalWrite(_B_PIN,HIGH);
+    digitalWrite(_C_PIN,HIGH);
+    digitalWrite(_D_PIN,HIGH);
+    digitalWrite(_E_PIN,HIGH);
+    
+    digitalWrite(_A_PIN,LOW);
+    digitalWrite(_B_PIN,LOW);
+    digitalWrite(_C_PIN,LOW);
+    digitalWrite(_D_PIN,LOW);
+    digitalWrite(_E_PIN,LOW);
+    
+    set_mux(_test_line_counter);
+    
+    latch(show_time);
 }
 
 void PxMATRIX::displayTestPixel(uint16_t show_time) {
-
-  if ((millis()-_test_last_call)>500)
-  {
-    flushDisplay();
-    uint16_t blanks = _test_pixel_counter/8;
-    SPI.write(1<<_test_pixel_counter%8);
-    while (blanks){
-      SPI.write(0x00);
-      blanks--;
+    
+    if ((millis()-_test_last_call)>500)
+    {
+        flushDisplay();
+        uint16_t blanks = _test_pixel_counter/8;
+        SPI.write(1<<_test_pixel_counter%8);
+        while (blanks){
+            SPI.write(0x00);
+            blanks--;
+        }
+        _test_last_call=millis();
+        _test_pixel_counter++;
     }
-    _test_last_call=millis();
-    _test_pixel_counter++;
-  }
-
-  if (_test_pixel_counter>_send_buffer_size/3*8)
-
-  {
-    _test_pixel_counter=0;
-    _test_line_counter++;
-  }
-
-  if (_test_line_counter> (_height/2))
+    
+    if (_test_pixel_counter>_send_buffer_size/3*8)
+        
+    {
+        _test_pixel_counter=0;
+        _test_line_counter++;
+    }
+    
+    if (_test_line_counter> (_height/2))
         _test_line_counter=0;
-
-  digitalWrite(_A_PIN,HIGH);
-  digitalWrite(_B_PIN,HIGH);
-  digitalWrite(_C_PIN,HIGH);
-  digitalWrite(_D_PIN,HIGH);
-  digitalWrite(_E_PIN,HIGH);
-
-  digitalWrite(_A_PIN,LOW);
-  digitalWrite(_B_PIN,LOW);
-  digitalWrite(_C_PIN,LOW);
-  digitalWrite(_D_PIN,LOW);
-  digitalWrite(_E_PIN,LOW);
-
-  set_mux(_test_line_counter);
-
-  latch(show_time);
+    
+    digitalWrite(_A_PIN,HIGH);
+    digitalWrite(_B_PIN,HIGH);
+    digitalWrite(_C_PIN,HIGH);
+    digitalWrite(_D_PIN,HIGH);
+    digitalWrite(_E_PIN,HIGH);
+    
+    digitalWrite(_A_PIN,LOW);
+    digitalWrite(_B_PIN,LOW);
+    digitalWrite(_C_PIN,LOW);
+    digitalWrite(_D_PIN,LOW);
+    digitalWrite(_E_PIN,LOW);
+    
+    set_mux(_test_line_counter);
+    
+    latch(show_time);
 }
 
 // clear everything
 void PxMATRIX::clearDisplay(void) {
-  for(int this_color=0;this_color<color_depth;this_color++)
-  for (int j=0;j<(_width*_height*3)/8;j++)
-    PxMATRIX_buffer[this_color][j]=0;
+    for(int this_color=0;this_color<color_depth;this_color++)
+        for (int j=0;j<(_width*_height*3)/8;j++)
+            PxMATRIX_buffer[this_color][j]=0;
 }
+
+// Adafruit_GFX Virtual plot functions
+
+inline void PxMATRIX::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
+{
+    if (_rotate){
+        optimized_drawFastVLine(y, _height-x-w, w, color);
+    } else {
+        optimized_drawFastHLine(x, y, w, color);
+    }
+}
+
+inline void PxMATRIX::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
+{
+    if (_rotate){
+        optimized_drawFastHLine(y, _height-1-x, h, color);
+    } else {
+        optimized_drawFastVLine(x, y, h, color);
+    }
+}
+
+inline void PxMATRIX::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+{
+    if (_rotate){
+        optimized_fillRect(y, _height-x-w, h, w, color);
+    } else {
+        optimized_fillRect(x, y, w, h, color);
+    }
+}
+
+inline void PxMATRIX::optimized_drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
+{
+    uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
+    uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
+    uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
+    
+    optimized_drawFastHLineRGB888(x, y, w, r, g, b);
+}
+
+inline void PxMATRIX::optimized_drawFastHLineRGB888(int16_t x, int16_t y, int16_t w, uint8_t r, uint8_t g, uint8_t b)
+{
+    if ((x >= _width) || (y < 0) || (y >= _height) || (w<=0))
+        return;
+    
+    int16_t x1 = max(0, x);
+    int16_t x2 = min(_width-1, x+w-1);
+
+    // reverse coordinates
+    x2 =_width - 1 - x2;
+    x1 =_width - 1 - x1;
+    
+    uint16_t bits_x1 = (x1%8);
+    uint16_t bits_x2 = (x2%8);
+    uint16_t byte_x1 = x1/8;
+    uint16_t byte_x2 = x2/8;
+
+    uint32_t total_offset_r = _total_offset[y];
+#ifdef double_buffer
+    total_offset_r -= buffer_size*selected_buffer;
+#endif
+
+    uint8_t x1mask = (uint8_t)0xFF >> (7-bits_x1);
+    uint8_t x2mask = (uint8_t)0xFF << bits_x2;
+    if(byte_x1 == byte_x2) {
+        // the whole line is in one byte
+        uint8_t mask = x1mask & x2mask;
+        setMatrixBufferByte(total_offset_r - byte_x1, r, g, b, mask, ~mask);
+    } else {
+        // set line bounds
+        setMatrixBufferByte(total_offset_r - byte_x1, r, g, b, x1mask, ~x1mask);
+        setMatrixBufferByte(total_offset_r - byte_x2, r, g, b, x2mask, ~x2mask);
+    }
+
+    // fast fill the line
+    for(int16_t of=byte_x2+1; of<byte_x1; of++) {
+        Serial.printf("OF %d\r\n", of);
+        setMatrixBufferByte(total_offset_r - of, r, g, b, 0xFF, 0x00);
+    }
+}
+
+inline void PxMATRIX::optimized_drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
+{
+    uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
+    uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
+    uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
+    
+    optimized_drawFastVLineRGB888(x, y, h, r, g, b);
+}
+
+inline void PxMATRIX::optimized_drawFastVLineRGB888(int16_t x, int16_t y, int16_t h, uint8_t r, uint8_t g, uint8_t b)
+{
+    if ((x < 0) || (x >= _width) || (y >= _height) || (h<=0))
+        return;
+    
+    int16_t y1 = max(0, y);
+    int16_t y2 = min(_height-1, y+h-1);
+    
+    // reverse coordinates
+    x =_width - 1 - x;
+    
+    uint16_t byte_x = x/8;
+    uint8_t bit_select = x%8;
+    if ((_scan_pattern==ZAGGIZ) && ((y%8)<4))
+        bit_select = 7-bit_select;
+    uint8_t mask = _BV(bit_select);
+
+    // draw the vertical line
+    for (int16_t j=y1; j<=y2; j++) {
+        uint32_t total_offset_r = _total_offset[j] - byte_x;
+#ifdef double_buffer
+        total_offset_r -= buffer_size*selected_buffer;
+#endif
+
+        setMatrixBufferByte(total_offset_r, r, g, b, mask, ~mask);
+    }
+}
+
+inline void PxMATRIX::optimized_fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+{
+    uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
+    uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
+    uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
+    
+    optimized_fillRectRGB888(x, y, w, h, r, g, b);
+}
+
+inline void PxMATRIX::optimized_fillRectRGB888(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t r, uint8_t g, uint8_t b)
+{
+    if ((x >= _width) || (y >= _height) || (w<=0) || (h<=0))
+        return;
+    int16_t x1 = max(0, x);
+    int16_t x2 = min(_width-1, x+w-1);
+
+    int16_t y1 = max(0, y);
+    int16_t y2 = min(_height-1, y+h-1);
+
+    // reverse coordinates
+    x2 =_width - 1 - x2;
+    x1 =_width - 1 - x1;
+    
+    uint16_t bits_x1 = (x1%8);
+    uint16_t bits_x2 = (x2%8);
+    uint16_t byte_x1 = x1/8;
+    uint16_t byte_x2 = x2/8;
+    uint8_t x1mask = (uint8_t)0xFF >> (7-bits_x1);
+    uint8_t x2mask = (uint8_t)0xFF << bits_x2;
+
+    for (int16_t j=y1; j<=y2; j++) {
+        uint32_t total_offset_r = _total_offset[j];
+#ifdef double_buffer
+        total_offset_r -= buffer_size*selected_buffer;
+#endif
+        
+        if(byte_x1 == byte_x2) {
+            // the whole line is in one byte
+            uint8_t mask = x1mask & x2mask;
+            setMatrixBufferByte(total_offset_r - byte_x1, r, g, b, mask, ~mask);
+        } else {
+            // set line bounds
+            setMatrixBufferByte(total_offset_r - byte_x1, r, g, b, x1mask, ~x1mask);
+            setMatrixBufferByte(total_offset_r - byte_x2, r, g, b, x2mask, ~x2mask);
+        }
+        
+        // fast fill the line
+        for(int16_t of=byte_x2+1; of<byte_x1; of++) {
+            setMatrixBufferByte(total_offset_r - of, r, g, b, 0xFF, 0x00);
+        }
+    }
+}
+
 #endif
