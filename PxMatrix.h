@@ -55,14 +55,10 @@ enum mux_patterns {BINARY, STRAIGHT};
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
 enum scan_patterns {LINE, ZIGZAG, ZAGGIZ};
 
-#define max_matrix_width 64
-#define max_matrix_height 64
 #define color_step 256 / color_depth
 #define color_half_step int(color_step / 2)
 #define color_third_step int(color_step / 3)
 #define color_two_third_step int(color_third_step*2)
-
-#define buffer_size max_matrix_width * max_matrix_height * 3 / 8
 
 class PxMATRIX : public Adafruit_GFX {
  public:
@@ -127,12 +123,9 @@ class PxMATRIX : public Adafruit_GFX {
 
  private:
 
- // the display buffer for the LED matrix
-#ifdef double_buffer
-  uint8_t PxMATRIX_buffer[color_depth][2*buffer_size];// = {0x00 };
-#else
-  uint8_t PxMATRIX_buffer[color_depth][buffer_size];// = {0x00 };
-#endif
+  uint16_t _buffer_size;
+  // the display buffer for the LED matrix
+  uint8_t *PxMATRIX_buffer[color_depth];
 
   // GPIO pins
   uint8_t _LATCH_PIN;
@@ -218,6 +211,14 @@ inline void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t 
 
   _width = width;
   _height = height;
+  _buffer_size = _width * _height * 3 / 8;
+  uint16_t local_buffer_size = _buffer_size;
+#ifdef double_buffer
+  local_buffer_size *= 2;
+#endif
+  for (int i = 0; i < color_depth; i++) {
+    PxMATRIX_buffer[i] = new uint8_t[local_buffer_size];
+  }
   _panels_width = 1;
 
   _rows_per_buffer = _height/2;
@@ -358,7 +359,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   {
     // Precomputed row offset values
 #ifdef double_buffer
-    base_offset=buffer_size*selected_buffer+_row_offset[y]-(x/8)*2;
+    base_offset=_buffer_size*selected_buffer+_row_offset[y]-(x/8)*2;
 #else
     base_offset=_row_offset[y]-(x/8)*2;
 #endif
@@ -393,7 +394,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       // this could be pretty easily extended to vertical stacking as well
       total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
 #ifdef double_buffer
-      total_offset_r += buffer_size*selected_buffer;
+      total_offset_r += _buffer_size*selected_buffer;
 #endif
     }
     else
@@ -402,7 +403,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       base_offset=_row_offset[y]-(x/8);
 
 #ifdef double_buffer
-      base_offset-=buffer_size*selected_buffer;
+      base_offset-=_buffer_size*selected_buffer;
 #endif
 
       // relies on integer truncation, do not simplify
@@ -624,7 +625,7 @@ void PxMATRIX::display(uint16_t show_time) {
       delayMicroseconds(1);
 
 #ifdef double_buffer
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
+      SPI.writeBytes(&PxMATRIX_buffer[_display_color][_buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
 #else
       SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
 #endif
@@ -636,7 +637,7 @@ void PxMATRIX::display(uint16_t show_time) {
     {
       set_mux(i);
 #ifdef double_buffer
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
+      SPI.writeBytes(&PxMATRIX_buffer[_display_color][_buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
 #else
       SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
 #endif
