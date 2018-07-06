@@ -55,14 +55,13 @@ enum mux_patterns {BINARY, STRAIGHT};
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
 enum scan_patterns {LINE, ZIGZAG, ZAGGIZ};
 
-#define max_matrix_width 64
-#define max_matrix_height 64
+#define max_matrix_pixels 64 * 64
 #define color_step 256 / color_depth
 #define color_half_step int(color_step / 2)
 #define color_third_step int(color_step / 3)
 #define color_two_third_step int(color_third_step*2)
 
-#define buffer_size max_matrix_width * max_matrix_height * 3 / 8
+#define buffer_size max_matrix_pixels * 3 / 8
 
 class PxMATRIX : public Adafruit_GFX {
  public:
