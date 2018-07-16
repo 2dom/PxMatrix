@@ -10,16 +10,16 @@ BSD license, check license.txt for more information
 #define _PxMATRIX_H
 
 // This is how many color levels the display shows - the more the slower the update
-#ifndef PXMATRIX_COLOR_DEPTH
-#define PXMATRIX_COLOR_DEPTH 8
+#ifndef PxMATRIX_COLOR_DEPTH
+#define PxMATRIX_COLOR_DEPTH 8
 #endif
 
-#ifndef PXMATRIX_MAX_ROWS
-#define PXMATRIX_MAX_ROWS 64
+#ifndef PxMATRIX_MAX_HEIGHT
+#define PxMATRIX_MAX_HEIGHT 64
 #endif
 
-#ifndef PXMATRIX_MAX_COLS
-#define PXMATRIX_MAX_COLS 64
+#ifndef PxMATRIX_MAX_WIDTH
+#define PxMATRIX_MAX_WIDTH 64
 #endif
 
 //#define double_buffer
@@ -64,7 +64,7 @@ enum mux_patterns {BINARY, STRAIGHT};
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
 enum scan_patterns {LINE, ZIGZAG, ZAGGIZ};
 
-#define max_matrix_pixels PXMATRIX_MAX_ROWS * PXMATRIX_MAX_COLS
+#define max_matrix_pixels PXMATRIX_MAX_HEIGHT * PXMATRIX_MAX_WIDTH
 #define color_step 256 / PXMATRIX_COLOR_DEPTH
 #define color_half_step int(color_step / 2)
 #define color_third_step int(color_step / 3)
@@ -166,7 +166,7 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _display_color;
 
   // Holds some pre-computed values for faster pixel drawing
-  uint32_t _row_offset[64];
+  uint32_t _row_offset[PxMATRIX_MAX_HEIGHT];
 
   // Holds the display row pattern type
   uint8_t _row_pattern;
@@ -224,6 +224,18 @@ inline void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t 
   _A_PIN = A;
   _B_PIN = B;
 
+  if (width > PxMATRIX_MAX_WIDTH){
+    #ifdef DEBUG_ESP_PORT
+      DEBUG_ESP_PORT.print("[PxMatrix] Width larger than PxMATRIX_MAX_WIDTH.\n");
+    #endif
+  } 
+ 
+ if (height > PxMATRIX_MAX_HEIGHT){
+    #ifdef DEBUG_ESP_PORT
+      DEBUG_ESP_PORT.print("[PxMatrix] Height larger than PxMATRIX_MAX_HEIGHT.\n");
+    #endif
+  } 
+ 
   _width = width;
   _height = height;
   _panels_width = 1;
