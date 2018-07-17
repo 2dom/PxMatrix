@@ -122,6 +122,7 @@ void pixel_time_test(uint8_t draw_time)
   Serial.println(delta_timer);
 
 
+  display.setBrightness(0);
   display.clearDisplay();
   display.setTextColor(myCYAN);
   display.setCursor(2,0);
@@ -131,6 +132,11 @@ void pixel_time_test(uint8_t draw_time)
   display.print("Time");
 
   display_update_enable(true);
+  for (uint8_t brightness=0; brightness<256; brightness++)
+  {
+    display.setBrightness(brightness);
+    delay(10);
+  }
 
   yield();
   delay(3000);
