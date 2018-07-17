@@ -10,13 +10,23 @@ BSD license, check license.txt for more information
 #define _PxMATRIX_H
 
 // This is how many color levels the display shows - the more the slower the update
-#define color_depth 8
+#ifndef PxMATRIX_COLOR_DEPTH
+#define PxMATRIX_COLOR_DEPTH 8
+#endif
+
+#ifndef PxMATRIX_MAX_HEIGHT
+#define PxMATRIX_MAX_HEIGHT 64
+#endif
+
+#ifndef PxMATRIX_MAX_WIDTH
+#define PxMATRIX_MAX_WIDTH 64
+#endif
+
 //#define double_buffer
 
 #include "Adafruit_GFX.h"
 #include "Arduino.h"
 #include <SPI.h>
-
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
@@ -33,7 +43,6 @@ BSD license, check license.txt for more information
 #endif
 
 #include <stdlib.h>
-
 
 // Sometimes some extra width needs to be passed to Adafruit GFX constructor
 // to render text close to the end of the display correctly
@@ -55,8 +64,8 @@ enum mux_patterns {BINARY, STRAIGHT};
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
 enum scan_patterns {LINE, ZIGZAG, ZAGGIZ};
 
-#define max_matrix_pixels 64 * 64
-#define color_step 256 / color_depth
+#define max_matrix_pixels PxMATRIX_MAX_HEIGHT * PxMATRIX_MAX_WIDTH
+#define color_step 256 / PxMATRIX_COLOR_DEPTH
 #define color_half_step int(color_step / 2)
 #define color_third_step int(color_step / 3)
 #define color_two_third_step int(color_third_step*2)
@@ -128,9 +137,9 @@ class PxMATRIX : public Adafruit_GFX {
 
  // the display buffer for the LED matrix
 #ifdef double_buffer
-  uint8_t PxMATRIX_buffer[color_depth][2*buffer_size];// = {0x00 };
+  uint8_t PxMATRIX_buffer[PxMATRIX_COLOR_DEPTH][2*buffer_size];// = {0x00 };
 #else
-  uint8_t PxMATRIX_buffer[color_depth][buffer_size];// = {0x00 };
+  uint8_t PxMATRIX_buffer[PxMATRIX_COLOR_DEPTH][buffer_size];// = {0x00 };
 #endif
 
   // GPIO pins
@@ -157,7 +166,7 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _display_color;
 
   // Holds some pre-computed values for faster pixel drawing
-  uint32_t _row_offset[64];
+  uint32_t _row_offset[PxMATRIX_MAX_HEIGHT];
 
   // Holds the display row pattern type
   uint8_t _row_pattern;
@@ -215,6 +224,18 @@ inline void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t 
   _A_PIN = A;
   _B_PIN = B;
 
+  if (width > PxMATRIX_MAX_WIDTH){
+    #ifdef DEBUG_ESP_PORT
+      DEBUG_ESP_PORT.print("[PxMatrix] Width larger than PxMATRIX_MAX_WIDTH.\n");
+    #endif
+  } 
+ 
+ if (height > PxMATRIX_MAX_HEIGHT){
+    #ifdef DEBUG_ESP_PORT
+      DEBUG_ESP_PORT.print("[PxMatrix] Height larger than PxMATRIX_MAX_HEIGHT.\n");
+    #endif
+  } 
+ 
   _width = width;
   _height = height;
   _panels_width = 1;
@@ -419,7 +440,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       bit_select = 7-bit_select;
 
   //Color interlacing
-  for (int this_color=0; this_color<color_depth; this_color++)
+  for (int this_color=0; this_color<PxMATRIX_COLOR_DEPTH; this_color++)
   {
     uint8_t color_tresh = this_color*color_step+color_half_step;
 
@@ -429,14 +450,14 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       PxMATRIX_buffer[this_color][total_offset_r] &= ~_BV(bit_select);
 
     if (g > color_tresh+_color_G_offset)
-      PxMATRIX_buffer[(this_color+color_third_step)%color_depth][total_offset_g] |=_BV(bit_select);
+      PxMATRIX_buffer[(this_color+color_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_g] |=_BV(bit_select);
     else
-      PxMATRIX_buffer[(this_color+color_third_step)%color_depth][total_offset_g] &= ~_BV(bit_select);
+      PxMATRIX_buffer[(this_color+color_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_g] &= ~_BV(bit_select);
 
     if (b > color_tresh+_color_B_offset)
-      PxMATRIX_buffer[(this_color+color_two_third_step)%color_depth][total_offset_b] |=_BV(bit_select);
+      PxMATRIX_buffer[(this_color+color_two_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_b] |=_BV(bit_select);
     else
-      PxMATRIX_buffer[(this_color+color_two_third_step)%color_depth][total_offset_b] &= ~_BV(bit_select);
+      PxMATRIX_buffer[(this_color+color_two_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_b] &= ~_BV(bit_select);
   }
 }
 
@@ -643,7 +664,7 @@ void PxMATRIX::display(uint16_t show_time) {
     }
   }
   _display_color++;
-  if (_display_color>=color_depth)
+  if (_display_color>=PxMATRIX_COLOR_DEPTH)
   {
     _display_color=0;
 #ifdef double_buffer
@@ -738,7 +759,7 @@ void PxMATRIX::displayTestPixel(uint16_t show_time) {
 
 // clear everything
 void PxMATRIX::clearDisplay(void) {
-  for(int this_color=0;this_color<color_depth;this_color++)
+  for(int this_color=0;this_color<PxMATRIX_COLOR_DEPTH;this_color++)
   for (int j=0;j<(_width*_height*3)/8;j++)
     PxMATRIX_buffer[this_color][j]=0;
 }
