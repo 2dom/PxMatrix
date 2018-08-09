@@ -133,6 +133,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Set the number of panels that make up the display area width
   inline void setPanelsWidth(uint8_t panels);
 
+  // Set inversion of the vertical buffer index when rendering. This is a fix for some weird panels.
+  inline void setInvertVerticalBufferIndex(bool invert);
+
  private:
 
  // the display buffer for the LED matrix
@@ -153,6 +156,7 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _width;
   uint8_t _height;
   uint8_t _panels_width;
+  uint8_t _panel_invert_vert_buffer_index;
   uint8_t _rows_per_buffer;
   uint8_t _row_sets_per_buffer;
   uint8_t _panel_width_bytes;
@@ -239,6 +243,7 @@ inline void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t 
   _width = width;
   _height = height;
   _panels_width = 1;
+  _panel_invert_vert_buffer_index = 0;
 
   _rows_per_buffer = _height/2;
   _panel_width_bytes = (_width/_panels_width)/8;
@@ -283,6 +288,10 @@ inline void PxMATRIX::setScanPattern(scan_patterns scan_pattern)
 inline void PxMATRIX::setPanelsWidth(uint8_t panels) {
   _panels_width=panels;
   _panel_width_bytes = (_width/_panels_width)/8;
+}
+
+inline void PxMATRIX::setInvertVerticalBufferIndex(bool invert) {
+  _panel_invert_vert_buffer_index = invert;
 }
 
 inline void PxMATRIX::setRotate(bool rotate) {
@@ -404,6 +413,9 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       // can only be non-zero when _height/(2 inputs per panel)/_row_pattern > 1
       // i.e.: 32x32 panel with 1/8 scan (A/B/C lines) -> 32/2/8 = 2
       uint8_t vert_index_in_buffer = (y%_rows_per_buffer)/_row_pattern; // which set of rows per buffer
+      if (_panel_invert_vert_buffer_index) {
+        vert_index_in_buffer = _rows_per_buffer/_row_pattern - vert_index_in_buffer - 1;
+      }
       // can only ever be 0/1 since there are only ever 2 separate input sets present for this variety of panels (R1G1B1/R2G2B2)
       uint8_t which_buffer = y/_rows_per_buffer;
       uint8_t x_byte = x/8;
