@@ -62,7 +62,7 @@ enum mux_patterns {BINARY, STRAIGHT};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
-enum scan_patterns {LINE, ZIGZAG, ZAGGIZ};
+enum scan_patterns {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG};
 
 #define max_matrix_pixels PxMATRIX_MAX_HEIGHT * PxMATRIX_MAX_WIDTH
 #define color_step 256 / PxMATRIX_COLOR_DEPTH
@@ -385,9 +385,52 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   uint32_t total_offset_g=0;
   uint32_t total_offset_b=0;
 
+  if (_scan_pattern==WZAGZIG || _scan_pattern==VZAG)
+  {
+    // get block coordinates and constraints
+    uint8_t rows_per_buffer = _height/2;
+    uint8_t rows_per_block = rows_per_buffer/2;
+    // this is a defining characteristic of WZAGZIG and VZAG:
+    // two byte alternating chunks bottom up for WZAGZIG
+    // two byte up down down up for VZAG
+    uint8_t cols_per_block = 16;
+    uint8_t panel_width = _width/_panels_width;
+    uint8_t blocks_x_per_panel = panel_width/cols_per_block;
+    uint8_t panel_index = x/panel_width;
+    // strip down to single panel coordinates, restored later using panel_index
+    x = x%panel_width;
+    uint8_t base_y_offset = y/rows_per_buffer;
+    uint8_t buffer_y = y%rows_per_buffer;
+    uint8_t block_x = x/cols_per_block;
+    uint8_t block_x_mod = x%cols_per_block;
+    uint8_t block_y = buffer_y/rows_per_block; // can only be 0/1 for height/pattern=4
+    uint8_t block_y_mod = buffer_y%rows_per_block;
+
+    // translate block address to new block address
+    // invert block_y so remaining translation will be more sane
+    uint8_t block_y_inv = 1 - block_y;
+    uint8_t block_x_inv = blocks_x_per_panel - block_x - 1;
+    uint8_t block_linear_index;
+    if (_scan_pattern==WZAGZIG)
+    {
+      // apply x/y block transform for WZAGZIG, only works for height/pattern=4
+      block_linear_index = block_x_inv * 2 + block_y_inv;
+    }
+    else if (_scan_pattern==VZAG)
+    {
+      // apply x/y block transform for VZAG, only works for height/pattern=4 and 32x32 panels until a larger example is found
+      block_linear_index = block_x_inv * 3 * block_y + block_y_inv  * (block_x_inv + 1);
+    }
+    // render block linear index back into normal coordinates
+    uint8_t new_block_x = block_linear_index % blocks_x_per_panel;
+    uint8_t new_block_y = 1 - block_linear_index/blocks_x_per_panel;
+    x = new_block_x * cols_per_block + block_x_mod + panel_index * panel_width;
+    y = new_block_y * rows_per_block + block_y_mod + base_y_offset * rows_per_buffer;
+  }
+
   // This code sections supports panels that have a row-changin scanning pattern
   // It does support chaining however only of height/pattern=2
-  if (_scan_pattern!=LINE)
+  if (_scan_pattern!=LINE && _scan_pattern!=WZAGZIG && _scan_pattern!=VZAG)
   {
     // Precomputed row offset values
 #ifdef double_buffer
