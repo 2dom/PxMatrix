@@ -133,7 +133,7 @@ class PxMATRIX : public Adafruit_GFX {
   // Set the number of panels that make up the display area width
   inline void setPanelsWidth(uint8_t panels);
 
-  // Set the number of panels that make up the display area width
+  // Set the brightness of the panels
   inline void setBrightness(uint8_t brightness);
 
 
