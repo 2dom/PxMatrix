@@ -132,7 +132,7 @@ void pixel_time_test(uint8_t draw_time)
   display.print("Time");
 
   display_update_enable(true);
-  for (uint8_t brightness=0; brightness<256; brightness++)
+  for (uint8_t brightness=0; brightness<255; brightness++)
   {
     display.setBrightness(brightness);
     delay(10);
