@@ -120,12 +120,17 @@ The number of color levels can be selected in the header file. The default (8 co
 
 ## Troubleshooting
 
+  * Some panels require grounding of unused (multiplex) inputs. For example, some 1/16 scan panel expose an (unlabeled) E input that needs grounding where only ABCD is connected to the ESP. If left open the display  typically shows shifted images and/or ghosting.
+
   * Check you cabling with a multimeter (diode-test). You can measure the connection between the input/ouput panel connector and the NodeMCU/ESP8266 via the exposed SMD pads/legs.
+
   * Your display may have a different scanning pattern. Make sure that you have selected the correct scanning pattern in the display.begin call
   * Run the "pattern_test.ino" and check if the scanning pattern is appearing ok. For a 8 row-step display it should look like this (red then yellow then white line progressing):
   ![8step](/images/8step.gif)
 
   * It is possible that the LED multiplex chip is defective (this was the case with one of my modules). You can verify this by selecting a bit pattern on the A,B,C inputs and measuring that the corresponing row outputs are low , e.g. a 4 row-step display typically uses a ([PR4538](/docs/pr4538.pdf)) chip. Setting (A=1,B=0) should give you (LINE0=1,LINE1=0,LINE2=1,LINE3=1).  This chip can easily be replaced. Spare part available [here](https://www.aliexpress.com/item/Free-shipping-10pcs-lot-PR4538DW-SOP-20-original-authentic/32594044891.html?spm=a2g0s.9042311.0.0.bjr5BY).
+
+  * If you have any problems with ghosting or randomly lit-up pixels, please double-check the ground connection between ESP and your panel and make sure that your power supply can deliver >2A. Also make sure that your cabling between power suppply and power connector (center of the panel) is sufficient to carry the current.
 
 ## Thanks to
 
