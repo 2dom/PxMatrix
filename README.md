@@ -120,7 +120,7 @@ The number of color levels can be selected in the header file. The default (8 co
 
 ## Troubleshooting
 
-  * Some panels require grounding of unused (multiplex) inputs. For example, some 1/16 scan panel expose an (unlabeled) E input that needs grounding where only ABCD is connected to the ESP. If left open the display  typically shows shifted images and/or ghosting.
+  * Some panels require grounding of unused (multiplex) inputs. For example, some 1/16 scan panels expose an (sometimes unlabeled) E input that needs grounding where only ABCD is connected to the ESP. If left open the display typically shows shifted images and/or ghosting.
 
   * Check you cabling with a multimeter (diode-test). You can measure the connection between the input/ouput panel connector and the NodeMCU/ESP8266 via the exposed SMD pads/legs.
 
