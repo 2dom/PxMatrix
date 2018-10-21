@@ -121,6 +121,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Select active buffer to updare display from
   inline void selectBuffer(bool selected_buffer);
 
+  // Select active buffer to updare display from
+  inline void swapBuffers();
+
   // Control the minimum color values that result in an active pixel
   inline void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
 
@@ -345,6 +348,13 @@ inline void PxMATRIX::selectBuffer(bool selected_buffer)
 
   _selected_buffer=selected_buffer;
 }
+
+inline void PxMATRIX::swapBuffers()
+{
+
+  _selected_buffer!=_selected_buffer;
+}
+
 
 inline void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
 {
