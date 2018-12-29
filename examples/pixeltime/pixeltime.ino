@@ -30,9 +30,12 @@ Ticker display_ticker;
 #endif
 // Pins for LED MATRIX
 
+#define matrix_width 32
+#define matrix_height 16
+
 uint8_t display_draw_time=0;
 
-PxMATRIX display(32,16,P_LAT, P_OE,P_A,P_B,P_C);
+PxMATRIX display(matrix_width,matrix_height,P_LAT, P_OE,P_A,P_B,P_C);
 //PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
 //PxMATRIX display(64,64,P_LAT, P_OE,P_A,P_B,P_C,P_D,P_E);
 
@@ -194,10 +197,47 @@ void draw_weather_icon (uint8_t icon)
   }
 }
 
+unsigned long last_draw=0;
+void scroll_text(uint8_t ypos, unsigned long scroll_delay, String text, uint8_t colorR, uint8_t colorG, uint8_t colorB)
+{
+    uint16_t text_length = text.length();
+    display.setTextWrap(false);  // we don't wrap text so it scrolls nicely
+    display.setTextSize(1);
+    display.setRotation(0);
+    display.setTextColor(display.color565(colorR,colorG,colorB));
+
+    // Asuming 5 pixel average character width
+    for (int xpos=matrix_width; xpos>-(matrix_width+text_length*5); xpos--)
+    {
+      display.setTextColor(display.color565(colorR,colorG,colorB));
+      display.clearDisplay();
+      display.setCursor(xpos,ypos);
+      display.println(text);
+      delay(scroll_delay);
+      yield();
+
+      // This might smooth the transition a bit if we go slow
+
+      display.setTextColor(display.color565(colorR/4,colorG/4,colorB/4));
+      display.setCursor(xpos-1,ypos);
+      display.println(text);
+
+
+
+
+      delay(scroll_delay/5);
+      yield();
+
+
+
+
+    }
+}
+
 
 uint8_t icon_index=0;
 void loop() {
-
+  scroll_text(1,50,"Welcome to PxMatrix!",96,96,250);
   display.clearDisplay();
 
   draw_weather_icon(icon_index);
@@ -212,4 +252,6 @@ void loop() {
     display.drawLine(xx+16,11,xx+16,15,display.color565(0,0,xx*16));
   }
   delay(3000);
+
+
 }
