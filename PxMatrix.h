@@ -22,6 +22,10 @@ BSD license, check license.txt for more information
 #define PxMATRIX_MAX_WIDTH 64
 #endif
 
+#ifndef PxMATRIX_LATCH_ACTIVE_POLARITY
+#define PxMATRIX_LATCH_ACTIVE_POLARITY true
+#endif
+
 //#define double_buffer
 
 #include "Adafruit_GFX.h"
@@ -658,10 +662,16 @@ void PxMATRIX::latch(uint16_t show_time )
 {
   //digitalWrite(_OE_PIN,0); // <<< remove this
   digitalWrite(_LATCH_PIN,HIGH);
-  //delayMicroseconds(10);
+  digitalWrite(SPI_BUS_CLK,LOW);
+  for (uint8_t latch_count=0; latch_count<3; latch_count++)
+  {
+    digitalWrite(SPI_BUS_CLK,HIGH);
+    delayMicroseconds(1);
+    digitalWrite(SPI_BUS_CLK,LOW);
+    delayMicroseconds(1);
+  }
   digitalWrite(_LATCH_PIN,LOW);
-  //delayMicroseconds(10);
- digitalWrite(_OE_PIN,0); //<<<< insert this
+  digitalWrite(_OE_PIN,0); //<<<< insert this
   delayMicroseconds(show_time);
   digitalWrite(_OE_PIN,1);
 }
@@ -682,10 +692,10 @@ void PxMATRIX::display(uint16_t show_time) {
       // update times and increased brightness
 
       set_mux((i+_row_pattern-1)%_row_pattern);
-      digitalWrite(_LATCH_PIN,HIGH);
+      digitalWrite(_LATCH_PIN,PxMATRIX_LATCH_ACTIVE_POLARITY);
       digitalWrite(_OE_PIN,0);
       start_time = micros();
-      digitalWrite(_LATCH_PIN,LOW);
+      digitalWrite(_LATCH_PIN,!PxMATRIX_LATCH_ACTIVE_POLARITY);
       delayMicroseconds(1);
 
 #ifdef double_buffer

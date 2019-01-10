@@ -137,6 +137,8 @@ The number of color levels can be selected in the header file. The default (8 co
   * Kinsey Moore for improving the code
   * Jean Carlos for testing the chaining
 
+If you would like to buy me a beer: [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TXLWSPUD9X2KL)
+
 
 ## Examples
 
