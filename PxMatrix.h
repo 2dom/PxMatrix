@@ -22,10 +22,6 @@ BSD license, check license.txt for more information
 #define PxMATRIX_MAX_WIDTH 64
 #endif
 
-#ifndef PxMATRIX_LATCH_ACTIVE_POLARITY
-#define PxMATRIX_LATCH_ACTIVE_POLARITY true
-#endif
-
 //#define double_buffer
 
 #include "Adafruit_GFX.h"
@@ -67,6 +63,11 @@ enum mux_patterns {BINARY, STRAIGHT};
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
 enum scan_patterns {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG};
+
+// Specify s speciffic driver chip. Most panels implement a standard shifted
+// register (SHIFT). Other chips/panels may need special treatment in oder to work
+enum driver_chips {SHIFT, FM6126A};
+
 
 #define max_matrix_pixels PxMATRIX_MAX_HEIGHT * PxMATRIX_MAX_WIDTH
 #define color_step 256 / PxMATRIX_COLOR_DEPTH
@@ -143,6 +144,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Set the brightness of the panels
   inline void setBrightness(uint8_t brightness);
 
+  // Set driver chip type
+  inline void setDriverChip(driver_chips driver_chip);
+
 
  private:
 
@@ -206,6 +210,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Holds the scan pattern
   scan_patterns _scan_pattern;
 
+  // Holds the used driver chip
+  driver_chips _driver_chip;
+
   // Used for test pattern
   uint16_t _test_pixel_counter;
   uint16_t _test_line_counter;
@@ -222,6 +229,9 @@ inline void latch(uint16_t show_time );
 
   // Set row multiplexer
 inline void set_mux(uint8_t value);
+
+// Write configuration register in some driver chips
+inline void writeRegister(uint16_t reg_value, uint8_t reg_position);
 };
 
 // Pass 8-bit (each) R,G,B, get back 16-bit packed color
@@ -273,8 +283,92 @@ inline void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t 
 
   _row_pattern=BINARY;
   _scan_pattern=LINE;
+  _driver_chip=SHIFT;
 
   clearDisplay();
+}
+
+
+
+inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
+{
+
+  if (_driver_chip == FM6126A){
+
+    Serial.println("\nFM6126A - REG: " + String(reg_position));
+
+    // All FM6126A code is based on the excellent guesswork by shades66 in https://github.com/hzeller/rpi-rgb-led-matrix/issues/746
+    // Register 12 - brightness/gain settings, three 6bit values, aaaaaabbbbbbcccccc a= darkness?
+    //               seems to add red to the background when the leds are off, b=main brightness c=finer brightness
+    //               (i'm not sure if b & c are actually as 12 bit value but with b set to all 1's the value in c doesn't seem to make much difference)
+
+    // Register 13 - not sure what it's doing yet, just that 1 specific bit within seems to be an overall enable function.
+
+    // Now set all the values at the top to the same value for each of register 12/13 to get the same settings across the panel, the current code loads different settings into each 32 columns.
+    // clocking in the register is simply clocking in the value (i've 2 panels so 128bits of data) and for the last 12/13 bits depending on the register setting the latch to high. the final drop of latch to low clocks in the configuration. this is done by sending the same value to r1/r2/g1/g2/b1/b2 at the same time to load the config into all the FM6126 chips
+
+    // Some necessary magic bit fields
+    // b12  - 1  adds red tinge
+    // b12  - 9/8/7/6/5  =  4 bit brightness
+    // b13  - 9   =1 screen on
+    // b13  - 6   =1 screen off
+
+    digitalWrite(SPI_BUS_CLK,HIGH); // CCK LOW
+    digitalWrite(_OE_PIN,LOW);
+    digitalWrite(_LATCH_PIN,HIGH);
+    digitalWrite(_A_PIN,HIGH);
+    digitalWrite(_B_PIN,LOW);
+    digitalWrite(_C_PIN,LOW);
+    digitalWrite(_D_PIN,LOW);
+
+    uint8_t reg_bit=0;
+    for (uint32_t bit_counter=0; bit_counter < _send_buffer_size*8; bit_counter++)
+    {
+      reg_bit=bit_counter%16;
+      if ((reg_value>>reg_bit)&1)
+        digitalWrite(SPI_BUS_MOSI,HIGH);
+      else
+        digitalWrite(SPI_BUS_MOSI,LOW);
+
+      delay(1);
+      digitalWrite(SPI_BUS_CLK,LOW); // CLK HIGH
+      delay(1);
+      digitalWrite(SPI_BUS_CLK,HIGH); // CLK LOW
+      delay(1);
+      if ((bit_counter ==  (_send_buffer_size*8 - reg_position-1)))
+      {
+        digitalWrite(_LATCH_PIN,LOW);
+      }
+    }
+    digitalWrite(_LATCH_PIN,HIGH);
+  }
+  digitalWrite(_OE_PIN,HIGH);
+
+}
+
+
+inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
+{
+  _driver_chip=driver_chip;
+
+  if (driver_chip == FM6126A){
+
+    uint16_t b12a=0b0111111111111111;
+    uint16_t b12b=0b0111100000111111;
+    uint16_t b12c=0b0111111111111111;
+    uint16_t b12d=0b0111100000111111;
+
+    uint16_t b13a=0b0000000001000000;
+    uint16_t b13b=0b0000000001000000;
+    uint16_t b13c=0b0000000001000000;
+    uint16_t b13d=0b0000000001000000;
+
+
+    writeRegister(b12a, 12);
+    writeRegister(b13a, 13);
+
+
+  }
 }
 
 inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
@@ -660,21 +754,44 @@ void PxMATRIX::set_mux(uint8_t value)
 
 void PxMATRIX::latch(uint16_t show_time )
 {
-  //digitalWrite(_OE_PIN,0); // <<< remove this
-  digitalWrite(_LATCH_PIN,HIGH);
-  digitalWrite(SPI_BUS_CLK,LOW);
-  for (uint8_t latch_count=0; latch_count<3; latch_count++)
+
+  if (_driver_chip==SHIFT)
   {
-    digitalWrite(SPI_BUS_CLK,HIGH);
-    delayMicroseconds(1);
+    //digitalWrite(_OE_PIN,0); // <<< remove this
+    digitalWrite(_LATCH_PIN,HIGH);
     digitalWrite(SPI_BUS_CLK,LOW);
-    delayMicroseconds(1);
+    for (uint8_t latch_count=0; latch_count<3; latch_count++)
+    {
+      digitalWrite(SPI_BUS_CLK,HIGH);
+      delayMicroseconds(1);
+      digitalWrite(SPI_BUS_CLK,LOW);
+      delayMicroseconds(1);
+    }
+    digitalWrite(_LATCH_PIN,LOW);
+    digitalWrite(_OE_PIN,0); //<<<< insert this
+    delayMicroseconds(show_time);
+    digitalWrite(_OE_PIN,1);
   }
-  digitalWrite(_LATCH_PIN,LOW);
-  digitalWrite(_OE_PIN,0); //<<<< insert this
-  delayMicroseconds(show_time);
-  digitalWrite(_OE_PIN,1);
+
+  if (_driver_chip==FM6126A)
+  {
+    //digitalWrite(_OE_PIN,0); // <<< remove this
+    digitalWrite(_LATCH_PIN,LOW);
+    digitalWrite(SPI_BUS_CLK,LOW);
+    for (uint8_t latch_count=0; latch_count<3; latch_count++)
+    {
+      digitalWrite(SPI_BUS_CLK,HIGH);
+      delayMicroseconds(1);
+      digitalWrite(SPI_BUS_CLK,LOW);
+      delayMicroseconds(1);
+    }
+    digitalWrite(_LATCH_PIN,HIGH);
+    digitalWrite(_OE_PIN,0); //<<<< insert this
+    delayMicroseconds(show_time);
+    digitalWrite(_OE_PIN,1);
+  }
 }
+
 
 void PxMATRIX::display(uint16_t show_time) {
   unsigned long start_time=0;
@@ -692,10 +809,10 @@ void PxMATRIX::display(uint16_t show_time) {
       // update times and increased brightness
 
       set_mux((i+_row_pattern-1)%_row_pattern);
-      digitalWrite(_LATCH_PIN,PxMATRIX_LATCH_ACTIVE_POLARITY);
+      digitalWrite(_LATCH_PIN,HIGH);
       digitalWrite(_OE_PIN,0);
       start_time = micros();
-      digitalWrite(_LATCH_PIN,!PxMATRIX_LATCH_ACTIVE_POLARITY);
+      digitalWrite(_LATCH_PIN,LOW);
       delayMicroseconds(1);
 
 #ifdef double_buffer
@@ -737,7 +854,9 @@ void PxMATRIX::displayTestPattern(uint16_t show_time) {
 
   if ((millis()-_test_last_call)>500)
   {
-    SPI.write(0xFF);
+    flushDisplay();
+    for (int ii=0;ii<=_test_pixel_counter;ii++)
+      SPI.write(0xFF);
     _test_last_call=millis();
     _test_pixel_counter++;
   }
