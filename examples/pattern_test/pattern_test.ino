@@ -44,8 +44,11 @@ void display_updater()
 }
 #endif
 
+#ifndef ICACHE_RAM_ATTR
+#define ICACHE_RAM_ATTR IRAM_ATTR
+#endif
 #ifdef ESP32
-void IRAM_ATTR display_updater(){
+void ICACHE_RAM_ATTR display_updater(){
   // Increment the counter and set the time of ISR
   portENTER_CRITICAL_ISR(&timerMux);
   //isplay.display(70);
