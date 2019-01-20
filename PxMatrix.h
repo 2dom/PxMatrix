@@ -288,6 +288,7 @@ inline void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t 
   _rotate=0;
   _fast_update=0;
 
+  _row_pattern=0;
   _scan_pattern=LINE;
   _driver_chip=SHIFT;
 
