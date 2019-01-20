@@ -230,6 +230,8 @@ inline void latch(uint16_t show_time );
   // Set row multiplexer
 inline void set_mux(uint8_t value);
 
+inline void spi_init();
+
 // Write configuration register in some driver chips
 inline void writeRegister(uint16_t reg_value, uint8_t reg_position);
 };
@@ -315,7 +317,8 @@ inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
     // b12  - 9/8/7/6/5  =  4 bit brightness
     // b13  - 9   =1 screen on
     // b13  - 6   =1 screen off
-
+    pinMode(SPI_BUS_CLK,OUTPUT);
+    pinMode(SPI_BUS_MOSI,OUTPUT);
     digitalWrite(SPI_BUS_CLK,HIGH); // CCK LOW
     digitalWrite(_OE_PIN,LOW);
     digitalWrite(_LATCH_PIN,HIGH);
@@ -369,6 +372,7 @@ inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
 
     writeRegister(b12a, 12);
     writeRegister(b13a, 13);
+
 
 
   }
@@ -640,6 +644,21 @@ inline void PxMATRIX::begin()
 
 }
 
+void PxMATRIX::spi_init(){
+
+  #ifdef ESP8266
+    SPI.begin();
+  #endif
+  #ifdef ESP32
+    SPI.begin(SPI_BUS_CLK, SPI_BUS_MISO, SPI_BUS_MOSI, SPI_BUS_SS);
+  #endif
+
+    SPI.setDataMode(SPI_MODE0);
+    SPI.setBitOrder(MSBFIRST);
+    SPI.setFrequency(10000000);
+
+}
+
 void PxMATRIX::begin(uint8_t row_pattern) {
 
   _row_pattern=row_pattern;
@@ -650,19 +669,10 @@ void PxMATRIX::begin(uint8_t row_pattern) {
   _row_sets_per_buffer = _rows_per_buffer/_row_pattern;
   _send_buffer_size=_pattern_color_bytes*3;
 
-#ifdef ESP8266
-  SPI.begin();
-#endif
-#ifdef ESP32
-  SPI.begin(SPI_BUS_CLK, SPI_BUS_MISO, SPI_BUS_MOSI, SPI_BUS_SS);
-#endif
 
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setFrequency(20000000);
 
-  pinMode(SPI_BUS_CLK, OUTPUT);
-  pinMode(SPI_BUS_MOSI, OUTPUT);
+  spi_init();
+
 
   pinMode(_OE_PIN, OUTPUT);
   pinMode(_LATCH_PIN, OUTPUT);
@@ -765,15 +775,9 @@ void PxMATRIX::latch(uint16_t show_time )
   {
     //digitalWrite(_OE_PIN,0); // <<< remove this
     digitalWrite(_LATCH_PIN,HIGH);
-    digitalWrite(SPI_BUS_CLK,LOW);
-    for (uint8_t latch_count=0; latch_count<3; latch_count++)
-    {
-      digitalWrite(SPI_BUS_CLK,HIGH);
-      delayMicroseconds(1);
-      digitalWrite(SPI_BUS_CLK,LOW);
-      delayMicroseconds(1);
-    }
+    //delayMicroseconds(10);
     digitalWrite(_LATCH_PIN,LOW);
+    //delayMicroseconds(10);
     digitalWrite(_OE_PIN,0); //<<<< insert this
     delayMicroseconds(show_time);
     digitalWrite(_OE_PIN,1);
@@ -806,7 +810,7 @@ void PxMATRIX::display(uint16_t show_time) {
 #endif
   for (uint8_t i=0;i<_row_pattern;i++)
   {
-    if(_driver_chip != FM6124) {
+    if(_driver_chip == SHIFT) {
       if (_fast_update && (_brightness==255)){
 
         // This will clock data into the display while the outputs are still
@@ -819,7 +823,7 @@ void PxMATRIX::display(uint16_t show_time) {
         digitalWrite(_LATCH_PIN,HIGH);
         digitalWrite(_OE_PIN,0);
         start_time = micros();
-        
+
         digitalWrite(_LATCH_PIN,LOW);
         delayMicroseconds(1);
 
@@ -843,37 +847,62 @@ void PxMATRIX::display(uint16_t show_time) {
         latch(show_time*(uint16_t)_brightness/255);
       }
     }
-    else // _driver_chip == FM6124
+    if (_driver_chip == FM6124 || _driver_chip == FM6126A) // _driver_chip == FM6124
     {
+
+
+      // for (uint32_t xx = 0; xx < _send_buffer_size - 1; xx++) {
+      //   uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + xx];
+      //   for (uint8_t bb = 0; bb < 8; bb++) {
+      //     if (((v >> (7 - bb)) & 1) == 1)
+      //       GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_MOSI);
+      //     else
+      //       GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_MOSI);
+      //     GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_CLK);
+      //     GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_CLK);
+      //   }
+      // }
+
+      pinMode(SPI_BUS_CLK, SPECIAL);
+      pinMode(SPI_BUS_MOSI, SPECIAL);
+
+
+      SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size-1);
+
+      pinMode(SPI_BUS_CLK, OUTPUT);
+      pinMode(SPI_BUS_MOSI, OUTPUT);
+      pinMode(_D_PIN, OUTPUT);
       set_mux(i);
-      for (int x = 0; x < _send_buffer_size - 1; x++) {
-        uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + x];
-        for (int b = 0; b < 8; b++) {
-          if (((v >> (7 - b)) & 1) == 1)
-            GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_MOSI);
-          else
-            GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_MOSI);
-          GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_CLK);
-          GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_CLK);
-        }
-      }
+
       uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + _send_buffer_size - 1];
-      for (int b = 0; b < 8; b++) {
-        if (((v >> (7 - b)) & 1) == 1)
+      for (uint8_t this_byte = 0; this_byte < 8; this_byte++) {
+        if (((v >> (7 - this_byte)) & 1))
           GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_MOSI);
         else
           GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_MOSI);
         GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_CLK);
         GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_CLK);
 
-        if (b == (8 - 1 - 3))
+
+        if (this_byte == 4)
+          //GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << _LATCH_PIN);
           digitalWrite(_LATCH_PIN, HIGH);
       }
+      //GPIO_REG_WRITE(GPIO_  spi_init();
+
       digitalWrite(_LATCH_PIN, LOW);
+      //GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << _OE_PIN);
       digitalWrite(_OE_PIN, 0); //<<<< insert this
-      delayMicroseconds(show_time);
+      unsigned long start_time = micros();
+
+
+
+      while ((micros()-start_time)<show_time)
+        delayMicroseconds(1);
+      //GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << _OE_PIN);
       digitalWrite(_OE_PIN, 1);
       //latch(show_time*(uint16_t)_brightness/255);
+
     }
   }
   _display_color++;
