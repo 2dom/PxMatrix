@@ -66,7 +66,7 @@ enum scan_patterns {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG};
 
 // Specify s speciffic driver chip. Most panels implement a standard shifted
 // register (SHIFT). Other chips/panels may need special treatment in oder to work
-enum driver_chips {SHIFT, FM6126A};
+enum driver_chips {SHIFT, FM6124, FM6126A};
 
 
 #define max_matrix_pixels PxMATRIX_MAX_HEIGHT * PxMATRIX_MAX_WIDTH
@@ -292,10 +292,13 @@ inline void PxMATRIX::init(uint8_t width, uint8_t height,uint8_t LATCH, uint8_t 
 
 inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
 {
+  if (_driver_chip == FM6124 || _driver_chip == FM6126A){
 
-  if (_driver_chip == FM6126A){
-
-    Serial.println("\nFM6126A - REG: " + String(reg_position));
+    if (_driver_chip == FM6124) {
+       Serial.println("\FM6124 - REG: " + String(reg_position));
+    } else {
+       Serial.println("\nFM6126A - REG: " + String(reg_position));
+    }
 
     // All FM6126A code is based on the excellent guesswork by shades66 in https://github.com/hzeller/rpi-rgb-led-matrix/issues/746
     // Register 12 - brightness/gain settings, three 6bit values, aaaaaabbbbbbcccccc a= darkness?
@@ -351,7 +354,7 @@ inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
 {
   _driver_chip=driver_chip;
 
-  if (driver_chip == FM6126A){
+  if (driver_chip == FM6124 || driver_chip == FM6126A){
 
     uint16_t b12a=0b0111111111111111;
     uint16_t b12b=0b0111100000111111;
@@ -658,6 +661,9 @@ void PxMATRIX::begin(uint8_t row_pattern) {
   SPI.setBitOrder(MSBFIRST);
   SPI.setFrequency(20000000);
 
+  pinMode(SPI_BUS_CLK, OUTPUT);
+  pinMode(SPI_BUS_MOSI, OUTPUT);
+
   pinMode(_OE_PIN, OUTPUT);
   pinMode(_LATCH_PIN, OUTPUT);
   pinMode(_A_PIN, OUTPUT);
@@ -773,7 +779,7 @@ void PxMATRIX::latch(uint16_t show_time )
     digitalWrite(_OE_PIN,1);
   }
 
-  if (_driver_chip==FM6126A)
+  if (_driver_chip == FM6124 || _driver_chip==FM6126A)
   {
     //digitalWrite(_OE_PIN,0); // <<< remove this
     digitalWrite(_LATCH_PIN,LOW);
@@ -800,39 +806,74 @@ void PxMATRIX::display(uint16_t show_time) {
 #endif
   for (uint8_t i=0;i<_row_pattern;i++)
   {
-    if (_fast_update && (_brightness==255)){
+    if(_driver_chip != FM6124) {
+      if (_fast_update && (_brightness==255)){
 
-      // This will clock data into the display while the outputs are still
-      // latched (LEDs on). We therefore utilize SPI transfer latency as LED
-      // ON time and can reduce the waiting time (show_time). This is rather
-      // timing sensitive and may lead to flicker however promises reduced
-      // update times and increased brightness
+        // This will clock data into the display while the outputs are still
+        // latched (LEDs on). We therefore utilize SPI transfer latency as LED
+        // ON time and can reduce the waiting time (show_time). This is rather
+        // timing sensitive and may lead to flicker however promises reduced
+        // update times and increased brightness
 
-      set_mux((i+_row_pattern-1)%_row_pattern);
-      digitalWrite(_LATCH_PIN,HIGH);
-      digitalWrite(_OE_PIN,0);
-      start_time = micros();
-      digitalWrite(_LATCH_PIN,LOW);
-      delayMicroseconds(1);
+        set_mux((i+_row_pattern-1)%_row_pattern);
+        digitalWrite(_LATCH_PIN,HIGH);
+        digitalWrite(_OE_PIN,0);
+        start_time = micros();
+        
+        digitalWrite(_LATCH_PIN,LOW);
+        delayMicroseconds(1);
 
 #ifdef double_buffer
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
+        SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
 #else
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
+        SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
 #endif
-      while ((micros()-start_time)<show_time)
-        delayMicroseconds(1);
-      digitalWrite(_OE_PIN,1);
+        while ((micros()-start_time)<show_time)
+          delayMicroseconds(1);
+        digitalWrite(_OE_PIN,1);
+      }
+      else
+      {
+        set_mux(i);
+#ifdef double_buffer
+        SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
+#else
+        SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
+#endif
+        latch(show_time*(uint16_t)_brightness/255);
+      }
     }
-    else
+    else // _driver_chip == FM6124
     {
       set_mux(i);
-#ifdef double_buffer
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
-#else
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
-#endif
-      latch(show_time*(uint16_t)_brightness/255);
+      for (int x = 0; x < _send_buffer_size - 1; x++) {
+        uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + x];
+        for (int b = 0; b < 8; b++) {
+          if (((v >> (7 - b)) & 1) == 1)
+            GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_MOSI);
+          else
+            GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_MOSI);
+          GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_CLK);
+          GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_CLK);
+        }
+      }
+      uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + _send_buffer_size - 1];
+      for (int b = 0; b < 8; b++) {
+        if (((v >> (7 - b)) & 1) == 1)
+          GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_MOSI);
+        else
+          GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_MOSI);
+        GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_CLK);
+        GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_CLK);
+
+        if (b == (8 - 1 - 3))
+          digitalWrite(_LATCH_PIN, HIGH);
+      }
+      digitalWrite(_LATCH_PIN, LOW);
+      digitalWrite(_OE_PIN, 0); //<<<< insert this
+      delayMicroseconds(show_time);
+      digitalWrite(_OE_PIN, 1);
+      //latch(show_time*(uint16_t)_brightness/255);
     }
   }
   _display_color++;
