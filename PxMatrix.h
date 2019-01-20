@@ -871,7 +871,9 @@ void PxMATRIX::display(uint16_t show_time) {
 
       pinMode(SPI_BUS_CLK, OUTPUT);
       pinMode(SPI_BUS_MOSI, OUTPUT);
-      pinMode(_D_PIN, OUTPUT);
+      pinMode(SPI_BUS_MISO, OUTPUT);
+      pinMode(SPI_BUS_SS, OUTPUT);
+
       set_mux(i);
 
       uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + _send_buffer_size - 1];
