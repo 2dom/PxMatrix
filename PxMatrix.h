@@ -22,6 +22,10 @@ BSD license, check license.txt for more information
 #define PxMATRIX_MAX_WIDTH 64
 #endif
 
+#ifndef PxMATRIX_DEFAULT_SHOWTIME
+#define PxMATRIX_DEFAULT_SHOWTIME 30
+#endif
+
 //#define double_buffer
 
 #include "Adafruit_GFX.h"
@@ -91,6 +95,7 @@ class PxMATRIX : public Adafruit_GFX {
 
   // Updates the display
   inline void display(uint16_t show_time);
+  inline void display();
 
   // Draw pixels
   inline void drawPixelRGB565(int16_t x, int16_t y, uint16_t color);
@@ -664,6 +669,7 @@ void PxMATRIX::begin(uint8_t row_pattern) {
   _row_pattern=row_pattern;
   if (_row_pattern==4)
     _scan_pattern=ZIGZAG;
+  _mux_pattern = BINARY;
 
   _pattern_color_bytes=(_height/_row_pattern)*(_width/8);
   _row_sets_per_buffer = _rows_per_buffer/_row_pattern;
@@ -800,6 +806,11 @@ void PxMATRIX::latch(uint16_t show_time )
     delayMicroseconds(show_time);
     digitalWrite(_OE_PIN,1);
   }
+}
+
+ void PxMATRIX::display()
+{
+  display(PxMATRIX_DEFAULT_SHOWTIME);
 }
 
 
