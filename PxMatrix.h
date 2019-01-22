@@ -54,6 +54,17 @@ BSD license, check license.txt for more information
 #define ADAFRUIT_GFX_EXTRA 0
 #endif
 
+#ifdef ESP8266
+  #define GPIO_REG_SET(val) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS,val)
+  #define GPIO_REG_CLEAR(val) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS,val)
+#endif
+
+
+#ifdef ESP32
+  #define GPIO_REG_SET(val) GPIO.out_w1ts = val
+  #define GPIO_REG_CLEAR(val) GPIO.out_w1tc = val
+#endif
+
 // HW SPI PINS
 #define SPI_BUS_CLK 14
 #define SPI_BUS_MOSI 13
@@ -866,11 +877,11 @@ void PxMATRIX::display(uint16_t show_time) {
       //   uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + xx];
       //   for (uint8_t bb = 0; bb < 8; bb++) {
       //     if (((v >> (7 - bb)) & 1) == 1)
-      //       GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_MOSI);
+      //       GPIO_REG_SET( 1 << SPI_BUS_MOSI);
       //     else
-      //       GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_MOSI);
-      //     GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_CLK);
-      //     GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_CLK);
+      //       GPIO_REG_CLEAR( 1 << SPI_BUS_MOSI);
+      //     GPIO_REG_SET( 1 << SPI_BUS_CLK);
+      //     GPIO_REG_CLEAR( 1 << SPI_BUS_CLK);
       //   }
       // }
 
@@ -890,21 +901,21 @@ void PxMATRIX::display(uint16_t show_time) {
       uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + _send_buffer_size - 1];
       for (uint8_t this_byte = 0; this_byte < 8; this_byte++) {
         if (((v >> (7 - this_byte)) & 1))
-          GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_MOSI);
+          GPIO_REG_SET( 1 << SPI_BUS_MOSI);
         else
-          GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_MOSI);
-        GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << SPI_BUS_CLK);
-        GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << SPI_BUS_CLK);
+          GPIO_REG_CLEAR( 1 << SPI_BUS_MOSI);
+        GPIO_REG_SET( 1 << SPI_BUS_CLK);
+        GPIO_REG_CLEAR( 1 << SPI_BUS_CLK);
 
 
         if (this_byte == 4)
-          //GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << _LATCH_PIN);
+          //GPIO_REG_SET( 1 << _LATCH_PIN);
           digitalWrite(_LATCH_PIN, HIGH);
       }
       //GPIO_REG_WRITE(GPIO_  spi_init();
 
       digitalWrite(_LATCH_PIN, LOW);
-      //GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << _OE_PIN);
+      //GPIO_REG_SET( 1 << _OE_PIN);
       digitalWrite(_OE_PIN, 0); //<<<< insert this
       unsigned long start_time = micros();
 
@@ -912,7 +923,7 @@ void PxMATRIX::display(uint16_t show_time) {
 
       while ((micros()-start_time)<show_time)
         delayMicroseconds(1);
-      //GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << _OE_PIN);
+      //GPIO_REG_CLEAR( 1 << _OE_PIN);
       digitalWrite(_OE_PIN, 1);
       //latch(show_time*(uint16_t)_brightness/255);
 
