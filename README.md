@@ -123,7 +123,7 @@ PxMATRIX display(96,16,...);
 ...
 void setup(){
 display.begin(4);
-display.setPanelsWidth(2);
+display.setPanelsWidth(3);
 ...
 ```
 
