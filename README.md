@@ -113,15 +113,18 @@ If you want it more professional, Mike's got you covered. He created a [neat cus
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.
 
 ## Chaining
- Chaining any number of displays together horizontally is rather straightforward. Simply use the supplied flat band connector between the panels and then treat the entire chain as one display. For example, three 32x16 displays would result in one 96x16 display where we use the input connector (PI) on the first and the output connector (PO) on the last panel as explained above. Don't forget to specify the correct resolution in the constructor, i.e. PxMATRIX display(96,16,...), and how many panels you chained together, i.e. display.setPanelsWidth(n). So setting up two 1/4 scan panels may look like this:
+ Chaining any number of displays together horizontally is rather straightforward. Simply use the supplied flat band connector between the panels and then treat the entire chain as one display. For example, three 32x16 displays would result in one 96x16 display where we use the input connector (PI) on the first and the output connector (PO) on the last panel as explained above. Don't forget to specify the correct resolution in the constructor, i.e. PxMATRIX display(96,16,...), and how many panels you chained together, i.e. display.setPanelsWidth(3). Initializing this chaining set-up with 1/4 scan panels would look like this:
 
 ```
-PxMATRIX display(64,16,...);
+#include <PxMatrix.h>
+PxMATRIX display(96,16,...);
 ...
 []
 ...
+void setup(){
 display.begin(4);
 display.setPanelsWidth(2);
+...
 ```
 
 ![Chaining](/images/chain.png)
