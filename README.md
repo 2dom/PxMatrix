@@ -103,11 +103,14 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   CLK |  14 - (D5) | 14
   R0  |  13 - (D7) | 13
 
-You should end up with something like this (VCC/supply not nonnected here yet):
+You should end up with something like this (VCC/supply not connected here yet):
 
 ![Cabling](/images/P10_cables.jpg)
 
-If you want it more professional, Mike's got you covered. He created a [neat custom PCB](  https://github.com/mike-rankin/ESP8266_RGB_Matrix_Cable_Version) that gets rid of all those lose cables.
+If you want it more professional, some users have created custom PCBs to gets rid of all those lose cables.
+
+  * [Mike](https://github.com/mike-rankin/ESP8266_RGB_Matrix_Cable_Version)
+  * [Pepe](www.instructables.com/id/tabuled )
 
 ## Colors
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.
@@ -148,6 +151,7 @@ display.setPanelsWidth(3);
 
   * Kinsey Moore for improving the code
   * Jean Carlos for testing the chaining
+  * Dave Davenport for FM62126A support
 
 If you would like to buy me a beer: [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TXLWSPUD9X2KL)
 
