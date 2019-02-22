@@ -33,7 +33,9 @@ Ticker display_ticker;
 #define matrix_width 32
 #define matrix_height 16
 
-uint8_t display_draw_time=10;
+// This defines the 'on' time of the display is us. The larger this number,
+// the brighter the display. If too large the ESP will crash
+uint8_t display_draw_time=10; //10-50 is usually fine
 
 PxMATRIX display(matrix_width,matrix_height,P_LAT, P_OE,P_A,P_B,P_C);
 //PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
