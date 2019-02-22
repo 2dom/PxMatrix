@@ -876,7 +876,7 @@ void PxMATRIX::display(uint16_t show_time) {
 #else
         SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
 #endif
-        latch(show_time*_brightness/255);
+        latch(show_time*((uint16_t)_brightness)/255);
       }
     }
     if (_driver_chip == FM6124 || _driver_chip == FM6126A) // _driver_chip == FM6124

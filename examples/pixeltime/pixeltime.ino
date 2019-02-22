@@ -33,7 +33,7 @@ Ticker display_ticker;
 #define matrix_width 32
 #define matrix_height 16
 
-uint8_t display_draw_time=0;
+uint8_t display_draw_time=10;
 
 PxMATRIX display(matrix_width,matrix_height,P_LAT, P_OE,P_A,P_B,P_C);
 //PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
@@ -105,47 +105,8 @@ void display_update_enable(bool is_enable)
     timerAlarmDisable(timer);
   }
 #endif
-
-
 }
 
-void pixel_time_test(uint8_t draw_time)
-{
-
-  Serial.print("Pixel draw latency in us: ");
-  unsigned long start_timer=micros();
-  display.drawPixel(1,1,0);
-  unsigned long delta_timer=micros()-start_timer;
-  Serial.println(delta_timer);
-
-  Serial.print("Display update latency in us: ");
-  start_timer=micros();
-  display.display(draw_time);
-  delta_timer=micros()-start_timer;
-  Serial.println(delta_timer);
-
-
-  display.setBrightness(0);
-  display.clearDisplay();
-  display.setTextColor(myCYAN);
-  display.setCursor(2,0);
-  display.print("Pixel");
-  display.setTextColor(myMAGENTA);
-  display.setCursor(2,8);
-  display.print("Time");
-
-  display_update_enable(true);
-  for (uint8_t brightness=0; brightness<255; brightness++)
-  {
-    display.setBrightness(brightness);
-    delay(10);
-  }
-
-  yield();
-  delay(3000);
-
-  display_update_enable(false);
-}
 
 
 void setup() {
@@ -153,27 +114,24 @@ void setup() {
   // Define your display layout here, e.g. 1/8 step
   display.begin(8);
 
-  // Define your scan pattern here {LINE, ZIGZAG, ZAGGIZ} (default is LINE)
+  // Define your scan pattern here {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG} (default is LINE)
   //display.setScanPattern(LINE);
 
   // Define multiplex implemention here {BINARY, STRAIGHT} (default is BINARY)
   //display.setMuxPattern(BINARY);
 
-  // Compare draw latency at similar display brightness for standard and fast drawing
-  display.setFastUpdate(false);
-  Serial.println("Draw test without fast update");
-  display_draw_time=15;
-  pixel_time_test(display_draw_time);
-  Serial.println("Draw test with fast update");
   display.setFastUpdate(true);
-  display_draw_time=1;
-  pixel_time_test(display_draw_time);
-
-  display.setFastUpdate(false);
-  display_draw_time=15;
   display.clearDisplay();
+  display.setTextColor(myCYAN);
+  display.setCursor(2,0);
+  display.print("Pixel");
+  display.setTextColor(myMAGENTA);
+  display.setCursor(2,8);
+  display.print("Time");
   display_update_enable(true);
-  //display.setColorOffset(15,15,0);
+
+  delay(3000);
+
 }
 union single_double{
   uint8_t two[2];
@@ -217,23 +175,15 @@ void scroll_text(uint8_t ypos, unsigned long scroll_delay, String text, uint8_t 
       yield();
 
       // This might smooth the transition a bit if we go slow
-
-      display.setTextColor(display.color565(colorR/4,colorG/4,colorB/4));
-      display.setCursor(xpos-1,ypos);
-      display.println(text);
-
-
-
+      // display.setTextColor(display.color565(colorR/4,colorG/4,colorB/4));
+      // display.setCursor(xpos-1,ypos);
+      // display.println(text);
 
       delay(scroll_delay/5);
       yield();
 
-
-
-
     }
 }
-
 
 uint8_t icon_index=0;
 void loop() {
