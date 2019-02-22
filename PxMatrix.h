@@ -794,10 +794,20 @@ void PxMATRIX::latch(uint16_t show_time )
     digitalWrite(_LATCH_PIN,HIGH);
     //delayMicroseconds(10);
     digitalWrite(_LATCH_PIN,LOW);
+
     //delayMicroseconds(10);
-    digitalWrite(_OE_PIN,0); //<<<< insert this
-    delayMicroseconds(show_time);
-    digitalWrite(_OE_PIN,1);
+    if (show_time >0)
+    {
+      //delayMicroseconds(show_time);
+      digitalWrite(_OE_PIN,0);
+      unsigned long start_time=micros();
+      while ((micros()-start_time)<show_time)
+        asm volatile (" nop ");
+      digitalWrite(_OE_PIN,1);
+    }
+
+
+
   }
 
   if (_driver_chip == FM6124 || _driver_chip==FM6126A)
@@ -866,7 +876,7 @@ void PxMATRIX::display(uint16_t show_time) {
 #else
         SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
 #endif
-        latch(show_time*(uint16_t)_brightness/255);
+        latch(show_time*_brightness/255);
       }
     }
     if (_driver_chip == FM6124 || _driver_chip == FM6126A) // _driver_chip == FM6124

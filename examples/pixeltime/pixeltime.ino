@@ -166,7 +166,7 @@ void setup() {
   pixel_time_test(display_draw_time);
   Serial.println("Draw test with fast update");
   display.setFastUpdate(true);
-  display_draw_time=0;
+  display_draw_time=1;
   pixel_time_test(display_draw_time);
 
   display.setFastUpdate(false);
@@ -251,7 +251,16 @@ void loop() {
     display.drawLine(xx+16,6,xx+16,10,display.color565(0,xx*16,0));
     display.drawLine(xx+16,11,xx+16,15,display.color565(0,0,xx*16));
   }
-  delay(3000);
+  for (uint8_t dimm=255; dimm>0; dimm--)
+  {
+    display.setBrightness(dimm);
+    delay(5);
+  }
+  for (uint8_t dimm=0; dimm<255; dimm++)
+  {
+    display.setBrightness(dimm);
+    delay(5);
+  }
 
 
 }
