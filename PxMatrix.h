@@ -157,6 +157,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Set the number of panels that make up the display area width
   inline void setPanelsWidth(uint8_t panels);
 
+  // Set the number of panels that make up the display area height
+  inline void setPanelsHeight(uint8_t panels);	
+
   // Set the brightness of the panels
   inline void setBrightness(uint8_t brightness);
 
@@ -184,6 +187,7 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _width;
   uint8_t _height;
   uint8_t _panels_width;
+  uint8_t _panels_height;
   uint8_t _rows_per_buffer;
   uint8_t _row_sets_per_buffer;
   uint8_t _panel_width_bytes;
@@ -282,6 +286,7 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _height = height;
   _brightness=255;
   _panels_width = 1;
+  _panels_height = 1;
 
   _rows_per_buffer = _height/2;
   _panel_width_bytes = (_width/_panels_width)/8;
@@ -415,6 +420,10 @@ inline void PxMATRIX::setScanPattern(scan_patterns scan_pattern)
 inline void PxMATRIX::setPanelsWidth(uint8_t panels) {
   _panels_width=panels;
   _panel_width_bytes = (_width/_panels_width)/8;
+}
+
+inline void PxMATRIX::setPanelsHeight(uint8_t panels) {
+  _panels_height=panels;
 }
 
 inline void PxMATRIX::setRotate(bool rotate) {
@@ -588,11 +597,17 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     // can only ever be 0/1 since there are only ever 2 separate input sets present for this variety of panels (R1G1B1/R2G2B2)
     uint8_t which_buffer = y/_rows_per_buffer;
     uint8_t x_byte = x/8;
-    // assumes panels are only ever chained for more width
-    uint8_t which_panel = x_byte/_panel_width_bytes;
+    // height from one panel
+    uint8_t p_height = _height / _panels_height;
+    // decides on which panel the LED is placed
+    // considering horizonzal and vertical chaining
+    // counting starts with 1 on works line per line
+    uint8_t which_panel = x_byte/_panel_width_bytes + (y/p_height) * _panels_width; 
+    // decides which section of the panel is used
+    // dependent on _row_pattern
+    uint8_t which_section_on_panel = (y%p_height) /_row_pattern;
     uint8_t in_row_byte_offset = x_byte%_panel_width_bytes;
-    // this could be pretty easily extended to vertical stacking as well
-    total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
+    total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(which_panel + which_section_on_panel * _panels_width * _panels_height);
 #ifdef double_buffer
     total_offset_r -= buffer_size*selected_buffer;
 #endif
