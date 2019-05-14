@@ -168,9 +168,9 @@ class PxMATRIX : public Adafruit_GFX {
 
  // the display buffer for the LED matrix
 #ifdef double_buffer
-  uint8_t PxMATRIX_buffer[PxMATRIX_COLOR_DEPTH][2*buffer_size];// = {0x00 };
+  uint8_t PxMATRIX_buffer[2][PxMATRIX_COLOR_DEPTH][buffer_size];// = {0x00 };
 #else
-  uint8_t PxMATRIX_buffer[PxMATRIX_COLOR_DEPTH][buffer_size];// = {0x00 };
+  uint8_t PxMATRIX_buffer[1][PxMATRIX_COLOR_DEPTH][buffer_size];// = {0x00 };
 #endif
 
   // GPIO pins
@@ -286,7 +286,11 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _rows_per_buffer = _height/2;
   _panel_width_bytes = (_width/_panels_width)/8;
 
+#if double_buffer
+  _selected_buffer=true;
+#else
   _selected_buffer=false;
+#endif
   _active_buffer=false;
 
   _color_R_offset=0;
@@ -472,8 +476,10 @@ inline void PxMATRIX::selectBuffer(bool selected_buffer)
 
 inline void PxMATRIX::swapBuffers()
 {
-
-  _selected_buffer!=_selected_buffer;
+#if double_buffer
+    _active_buffer = _selected_buffer;
+    _selected_buffer = !_selected_buffer;
+#endif
 }
 
 
@@ -564,11 +570,8 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   if (_scan_pattern!=LINE && _scan_pattern!=WZAGZIG && _scan_pattern!=VZAG)
   {
     // Precomputed row offset values
-#ifdef double_buffer
-    base_offset=buffer_size*selected_buffer+_row_offset[y]-(x/8)*2;
-#else
     base_offset=_row_offset[y]-(x/8)*2;
-#endif
+
     uint8_t row_sector=0;
     uint16_t row_sector__offset=_width/4;
     for (uint8_t yy = 0; yy<_height; yy+=2*_row_pattern)
@@ -593,9 +596,6 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     uint8_t in_row_byte_offset = x_byte%_panel_width_bytes;
     // this could be pretty easily extended to vertical stacking as well
     total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
-#ifdef double_buffer
-    total_offset_r -= buffer_size*selected_buffer;
-#endif
   }
 
   total_offset_g=total_offset_r-_pattern_color_bytes;
@@ -611,19 +611,19 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     uint8_t color_tresh = this_color*color_step+color_half_step;
 
     if (r > color_tresh+_color_R_offset)
-      PxMATRIX_buffer[this_color][total_offset_r] |=_BV(bit_select);
+      PxMATRIX_buffer[selected_buffer][this_color][total_offset_r] |=_BV(bit_select);
     else
-      PxMATRIX_buffer[this_color][total_offset_r] &= ~_BV(bit_select);
+      PxMATRIX_buffer[selected_buffer][this_color][total_offset_r] &= ~_BV(bit_select);
 
     if (g > color_tresh+_color_G_offset)
-      PxMATRIX_buffer[(this_color+color_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_g] |=_BV(bit_select);
+      PxMATRIX_buffer[selected_buffer][(this_color+color_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_g] |=_BV(bit_select);
     else
-      PxMATRIX_buffer[(this_color+color_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_g] &= ~_BV(bit_select);
+      PxMATRIX_buffer[selected_buffer][(this_color+color_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_g] &= ~_BV(bit_select);
 
     if (b > color_tresh+_color_B_offset)
-      PxMATRIX_buffer[(this_color+color_two_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_b] |=_BV(bit_select);
+      PxMATRIX_buffer[selected_buffer][(this_color+color_two_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_b] |=_BV(bit_select);
     else
-      PxMATRIX_buffer[(this_color+color_two_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_b] &= ~_BV(bit_select);
+      PxMATRIX_buffer[selected_buffer][(this_color+color_two_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_b] &= ~_BV(bit_select);
   }
 }
 
@@ -638,7 +638,7 @@ inline void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color) {
   uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
   uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
   uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
-  fillMatrixBuffer( x,  y, r, g,b, 0);
+  fillMatrixBuffer( x,  y, r, g,b, _selected_buffer);
 }
 
 inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b, bool selected_buffer) {
@@ -646,7 +646,7 @@ inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g
 }
 
 inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b) {
-  fillMatrixBuffer(x, y, r, g,b, 0);
+  fillMatrixBuffer(x, y, r, g,b, _selected_buffer);
 }
 
 // the most basic function, get a single pixel
@@ -861,11 +861,8 @@ void PxMATRIX::display(uint16_t show_time) {
         digitalWrite(_LATCH_PIN,LOW);
         delayMicroseconds(1);
 
-#ifdef double_buffer
-        SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
-#else
-        SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
-#endif
+        SPI.writeBytes(&PxMATRIX_buffer[_active_buffer][_display_color][i*_send_buffer_size],_send_buffer_size);
+
         while ((micros()-start_time)<show_time)
           delayMicroseconds(1);
         digitalWrite(_OE_PIN,1);
@@ -873,11 +870,8 @@ void PxMATRIX::display(uint16_t show_time) {
       else
       {
         set_mux(i);
-#ifdef double_buffer
-        SPI.writeBytes(&PxMATRIX_buffer[_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
-#else
-        SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size);
-#endif
+        SPI.writeBytes(&PxMATRIX_buffer[_active_buffer][_display_color][buffer_size*_active_buffer+i*_send_buffer_size],_send_buffer_size);
+
         latch(show_time*((uint16_t)_brightness)/255);
       }
     }
@@ -901,7 +895,7 @@ void PxMATRIX::display(uint16_t show_time) {
       pinMode(SPI_BUS_MOSI, SPECIAL);
 
 
-      SPI.writeBytes(&PxMATRIX_buffer[_display_color][i*_send_buffer_size],_send_buffer_size-1);
+      SPI.writeBytes(&PxMATRIX_buffer[_active_buffer][_display_color][i*_send_buffer_size],_send_buffer_size-1);
 
       pinMode(SPI_BUS_CLK, OUTPUT);
       pinMode(SPI_BUS_MOSI, OUTPUT);
@@ -910,7 +904,7 @@ void PxMATRIX::display(uint16_t show_time) {
 
       set_mux(i);
 
-      uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + _send_buffer_size - 1];
+      uint8_t v = PxMATRIX_buffer[_active_buffer][_display_color][i*_send_buffer_size + _send_buffer_size - 1];
       for (uint8_t this_byte = 0; this_byte < 8; this_byte++) {
         if (((v >> (7 - this_byte)) & 1))
           GPIO_REG_SET( 1 << SPI_BUS_MOSI);
@@ -945,9 +939,6 @@ void PxMATRIX::display(uint16_t show_time) {
   if (_display_color>=PxMATRIX_COLOR_DEPTH)
   {
     _display_color=0;
-#ifdef double_buffer
-    _active_buffer=_selected_buffer;
-#endif
   }
 }
 
@@ -1041,6 +1032,6 @@ void PxMATRIX::displayTestPixel(uint16_t show_time) {
 void PxMATRIX::clearDisplay(void) {
   for(int this_color=0;this_color<PxMATRIX_COLOR_DEPTH;this_color++)
   for (int j=0;j<(_width*_height*3)/8;j++)
-    PxMATRIX_buffer[this_color][j]=0;
+    PxMATRIX_buffer[_selected_buffer][this_color][j]=0;
 }
 #endif
