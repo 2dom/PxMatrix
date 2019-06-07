@@ -48,8 +48,8 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 // the brighter the display. If too large the ESP will crash
 uint8_t display_draw_time = 10; //10-50 is usually fine
 
-PxMATRIX display(matrix_width, matrix_height, P_LAT, P_OE, P_A, P_B, P_C);
-//PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
+//PxMATRIX display(matrix_width, matrix_height, P_LAT, P_OE, P_A, P_B, P_C);
+PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
 //PxMATRIX display(64,64,P_LAT, P_OE,P_A,P_B,P_C,P_D,P_E);
 
 // Some standard colors
