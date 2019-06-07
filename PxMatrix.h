@@ -99,6 +99,7 @@ class PxMATRIX : public Adafruit_GFX {
   inline PxMATRIX(uint16_t width, uint16_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D);
   inline PxMATRIX(uint16_t width, uint16_t height,uint8_t LATCH, uint8_t OE, uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
 
+  inline void begin(uint8_t row_pattern, uint8_t CLK, uint8_t MOSI, uint8_t MISO, uint8_t SS);
   inline void begin(uint8_t row_pattern);
   inline void begin();
 
@@ -175,6 +176,13 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _C_PIN;
   uint8_t _D_PIN;
   uint8_t _E_PIN;
+
+  // SPI pins
+  uint8_t _SPI_CLK = SPI_BUS_CLK;
+  uint8_t _SPI_MOSI = SPI_BUS_MOSI;
+  uint8_t _SPI_MISO = SPI_BUS_MISO;
+  uint8_t _SPI_SS = SPI_BUS_SS;
+
   uint8_t _width;
   uint8_t _height;
   uint8_t _panels_width;
@@ -328,9 +336,9 @@ inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
     // b12  - 9/8/7/6/5  =  4 bit brightness
     // b13  - 9   =1 screen on
     // b13  - 6   =1 screen off
-    pinMode(SPI_BUS_CLK,OUTPUT);
-    pinMode(SPI_BUS_MOSI,OUTPUT);
-    digitalWrite(SPI_BUS_CLK,HIGH); // CCK LOW
+    pinMode(_SPI_CLK,OUTPUT);
+    pinMode(_SPI_MOSI,OUTPUT);
+    digitalWrite(_SPI_CLK,HIGH); // CCK LOW
     digitalWrite(_OE_PIN,LOW);
     digitalWrite(_LATCH_PIN,HIGH);
     digitalWrite(_A_PIN,HIGH);
@@ -343,14 +351,14 @@ inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
     {
       reg_bit=bit_counter%16;
       if ((reg_value>>reg_bit)&1)
-        digitalWrite(SPI_BUS_MOSI,HIGH);
+        digitalWrite(_SPI_MOSI,HIGH);
       else
-        digitalWrite(SPI_BUS_MOSI,LOW);
+        digitalWrite(_SPI_MOSI,LOW);
 
       delay(1);
-      digitalWrite(SPI_BUS_CLK,LOW); // CLK HIGH
+      digitalWrite(_SPI_CLK,LOW); // CLK HIGH
       delay(1);
-      digitalWrite(SPI_BUS_CLK,HIGH); // CLK LOW
+      digitalWrite(_SPI_CLK,HIGH); // CLK LOW
       delay(1);
       if ((bit_counter ==  (_send_buffer_size*8 - reg_position-1)))
       {
@@ -638,13 +646,23 @@ inline void PxMATRIX::begin()
 
 }
 
+void PxMATRIX::begin(uint8_t row_pattern, uint8_t CLK, uint8_t MOSI, uint8_t MISO, uint8_t SS)
+{
+  _SPI_CLK = CLK;
+  _SPI_MOSI = MOSI;
+  _SPI_MISO = MISO;
+  _SPI_SS = SS;
+  begin(row_pattern);
+
+}
+
 void PxMATRIX::spi_init(){
 
   #ifdef ESP8266
     SPI.begin();
   #endif
   #ifdef ESP32
-    SPI.begin(SPI_BUS_CLK, SPI_BUS_MISO, SPI_BUS_MOSI, SPI_BUS_SS);
+    SPI.begin(_SPI_CLK, _SPI_MISO, _SPI_MOSI, _SPI_SS);
   #endif
 
     SPI.setDataMode(SPI_MODE0);
@@ -792,12 +810,12 @@ void PxMATRIX::latch(uint16_t show_time )
   {
     //digitalWrite(_OE_PIN,0); // <<< remove this
     digitalWrite(_LATCH_PIN,LOW);
-    digitalWrite(SPI_BUS_CLK,LOW);
+    digitalWrite(_SPI_CLK,LOW);
     for (uint8_t latch_count=0; latch_count<3; latch_count++)
     {
-      digitalWrite(SPI_BUS_CLK,HIGH);
+      digitalWrite(_SPI_CLK,HIGH);
       delayMicroseconds(1);
-      digitalWrite(SPI_BUS_CLK,LOW);
+      digitalWrite(_SPI_CLK,LOW);
       delayMicroseconds(1);
     }
     digitalWrite(_LATCH_PIN,HIGH);
@@ -869,35 +887,35 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
       //   uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + xx];
       //   for (uint8_t bb = 0; bb < 8; bb++) {
       //     if (((v >> (7 - bb)) & 1) == 1)
-      //       GPIO_REG_SET( 1 << SPI_BUS_MOSI);
+      //       GPIO_REG_SET( 1 << _SPI_MOSI);
       //     else
-      //       GPIO_REG_CLEAR( 1 << SPI_BUS_MOSI);
-      //     GPIO_REG_SET( 1 << SPI_BUS_CLK);
-      //     GPIO_REG_CLEAR( 1 << SPI_BUS_CLK);
+      //       GPIO_REG_CLEAR( 1 << _SPI_MOSI);
+      //     GPIO_REG_SET( 1 << _SPI_CLK);
+      //     GPIO_REG_CLEAR( 1 << _SPI_CLK);
       //   }
       // }
 
-      pinMode(SPI_BUS_CLK, SPECIAL);
-      pinMode(SPI_BUS_MOSI, SPECIAL);
+      pinMode(_SPI_CLK, SPECIAL);
+      pinMode(_SPI_MOSI, SPECIAL);
 
 
       SPI.writeBytes(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size-1);
 
-      pinMode(SPI_BUS_CLK, OUTPUT);
-      pinMode(SPI_BUS_MOSI, OUTPUT);
-      pinMode(SPI_BUS_MISO, OUTPUT);
-      pinMode(SPI_BUS_SS, OUTPUT);
+      pinMode(_SPI_CLK, OUTPUT);
+      pinMode(_SPI_MOSI, OUTPUT);
+      pinMode(_SPI_MISO, OUTPUT);
+      pinMode(_SPI_SS, OUTPUT);
 
       set_mux(i);
 
       uint8_t v = (*bufferp)[_display_color][i*_send_buffer_size + _send_buffer_size - 1];
       for (uint8_t this_byte = 0; this_byte < 8; this_byte++) {
         if (((v >> (7 - this_byte)) & 1))
-          GPIO_REG_SET( 1 << SPI_BUS_MOSI);
+          GPIO_REG_SET( 1 << _SPI_MOSI);
         else
-          GPIO_REG_CLEAR( 1 << SPI_BUS_MOSI);
-        GPIO_REG_SET( 1 << SPI_BUS_CLK);
-        GPIO_REG_CLEAR( 1 << SPI_BUS_CLK);
+          GPIO_REG_CLEAR( 1 << _SPI_MOSI);
+        GPIO_REG_SET( 1 << _SPI_CLK);
+        GPIO_REG_CLEAR( 1 << _SPI_CLK);
 
 
         if (this_byte == 4)
