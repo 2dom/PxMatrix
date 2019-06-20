@@ -313,7 +313,7 @@ inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
   if (_driver_chip == FM6124 || _driver_chip == FM6126A){
 
     if (_driver_chip == FM6124) {
-       Serial.println("\FM6124 - REG: " + String(reg_position));
+       Serial.println("\nFM6124 - REG: " + String(reg_position));
     } else {
        Serial.println("\nFM6126A - REG: " + String(reg_position));
     }
@@ -671,7 +671,7 @@ void PxMATRIX::spi_init(){
 
     SPI.setDataMode(SPI_MODE0);
     SPI.setBitOrder(MSBFIRST);
-    SPI.setFrequency(10000000);
+    SPI.setFrequency(20000000);
 
 }
 
