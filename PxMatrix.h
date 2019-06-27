@@ -63,6 +63,17 @@ BSD license, check license.txt for more information
 #ifdef ESP32
   #define GPIO_REG_SET(val) GPIO.out_w1ts = val
   #define GPIO_REG_CLEAR(val) GPIO.out_w1tc = val
+
+  #include "soc/spi_struct.h"
+  #include "esp32-hal-gpio.h"
+
+  struct spi_struct_t {
+      spi_dev_t * dev;
+  #if !CONFIG_DISABLE_HAL_LOCKS
+      xSemaphoreHandle lock;
+  #endif
+      uint8_t num;
+  };
 #endif
 
 // HW SPI PINS
@@ -251,6 +262,7 @@ inline void spi_init();
 
 // Write configuration register in some driver chips
 inline void writeRegister(uint16_t reg_value, uint8_t reg_position);
+inline void fm612xWriteRegister(uint16_t reg_value, uint8_t reg_position);
 };
 
 // Pass 8-bit (each) R,G,B, get back 16-bit packed color
@@ -371,6 +383,35 @@ inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
 
 }
 
+inline void PxMATRIX::fm612xWriteRegister(uint16_t reg_value, uint8_t reg_position)
+{
+    spi_t * spi = SPI.bus();
+    // reg_value = 0x1234;  debug
+
+    for(int i=0; i<47; i++)
+      SPI.write16(reg_value);
+
+    spiSimpleTransaction(spi);
+
+    spi->dev->mosi_dlen.usr_mosi_dbitlen = 16-reg_position-1;
+    spi->dev->miso_dlen.usr_miso_dbitlen = 0;
+    spi->dev->data_buf[0] = reg_value>>8;
+    spi->dev->cmd.usr = 1;
+    while(spi->dev->cmd.usr);
+
+    GPIO_REG_SET(1 << _LATCH_PIN);
+
+    spi->dev->mosi_dlen.usr_mosi_dbitlen = (reg_position-8)-1;
+    spi->dev->data_buf[0] = reg_value>>(reg_position-8);
+    spi->dev->cmd.usr = 1;
+    while(spi->dev->cmd.usr);
+    spiEndTransaction(spi);
+
+    SPI.write(reg_value&0xff);
+
+    GPIO_REG_CLEAR(1 << _LATCH_PIN);
+
+}
 
 inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
 {
@@ -378,20 +419,30 @@ inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
 
   if (driver_chip == FM6124 || driver_chip == FM6126A){
 
-    uint16_t b12a=0b0111111111111111;
-    uint16_t b12b=0b0111100000111111;
-    uint16_t b12c=0b0111111111111111;
-    uint16_t b12d=0b0111100000111111;
+    uint16_t b12a=0b0111111111111111; //亮度: high
+             b12a=0b0111100011111111; //亮度: low
+ // uint16_t b12b=0b0111100000111111;
+    // uint16_t b12c=0b0111111111111111;
+    // uint16_t b12d=0b0111100000111111;
 
     uint16_t b13a=0b0000000001000000;
-    uint16_t b13b=0b0000000001000000;
-    uint16_t b13c=0b0000000001000000;
-    uint16_t b13d=0b0000000001000000;
+    // uint16_t b13b=0b0000000001000000;
+    // uint16_t b13c=0b0000000001000000;
+    // uint16_t b13d=0b0000000001000000;
 
+#ifdef ESP32
+    pinMode(_OE_PIN, OUTPUT);
+    pinMode(_LATCH_PIN, OUTPUT);
+    digitalWrite(_OE_PIN, HIGH);    
+    pinMode(_LATCH_PIN, LOW);
 
+    fm612xWriteRegister(b12a,11);
+    fm612xWriteRegister(b13a,12);
+
+#else
     writeRegister(b12a, 12);
     writeRegister(b13a, 13);
-
+#endif
 
 
   }
@@ -882,30 +933,43 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
     }
     if (_driver_chip == FM6124 || _driver_chip == FM6126A) // _driver_chip == FM6124
     {
+    #ifdef ESP32
 
-      // for (uint32_t xx = 0; xx < _send_buffer_size - 1; xx++) {
-      //   uint8_t v = PxMATRIX_buffer[_display_color][i*_send_buffer_size + xx];
-      //   for (uint8_t bb = 0; bb < 8; bb++) {
-      //     if (((v >> (7 - bb)) & 1) == 1)
-      //       GPIO_REG_SET( 1 << _SPI_MOSI);
-      //     else
-      //       GPIO_REG_CLEAR( 1 << _SPI_MOSI);
-      //     GPIO_REG_SET( 1 << _SPI_CLK);
-      //     GPIO_REG_CLEAR( 1 << _SPI_CLK);
-      //   }
-      // }
+      GPIO_REG_CLEAR( 1 << _OE_PIN);
+      uint8_t* bf = &(*bufferp)[_display_color][i*_send_buffer_size];
 
+      spi_t * spi = SPI.bus();
+      spiSimpleTransaction(spi);
+
+      spiWriteNL(spi, bf, _send_buffer_size-1);
+      uint8_t v = bf[_send_buffer_size - 1];
+
+      GPIO_REG_SET( 1 << _OE_PIN);
+
+      spi->dev->mosi_dlen.usr_mosi_dbitlen = 4;
+      spi->dev->miso_dlen.usr_miso_dbitlen = 0;
+      spi->dev->data_buf[0] = v;
+      spi->dev->cmd.usr = 1;
+      while(spi->dev->cmd.usr);
+
+      GPIO_REG_SET( 1 << _LATCH_PIN);
+
+      spi->dev->mosi_dlen.usr_mosi_dbitlen = 2;
+      spi->dev->data_buf[0] = v<<5;
+      spi->dev->cmd.usr = 1;
+      while(spi->dev->cmd.usr);
+      GPIO_REG_CLEAR( 1 << _LATCH_PIN);
+
+      spiEndTransaction(spi);
+      set_mux(i);
+    #else
       pinMode(_SPI_CLK, SPECIAL);
       pinMode(_SPI_MOSI, SPECIAL);
-
-
       SPI.writeBytes(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size-1);
-
       pinMode(_SPI_CLK, OUTPUT);
       pinMode(_SPI_MOSI, OUTPUT);
       pinMode(_SPI_MISO, OUTPUT);
       pinMode(_SPI_SS, OUTPUT);
-
       set_mux(i);
 
       uint8_t v = (*bufferp)[_display_color][i*_send_buffer_size + _send_buffer_size - 1];
@@ -916,7 +980,6 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
           GPIO_REG_CLEAR( 1 << _SPI_MOSI);
         GPIO_REG_SET( 1 << _SPI_CLK);
         GPIO_REG_CLEAR( 1 << _SPI_CLK);
-
 
         if (this_byte == 4)
           //GPIO_REG_SET( 1 << _LATCH_PIN);
@@ -929,14 +992,12 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
       digitalWrite(_OE_PIN, 0); //<<<< insert this
       unsigned long start_time = micros();
 
-
-
       while ((micros()-start_time)<show_time)
         delayMicroseconds(1);
       //GPIO_REG_CLEAR( 1 << _OE_PIN);
       digitalWrite(_OE_PIN, 1);
       //latch(show_time*(uint16_t)_brightness/255);
-
+    #endif
     }
   }
   _display_color++;
