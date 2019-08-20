@@ -107,10 +107,11 @@ You should end up with something like this (VCC/supply not connected here yet):
 
 ![Cabling](/images/P10_cables.jpg)
 
-If you want it more professional, some users have created custom PCBs to gets rid of all those lose cables.
+If you want it more professional, some users have created custom PCBs to get rid of all those lose cables.
 
   * [Mike](https://github.com/mike-rankin/ESP8266_RGB_Matrix_Cable_Version)
   * [Pepe](http://www.instructables.com/id/tabuled)
+  * [Brian](https://www.tindie.com/products/brianlough/esp32-matrix-shield-mini-32/)
 
 ## Colors
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.
@@ -152,6 +153,8 @@ display.setPanelsWidth(3);
   * Kinsey Moore for improving the code
   * Jean Carlos for testing the chaining
   * Dave Davenport for FM62126A support
+  * Rasmusfk and Maciej Matczak for double buffering support
+  * Brian Lough for creating a continuous stream of cool projects with PxMatrix
 
 If you would like to buy me a beer: [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TXLWSPUD9X2KL)
 
@@ -168,8 +171,10 @@ Animated picture frame from [here](https://2dom.github.io/PixelTimes/) (ESP8266 
 
 ![Example](/images/front_anim2.gif)
 
-
-
 Decoding 10 FPS MJPEG on 64x64 RGB LED matrix (ESP32)
 
-<nobr>![Example](/images/starwars.gif)![Example](/images/starwars_back.jpeg)</nobr>
+<nobr>![Example](/images/starwars.gif)
+
+Particle physics on 64x64 RGB LED matrix by witnessmenow (ESP32)
+
+![Example](https://twitter.com/i/status/1163039308254760960)</nobr>
