@@ -175,6 +175,6 @@ Decoding 10 FPS MJPEG on 64x64 RGB LED matrix (ESP32)
 
 <nobr>![Example](/images/starwars.gif)
 
-Particle physics on 64x64 RGB LED matrix by witnessmenow (ESP32)
+[Particle physics by witnessmenow](https://twitter.com/witnessmenow/status/1163039308254760960) on 64x64 RGB LED matrix (ESP32)
 
-![Example](https://twitter.com/i/status/1163039308254760960)</nobr>
+![Particle](/images/particel.gif)
