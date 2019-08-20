@@ -135,6 +135,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Rotate display
   inline void setRotate(bool rotate);
 
+  // Flip display
+  inline void setFlip(bool flip);
+
   // Helps to reduce display update latency on larger displays
   inline void setFastUpdate(bool fast_update);
 
@@ -219,6 +222,7 @@ class PxMATRIX : public Adafruit_GFX {
 
   // Hols configuration
   bool _rotate;
+  bool _flip;
   bool _fast_update;
 
   // Holds multiplex pattern
@@ -297,6 +301,7 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _test_pixel_counter=0;
   _test_line_counter=0;
   _rotate=0;
+  _flip=0;
   _fast_update=0;
 
   _row_pattern=0;
@@ -424,6 +429,10 @@ inline void PxMATRIX::setRotate(bool rotate) {
   _rotate=rotate;
 }
 
+inline void PxMATRIX::setFlip(bool flip) {
+  _flip=flip;
+}
+
 inline void PxMATRIX::setFastUpdate(bool fast_update) {
   _fast_update=fast_update;
 }
@@ -496,6 +505,9 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     x=y;
     y=_height-1-temp_x;
   }
+
+  if (_flip)
+    x=_width-x;
 
   if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
   return;
@@ -1036,7 +1048,7 @@ void PxMATRIX::clearDisplay(void) {
 #ifdef double_buffer
   clearDisplay(!_active_buffer);
 #else
-  clearDisplay(false);  
+  clearDisplay(false);
 #endif
 }
 //    void * memset ( void * ptr, int value, size_t num );
