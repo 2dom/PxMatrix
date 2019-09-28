@@ -798,9 +798,12 @@ void PxMATRIX::set_mux(uint8_t value)
     if (_row_pattern>=8)
     {
       if (value & 0x04)
-      digitalWrite(_C_PIN,HIGH);
+      {
+        delayMicroseconds(1);
+        digitalWrite(_C_PIN,HIGH);
+      }
       else
-      digitalWrite(_C_PIN,LOW);
+        digitalWrite(_C_PIN,LOW);
     }
 
     if (_row_pattern>=16)
