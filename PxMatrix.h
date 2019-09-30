@@ -799,7 +799,7 @@ void PxMATRIX::set_mux(uint8_t value)
     {
       if (value & 0x04)
       {
-        delayMicroseconds(1);
+        delayMicroseconds(2);
         digitalWrite(_C_PIN,HIGH);
       }
       else
