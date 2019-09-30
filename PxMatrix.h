@@ -266,7 +266,9 @@ inline void spi_init();
 
 // Write configuration register in some driver chips
 inline void writeRegister(uint16_t reg_value, uint8_t reg_position);
-inline void fm612xWriteRegister(uint16_t reg_value, uint8_t reg_position);
+#ifdef ESP32
+  inline void fm612xWriteRegister(uint16_t reg_value, uint8_t reg_position);
+#endif
 };
 
 // Pass 8-bit (each) R,G,B, get back 16-bit packed color
@@ -388,6 +390,7 @@ inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
 
 }
 
+#ifdef ESP32
 inline void PxMATRIX::fm612xWriteRegister(uint16_t reg_value, uint8_t reg_position)
 {
     spi_t * spi = SPI.bus();
@@ -417,6 +420,7 @@ inline void PxMATRIX::fm612xWriteRegister(uint16_t reg_value, uint8_t reg_positi
     GPIO_REG_CLEAR(1 << _LATCH_PIN);
 
 }
+#endif
 
 inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
 {
