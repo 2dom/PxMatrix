@@ -88,7 +88,7 @@ enum mux_patterns {BINARY, STRAIGHT};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
-enum scan_patterns {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG};
+enum scan_patterns {LINE, ZIGZAG,ZAGZIG, ZAGGIZ, WZAGZIG, VZAG};
 
 // Specify s speciffic driver chip. Most panels implement a standard shifted
 // register (SHIFT). Other chips/panels may need special treatment in oder to work
@@ -652,7 +652,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     for (uint8_t yy = 0; yy<_height; yy+=2*_row_pattern)
     {
       if ((yy<=y) && (y<yy+_row_pattern))
-        total_offset_r=base_offset-row_sector__offset*row_sector-(_scan_pattern==ZAGGIZ ? 1: 0);
+        total_offset_r=base_offset-row_sector__offset*row_sector-(_scan_pattern==(ZAGGIZ||ZAGZIG) ? 1: 0);
       if ((yy+_row_pattern<=y) && (y<yy+2*_row_pattern))
         total_offset_r=base_offset-row_sector__offset*row_sector-(_scan_pattern==ZIGZAG ? 1: 0);
       row_sector++;
