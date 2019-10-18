@@ -53,10 +53,10 @@ void IRAM_ATTR display_updater(){
 #endif
 
 struct Text {
-	const char *text;
+	char *text;
 	uint16_t width, height;
 	int16_t x, y;
-	int16_t dx, dy;	
+	int16_t dx, dy;
 } text = {"Hello", 0, 0, 0, 0, 1, 1};
 
 
@@ -93,13 +93,13 @@ int16_t x=0, dx=1;
 
 void loop() {
 //  display.clearDisplay();
-  display.fillScreen(backgroundColor);
-  
+  display.fillScreen(myBLACK);
+
   if(x+dx>=display.width() || x+dx<0)
   	dx=-dx;
   x+=dx;
   display.drawLine(x,0, display.width()-x-1, display.height()-1, lineColor);
-  
+
   if(text.x+text.dx+text.width>=display.width() || text.x+text.dx<0)
   	text.dx=-text.dx;
   if(text.y+text.dy+text.height>=display.height() || text.y+text.dy<0)
@@ -109,7 +109,7 @@ void loop() {
   display.setTextColor(textColor);
   display.setCursor(text.x, text.y);
   display.print(text.text);
-  
+
   display.showBuffer();
   delay(20);
 }

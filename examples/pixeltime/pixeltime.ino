@@ -122,6 +122,10 @@ void setup() {
   // Define multiplex implemention here {BINARY, STRAIGHT} (default is BINARY)
   //display.setMuxPattern(BINARY);
 
+  // If you are missing lines you could try adding some delay to the multiplexing
+  display.setMuxDelay(0,1,0,0,0);
+
+
   display.setFastUpdate(true);
   display.clearDisplay();
   display.setTextColor(myCYAN);

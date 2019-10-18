@@ -161,6 +161,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Set the multiplex pattern
   inline void setMuxPattern(mux_patterns mux_pattern);
 
+  // Set the time in microseconds that we pause after selecting each mux channel
+  inline void setMuxDelay(uint8_t mux_delay_A, uint8_t mux_delay_B, uint8_t mux_delay_C, uint8_t mux_delay_D, uint8_t mux_delay_E);
+
   // Set the multiplex pattern
   inline void setScanPattern(scan_patterns scan_pattern);
 
@@ -238,6 +241,13 @@ class PxMATRIX : public Adafruit_GFX {
 
   // Holds multiplex pattern
   mux_patterns _mux_pattern;
+
+  uint8_t _mux_delay_A;
+  uint8_t _mux_delay_B;
+  uint8_t _mux_delay_C;
+  uint8_t _mux_delay_D;
+  uint8_t _mux_delay_E;
+
 
   // Holds the scan pattern
   scan_patterns _scan_pattern;
@@ -320,14 +330,52 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _scan_pattern=LINE;
   _driver_chip=SHIFT;
 
+  _mux_delay_A=0;
+  _mux_delay_B=0;
+  _mux_delay_C=0;
+  _mux_delay_D=0;
+  _mux_delay_E=0;
+
+
+
+
   clearDisplay(0);
 #ifdef double_buffer
   clearDisplay(1);
 #endif
 }
 
+#ifdef ESP32
+inline void PxMATRIX::fm612xWriteRegister(uint16_t reg_value, uint8_t reg_position)
+{
+    spi_t * spi = SPI.bus();
+    // reg_value = 0x1234;  debug
 
+    for(int i=0; i<47; i++)
+      SPI.write16(reg_value);
 
+    spiSimpleTransaction(spi);
+
+    spi->dev->mosi_dlen.usr_mosi_dbitlen = 16-reg_position-1;
+    spi->dev->miso_dlen.usr_miso_dbitlen = 0;
+    spi->dev->data_buf[0] = reg_value>>8;
+    spi->dev->cmd.usr = 1;
+    while(spi->dev->cmd.usr);
+
+    GPIO_REG_SET(1 << _LATCH_PIN);
+
+    spi->dev->mosi_dlen.usr_mosi_dbitlen = (reg_position-8)-1;
+    spi->dev->data_buf[0] = reg_value>>(reg_position-8);
+    spi->dev->cmd.usr = 1;
+    while(spi->dev->cmd.usr);
+    spiEndTransaction(spi);
+
+    SPI.write(reg_value&0xff);
+
+    GPIO_REG_CLEAR(1 << _LATCH_PIN);
+
+}
+#else
 inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
 {
   if (_driver_chip == FM6124 || _driver_chip == FM6126A){
@@ -387,36 +435,7 @@ inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
   digitalWrite(_OE_PIN,HIGH);
 
 }
-
-inline void PxMATRIX::fm612xWriteRegister(uint16_t reg_value, uint8_t reg_position)
-{
-    spi_t * spi = SPI.bus();
-    // reg_value = 0x1234;  debug
-
-    for(int i=0; i<47; i++)
-      SPI.write16(reg_value);
-
-    spiSimpleTransaction(spi);
-
-    spi->dev->mosi_dlen.usr_mosi_dbitlen = 16-reg_position-1;
-    spi->dev->miso_dlen.usr_miso_dbitlen = 0;
-    spi->dev->data_buf[0] = reg_value>>8;
-    spi->dev->cmd.usr = 1;
-    while(spi->dev->cmd.usr);
-
-    GPIO_REG_SET(1 << _LATCH_PIN);
-
-    spi->dev->mosi_dlen.usr_mosi_dbitlen = (reg_position-8)-1;
-    spi->dev->data_buf[0] = reg_value>>(reg_position-8);
-    spi->dev->cmd.usr = 1;
-    while(spi->dev->cmd.usr);
-    spiEndTransaction(spi);
-
-    SPI.write(reg_value&0xff);
-
-    GPIO_REG_CLEAR(1 << _LATCH_PIN);
-
-}
+#endif
 
 inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
 {
@@ -438,7 +457,7 @@ inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
 #ifdef ESP32
     pinMode(_OE_PIN, OUTPUT);
     pinMode(_LATCH_PIN, OUTPUT);
-    digitalWrite(_OE_PIN, HIGH);    
+    digitalWrite(_OE_PIN, HIGH);
     pinMode(_LATCH_PIN, LOW);
 
     fm612xWriteRegister(b12a,11);
@@ -464,6 +483,16 @@ inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
     pinMode(_C_PIN, OUTPUT);
     pinMode(_D_PIN, OUTPUT);
   }
+}
+
+
+inline void PxMATRIX::setMuxDelay(uint8_t mux_delay_A, uint8_t mux_delay_B, uint8_t mux_delay_C, uint8_t mux_delay_D, uint8_t mux_delay_E)
+{
+  _mux_delay_A=mux_delay_A;
+  _mux_delay_B=mux_delay_B;
+  _mux_delay_C=mux_delay_C;
+  _mux_delay_D=mux_delay_D;
+  _mux_delay_E=mux_delay_E;
 }
 
 inline void PxMATRIX::setScanPattern(scan_patterns scan_pattern)
@@ -789,19 +818,24 @@ void PxMATRIX::set_mux(uint8_t value)
       digitalWrite(_A_PIN,HIGH);
     else
       digitalWrite(_A_PIN,LOW);
+    if (_mux_delay_A) delayMicroseconds(_mux_delay_A);
 
     if (value & 0x02)
       digitalWrite(_B_PIN,HIGH);
     else
       digitalWrite(_B_PIN,LOW);
+    if (_mux_delay_B) delayMicroseconds(_mux_delay_B);
 
     if (_row_pattern>=8)
     {
+
       if (value & 0x04)
       digitalWrite(_C_PIN,HIGH);
       else
       digitalWrite(_C_PIN,LOW);
+      if (_mux_delay_C) delayMicroseconds(_mux_delay_C);
     }
+
 
     if (_row_pattern>=16)
     {
@@ -809,6 +843,7 @@ void PxMATRIX::set_mux(uint8_t value)
           digitalWrite(_D_PIN,HIGH);
       else
           digitalWrite(_D_PIN,LOW);
+      if (_mux_delay_D) delayMicroseconds(_mux_delay_D);
     }
 
     if (_row_pattern>=32)
@@ -817,6 +852,7 @@ void PxMATRIX::set_mux(uint8_t value)
           digitalWrite(_E_PIN,HIGH);
       else
           digitalWrite(_E_PIN,LOW);
+      if (_mux_delay_E) delayMicroseconds(_mux_delay_E);
     }
   }
 
