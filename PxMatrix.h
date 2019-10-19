@@ -158,19 +158,20 @@ class PxMATRIX : public Adafruit_GFX {
   // Control the minimum color values that result in an active pixel
   inline void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
 
-  // Set the multiplex pattern
+  // Set the multiplex implemention {BINARY, STRAIGHT} (default is BINARY)
   inline void setMuxPattern(mux_patterns mux_pattern);
 
   // Set the time in microseconds that we pause after selecting each mux channel
+  // (May help if some rows are missing / the mux chip is too slow)
   inline void setMuxDelay(uint8_t mux_delay_A, uint8_t mux_delay_B, uint8_t mux_delay_C, uint8_t mux_delay_D, uint8_t mux_delay_E);
 
-  // Set the multiplex pattern
+  // Set the multiplex pattern {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG} (default is LINE)
   inline void setScanPattern(scan_patterns scan_pattern);
 
-  // Set the number of panels that make up the display area width
+  // Set the number of panels that make up the display area width (default is 1)
   inline void setPanelsWidth(uint8_t panels);
 
-  // Set the brightness of the panels
+  // Set the brightness of the panels (default is 255)
   inline void setBrightness(uint8_t brightness);
 
   // Set driver chip type
@@ -586,12 +587,13 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     y=_height-1-temp_x;
   }
 
-  if (_flip)
-    x=_width-x;
+
+
 
   if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
   return;
-  x =_width - 1 -x;
+  if (!_flip)
+    x =_width - 1 -x;
 
   uint32_t base_offset;
   uint32_t total_offset_r=0;

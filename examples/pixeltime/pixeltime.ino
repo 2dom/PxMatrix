@@ -125,6 +125,37 @@ void setup() {
   // If you are missing lines you could try adding some delay to the multiplexing
   //display.setMuxDelay(0,1,0,0,0);
 
+  // Rotate display
+  //display.setRotate(true);
+
+  // Flip display
+  //display.setFlip(true);
+
+  // Helps to reduce display update latency on larger displays
+  //display.setFastUpdate(true);
+
+  // Control the minimum color values that result in an active pixel
+  //display.setColorOffset(5, 5,5);
+
+  // Set the multiplex implemention {BINARY, STRAIGHT} (default is BINARY)
+  //display.setMuxPattern(BINARY);
+
+  // Set the time in microseconds that we pause after selecting each mux channel
+  // (May help if some rows are missing / the mux chip is too slow)
+  //display.setMuxDelay(0,1,0,0,0);
+
+  // Set the multiplex pattern {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG} (default is LINE)
+  //display.setScanPattern(LINE);
+
+  // Set the number of panels that make up the display area width (default is 1)
+  //display.setPanelsWidth(2);
+
+  // Set the brightness of the panels (default is 255)
+  //display.setBrightness(50);
+
+  // Set driver chip type
+  //display.setDriverChip(FM6124);
+
 
   display.setFastUpdate(true);
   display.clearDisplay();
