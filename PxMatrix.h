@@ -88,7 +88,7 @@ enum mux_patterns {BINARY, STRAIGHT};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
-enum scan_patterns {LINE, ZIGZAG,ZAGZIG, ZAGGIZ, WZAGZIG, VZAG};
+enum scan_patterns {LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG};
 
 // Specify s speciffic driver chip. Most panels implement a standard shifted
 // register (SHIFT). Other chips/panels may need special treatment in oder to work
@@ -641,7 +641,9 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     y = new_block_y * rows_per_block + block_y_mod + base_y_offset * rows_per_buffer;
   }
 
-  // This code sections supports panels that have a row-changin scanning pattern
+  // This code sections computes the the bytes in the buffer that will be manipulated.
+  // Some panels have a byte wise row-changing scanning pattern that will also be taken care of here.
+  // (Maybe move all byte minupulation down to the bit manipulation section?)
   // It does support chaining however only of height/pattern=2
   if (_scan_pattern!=LINE && _scan_pattern!=WZAGZIG && _scan_pattern!=VZAG)
   {
@@ -651,10 +653,17 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     uint16_t row_sector__offset=_width/4;
     for (uint8_t yy = 0; yy<_height; yy+=2*_row_pattern)
     {
+      total_offset_r=base_offset-row_sector__offset*row_sector;
       if ((yy<=y) && (y<yy+_row_pattern))
-        total_offset_r=base_offset-row_sector__offset*row_sector-((_scan_pattern==ZAGGIZ)||(_scan_pattern==ZAGZIG)) ? 1: 0);
+      {
+        if (_scan_pattern==ZAGGIZ) total_offset_r--;
+      }
+
       if ((yy+_row_pattern<=y) && (y<yy+2*_row_pattern))
-        total_offset_r=base_offset-row_sector__offset*row_sector-(_scan_pattern==ZIGZAG ? 1: 0);
+      {
+        if (_scan_pattern==ZIGZAG) total_offset_r--;
+      }
+
       row_sector++;
     }
   }
@@ -673,12 +682,35 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
   }
 
-  total_offset_g=total_offset_r-_pattern_color_bytes;
-  total_offset_b=total_offset_g-_pattern_color_bytes;
 
   uint8_t bit_select = x%8;
-  if ((_scan_pattern==ZAGGIZ) && ((y%(_row_pattern*2))<_row_pattern))
-      bit_select = 7-bit_select;
+  // Some panels have patterns that need manipulation on a bit level. We will do this here
+  if ((y%(_row_pattern*2))<_row_pattern)
+  {
+    // Bit oder reversed on 1st part of ZIGZAG pattern row changing pattern
+    if (_scan_pattern==ZAGGIZ)
+        bit_select = 7-bit_select;
+
+    // Byte split pattern (lower part)
+    if (_scan_pattern=ZZAGG)
+        if (bit_select>3) total_offset_r--;
+  }
+  else
+  {
+    // Byte split pattern (upper part)
+    if (_scan_pattern=ZZAGG)
+    {
+      if (bit_select<=3) bit_select += 4;
+      else
+      {
+        bit_select -=4;
+        total_offset_r--;
+      }
+    }
+  }
+
+  total_offset_g=total_offset_r-_pattern_color_bytes;
+  total_offset_b=total_offset_g-_pattern_color_bytes;
 
   uint8_t (*PxMATRIX_bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 
