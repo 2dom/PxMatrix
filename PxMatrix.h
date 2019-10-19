@@ -652,7 +652,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     for (uint8_t yy = 0; yy<_height; yy+=2*_row_pattern)
     {
       if ((yy<=y) && (y<yy+_row_pattern))
-        total_offset_r=base_offset-row_sector__offset*row_sector-(_scan_pattern==(ZAGGIZ||ZAGZIG) ? 1: 0);
+        total_offset_r=base_offset-row_sector__offset*row_sector-((_scan_pattern==ZAGGIZ)||(_scan_pattern==ZAGZIG)) ? 1: 0);
       if ((yy+_row_pattern<=y) && (y<yy+2*_row_pattern))
         total_offset_r=base_offset-row_sector__offset*row_sector-(_scan_pattern==ZIGZAG ? 1: 0);
       row_sector++;
