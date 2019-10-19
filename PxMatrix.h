@@ -669,7 +669,6 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
   }
 
-
   uint8_t bit_select = x%8;
   // Some panels have a byte wise row-changing scanning pattern and/or a bit changing pattern that will be taken care of here.
   if ((y%(_row_pattern*2))<_row_pattern)
@@ -685,7 +684,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       total_offset_r--;
 
     // Byte split pattern (lower part)
-    if (_scan_pattern=ZZAGG)
+    if (_scan_pattern==ZZAGG)
         if (bit_select>3) total_offset_r--;
   }
   else
@@ -693,7 +692,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     if (_scan_pattern==ZIGZAG) total_offset_r--;
 
     // Byte split pattern (upper part)
-    if (_scan_pattern=ZZAGG)
+    if (_scan_pattern==ZZAGG)
     {
       if (bit_select<=3) bit_select += 4;
       else
