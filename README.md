@@ -156,7 +156,8 @@ display.setPanelsWidth(3);
   * Jean Carlos for testing the chaining
   * Dave Davenport for FM62126A support
   * Rasmusfk and Maciej Matczak for double buffering support
-  * Brian Lough for creating a continuous stream of cool projects with PxMatrix
+  * Brian Lough for hardware donations and a continuous stream of cool projects with PxMatrix
+  * Peppe Monnezza for hardware donations
 
 If you would like to buy me a beer: [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TXLWSPUD9X2KL)
 
