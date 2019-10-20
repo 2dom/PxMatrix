@@ -1,6 +1,6 @@
-# PxMatrix - LED matrix panel driver for ESP32 and ESP8266 
+# PxMatrix - LED matrix panel driver for ESP32 and ESP8266
 
-![P10](/images/front_anim2.gif)
+<a href=https://2dom.github.io/PixelTimes/><img src=./images/front_anim2.gif></a>
 
 ## Overview
 
