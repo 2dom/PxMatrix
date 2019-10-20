@@ -20,8 +20,6 @@ Multiple panels may be chained together to build larger displays. The driver is 
 
 ![P10](/images/front_anim2.gif)
 
-
-
 ## Display structure
 
 The display basically consists of 6 large shift register. On the input connector you will find the inputs to the shift register (two for each color - Rx,Gx,Bx), a 2 to 5 bit latch address input (A,B,C,D,E), a latch enable input (LAT/STB), a clock input (CLK) and the output enable input (OE).
@@ -111,7 +109,7 @@ If you want it more professional, some users have created custom PCBs to get rid
 
   * [Mike](https://github.com/mike-rankin/ESP8266_RGB_Matrix_Cable_Version)
   * [Peppe](http://www.instructables.com/id/tabuled)
-  * [Brian](https://www.tindie.com/products/brianlough/esp32-matrix-shield-mini-32/)
+  * [Brian Lough (@witnessmenow)](https://www.tindie.com/products/brianlough/esp32-matrix-shield-mini-32/)
 
 ## Colors
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.
