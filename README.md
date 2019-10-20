@@ -33,7 +33,7 @@ For example, the 32x16 displays work like this (other varieties operate accordin
 Such LED matrix are usually used as a sub-module for larger displays and therefore features an output connector for daisy chaining. On the output connector you will find the identical signals to the input connector where A,B,C,LAT,CLK are simply routed through and (R,G,B) pins are the outputs of the shift registers on the module.
 
 ## Configure the library for your panel
-There are three parameters that define how the panel works. The first one is the basic row scanning layout explained above. You can specify this in the `display.begin(x)` call where x={4,8,16,32} is the scanning layout. Secondly, you may have to specify a different scanning pattern to the default LINE scanning. This can be achieved by calling `display.setScanPattern(x)` where x={LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG}. Finally, your panel may not handle BINARY row multiplexing by itself but we need to handle it in the library and select rows STRAIGHT via the A,B,C,D lines. This can be achieved by calling `display.setMuxPattern(x)` where x={BINARY, STRAIGHT}.
+There are three parameters that define how the panel works. The first one is the basic row scanning layout explained above. You can specify this in the `display.begin(x)` call where x={4,8,16,32} is the scanning layout. Secondly, you may have to specify a different scanning pattern to the default LINE scanning. This can be achieved by calling `display.setScanPattern(x)` where x={LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG}. Finally, your panel may not handle BINARY row multiplexing by itself but we need to handle it in the library and select rows STRAIGHT via the A,B,C,D lines. This can be achieved by calling `display.setMuxPattern(x)` where x={BINARY, STRAIGHT}.
  So for some very strange displays you may have execute:
 
 ```
@@ -136,11 +136,14 @@ display.setPanelsWidth(3);
 
 ## Troubleshooting
 
+  * Some panels have a slow multiplexer and only a partial image is displayed![half_mario](/images/half_mario.jpg). To remedy this
+  you can add some delay to the multiplexing using, for example, `display.setMuxDelay(0,1,0,0,0)` which would add a 1us delay before switching the B channel.
+
   * Some panels require grounding of unused (multiplex) inputs. For example, some 1/16 scan panels expose an (sometimes unlabeled) E input that needs grounding where only ABCD is connected to the ESP. If left open the display typically shows shifted images and/or ghosting.
 
   * Check you cabling with a multimeter (diode-test). You can measure the connection between the input/ouput panel connector and the NodeMCU/ESP8266 via the exposed SMD pads/legs.
 
-  * Your display may have a different scanning pattern. Make sure that you have selected the correct scanning pattern in the display.begin call
+  * Your display may have a different scanning pattern. Make sure that you have selected the correct scanning pattern in the `display.begin()` call
   * Run the "pattern_test.ino" and check if the scanning pattern is appearing ok. For a 8 row-step display it should look like this (red then yellow then white line progressing):
   ![8step](/images/8step.gif)
 

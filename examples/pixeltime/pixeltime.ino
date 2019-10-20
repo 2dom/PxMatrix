@@ -116,9 +116,6 @@ void setup() {
   // Define your display layout here, e.g. 1/8 step
   display.begin(8);
 
-  // Define your scan pattern here {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG} (default is LINE)
-  //display.setScanPattern(LINE);
-
   // Define multiplex implemention here {BINARY, STRAIGHT} (default is BINARY)
   //display.setMuxPattern(BINARY);
 
@@ -144,7 +141,7 @@ void setup() {
   // (May help if some rows are missing / the mux chip is too slow)
   //display.setMuxDelay(0,1,0,0,0);
 
-  // Set the multiplex pattern {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG} (default is LINE)
+  // Set the multiplex pattern {LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG} (default is LINE)
   //display.setScanPattern(LINE);
 
   // Set the number of panels that make up the display area width (default is 1)
