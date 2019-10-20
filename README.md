@@ -16,7 +16,7 @@ P5   | 320mmx160mm | 64x32 | 1/16
 P2.5 | 160mmx160mm | 64x64 | 1/32
 P3   | 192mmx192mm | 64x64 | 1/32
 
-Multiple panels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos. This readme gives an overview over the the library - for a more detailed guide you may consider witnessmenow's detailed [tutorial](http://www.instructables.com/id/RGB-LED-Matrix-With-an-ESP8266/).
+Multiple panels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos. This readme gives an overview over the the library - for a more detailed guide you may consider @witnessmenow's detailed [tutorial](http://www.instructables.com/id/RGB-LED-Matrix-With-an-ESP8266/).
 
 ![P10](/images/front_anim2.gif)
 
@@ -30,7 +30,7 @@ There are a few basic row scanning layouts: 1/4, 1/8, 1/16 and 1/32 row scan. Yo
 
 For example, the 32x16 displays work like this (other varieties operate accordingly): Each of the shift register is 64(1/4 row scan) / 32(1/8 row scan) bits long. R1 and R2 will together therefore cover 128(1/4 row scan) / 64(1/8 row scan) bits or 4(1/4 row scan) / 2(1/8 row scan) lines respectively. The rows are, however, not next to each other but have a spacing of 4(1/4 row scan) / 8(1/8 row scan). In case of 1/4 the row scan pattern may also alternate between rows or even reverse bit order.
 
-Such LED matrix are usually used as a sub-module for larger displays and therefore features an output connector for daisy chaining. On the output connector you will find the identical signals to the input connector where A,B,C,LAT,CLK are simply routed through and (R,G,B) pins are the outputs of the shift registers on the module.
+Such LED matrix are usually used as a sub-module for larger displays and therefore feature an output connector for daisy chaining. On the output connector you will find the identical signals to the input connector where A,B,C,LAT,CLK are simply routed through and (R,G,B) pins are the outputs of the shift registers on the module.
 
 ## Configure the library for your panel
 There are three parameters that define how the panel works. The first one is the basic row scanning layout explained above. You can specify this in the `display.begin(x)` call where x={4,8,16,32} is the scanning layout. Secondly, you may have to specify a different scanning pattern to the default LINE scanning. This can be achieved by calling `display.setScanPattern(x)` where x={LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG}. Finally, your panel may not handle BINARY row multiplexing by itself but we need to handle it in the library and select rows STRAIGHT via the A,B,C,D lines. This can be achieved by calling `display.setMuxPattern(x)` where x={BINARY, STRAIGHT}.
@@ -110,7 +110,7 @@ You should end up with something like this (VCC/supply not connected here yet):
 If you want it more professional, some users have created custom PCBs to get rid of all those lose cables.
 
   * [Mike](https://github.com/mike-rankin/ESP8266_RGB_Matrix_Cable_Version)
-  * [Pepe](http://www.instructables.com/id/tabuled)
+  * [Peppe](http://www.instructables.com/id/tabuled)
   * [Brian](https://www.tindie.com/products/brianlough/esp32-matrix-shield-mini-32/)
 
 ## Colors
@@ -156,7 +156,7 @@ display.setPanelsWidth(3);
   * Jean Carlos for testing the chaining
   * Dave Davenport for FM62126A support
   * Rasmusfk and Maciej Matczak for double buffering support
-  * Brian Lough for hardware donations and a continuous stream of cool projects with PxMatrix
+  * Brian Lough (@witnessmenow) for hardware donations and a continuous stream of cool projects with PxMatrix
   * Peppe Monnezza for hardware donations
 
 If you would like to buy me a beer: [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TXLWSPUD9X2KL)
