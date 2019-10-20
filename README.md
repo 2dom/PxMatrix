@@ -1,3 +1,5 @@
+# PxMatrix - Adafruit GFX compatible graphics driver for LED matrix panels
+
 ![P10](/images/front_anim2.gif)
 
 ## Overview
