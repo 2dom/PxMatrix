@@ -136,8 +136,8 @@ display.setPanelsWidth(3);
 
 ## Troubleshooting
 
-  * Some panels have a slow multiplexer and only a partial image is displayed![half_mario](/images/half_mario.jpg). To remedy this
-  you can add some delay to the multiplexing using, for example, `display.setMuxDelay(0,1,0,0,0)` which would add a 1us delay before switching the B channel.
+  * Some panels have a slow multiplexer and only a partial image is displayed. ![half_mario](/images/half_mario.jpg | width=300)
+  To remedy this you can add some delay to the multiplexing using, for example, `display.setMuxDelay(1,1,1,1,1)` which would add a 1us delay to each of the A-E channels.
 
   * Some panels require grounding of unused (multiplex) inputs. For example, some 1/16 scan panels expose an (sometimes unlabeled) E input that needs grounding where only ABCD is connected to the ESP. If left open the display typically shows shifted images and/or ghosting.
 
