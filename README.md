@@ -1,4 +1,4 @@
-# PxMatrix - Adafruit GFX compatible graphics driver for LED matrix panels
+# PxMatrix - LED matrix panel driver for ESP32 and ESP8266 
 
 ![P10](/images/front_anim2.gif)
 
