@@ -1,3 +1,5 @@
+![P10](/images/front_anim2.gif)
+
 ## Overview
 
 This driver controls chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in diffent layouts and resolutions:
@@ -17,8 +19,6 @@ P2.5 | 160mmx160mm | 64x64 | 1/32
 P3   | 192mmx192mm | 64x64 | 1/32
 
 Multiple panels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos. This readme gives an overview over the the library - for a more detailed guide you may consider @witnessmenow's detailed [tutorial](http://www.instructables.com/id/RGB-LED-Matrix-With-an-ESP8266/).
-
-![P10](/images/front_anim2.gif)
 
 ## Display structure
 
