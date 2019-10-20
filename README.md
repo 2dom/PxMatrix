@@ -139,16 +139,15 @@ display.setPanelsWidth(3);
   * Some panels have a slow multiplexer and only a partial image is displayed.
   To remedy this you can add some delay to the multiplexing using, for example, `display.setMuxDelay(1,1,1,1,1)` which would add a 1us delay to each of the A-E channels.<br><img src=./images/half_mario.jpg width="400">
 
-  * Some panels require grounding of unused (multiplex) inputs. For example, some 1/16 scan panels expose an (sometimes unlabeled) E input that needs grounding where only ABCD is connected to the ESP. If left open the display typically shows shifted images and/or ghosting.
+  * If you have any problems with ghosting or randomly lit-up pixels, please double-check the ground connection between ESP and your panel and make sure that your power supply can deliver >2A. Also make sure that your cabling between power suppply and power connector (center of the panel) is sufficient to carry the current.
+
+  * If you still problems with ghosting, shifted images or randomly lit-up pixels make sure that unused (multiplex) inputs are grounded. For example, some 1/16 scan panels expose an (sometimes unlabeled) E input that needs grounding where only ABCD inputs are connected to the ESP.
 
   * Check you cabling with a multimeter (diode-test). You can measure the connection between the input/ouput panel connector and the NodeMCU/ESP8266 via the exposed SMD pads/legs.
 
-  * Your display may have a different scanning pattern. Make sure that you have selected the correct scanning pattern in the `display.begin()` call
-  * Run the "pattern_test.ino" and check if the scanning pattern is appearing ok. For a 8 row-step display it should look like this (red then yellow then white line progressing): <br><img src=./images/8step.gif width="400">
+  * Your display may have a different scanning pattern. Make sure that you have selected the correct scanning pattern in the `display.begin()` call.
 
-  * It is possible that the LED multiplex chip is defective (this was the case with one of my modules). You can verify this by selecting a bit pattern on the A,B,C inputs and measuring that the corresponing row outputs are low , e.g. a 4 row-step display typically uses a ([PR4538](/docs/pr4538.pdf)) chip. Setting (A=1,B=0) should give you (LINE0=1,LINE1=0,LINE2=1,LINE3=1).  This chip can easily be replaced. Spare part available [here](https://www.aliexpress.com/item/Free-shipping-10pcs-lot-PR4538DW-SOP-20-original-authentic/32594044891.html?spm=a2g0s.9042311.0.0.bjr5BY).
-
-  * If you have any problems with ghosting or randomly lit-up pixels, please double-check the ground connection between ESP and your panel and make sure that your power supply can deliver >2A. Also make sure that your cabling between power suppply and power connector (center of the panel) is sufficient to carry the current.
+  * Run the "pattern_test.ino" and check if the scanning pattern is appearing ok. For a 8 row-step display with LINE scanning pattern it should look like this (red then yellow then white line progressing): <br><img src=./images/8step.gif width="400">
 
 ## Thanks to
 
@@ -163,8 +162,6 @@ If you would like to buy me a beer: [![paypal](https://www.paypalobjects.com/en_
 
 
 ## Examples
-
-
 
 Animated weather clock from [here](https://2dom.github.io/PixelTime/)  (ESP8266)
 
