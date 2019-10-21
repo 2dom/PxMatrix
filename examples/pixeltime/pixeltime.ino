@@ -37,7 +37,7 @@ Ticker display_ticker;
 // the brighter the display. If too large the ESP will crash
 uint8_t display_draw_time=10; //10-50 is usually fine
 
-PxMATRIX display(matrix_width,matrix_height,P_LAT, P_OE,P_A,P_B,P_C);
+PxMATRIX display(32,16,P_LAT, P_OE,P_A,P_B,P_C);
 //PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
 //PxMATRIX display(64,64,P_LAT, P_OE,P_A,P_B,P_C,P_D,P_E);
 
@@ -119,8 +119,8 @@ void setup() {
   // Define multiplex implemention here {BINARY, STRAIGHT} (default is BINARY)
   //display.setMuxPattern(BINARY);
 
-  // If you are missing lines you could try adding some delay to the multiplexing
-  //display.setMuxDelay(0,1,0,0,0);
+  // Set the multiplex pattern {LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG} (default is LINE)
+  //display.setScanPattern(LINE);
 
   // Rotate display
   //display.setRotate(true);
@@ -140,9 +140,6 @@ void setup() {
   // Set the time in microseconds that we pause after selecting each mux channel
   // (May help if some rows are missing / the mux chip is too slow)
   //display.setMuxDelay(0,1,0,0,0);
-
-  // Set the multiplex pattern {LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG} (default is LINE)
-  //display.setScanPattern(LINE);
 
   // Set the number of panels that make up the display area width (default is 1)
   //display.setPanelsWidth(2);

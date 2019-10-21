@@ -670,7 +670,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   }
 
   uint8_t bit_select = x%8;
-  // Some panels have a byte wise row-changing scanning pattern and/or a bit changing pattern that will be taken care of here.
+  //Some panels have a byte wise row-changing scanning pattern and/or a bit changing pattern that will be taken care of here.
   if ((y%(_row_pattern*2))<_row_pattern)
   {
     // Variant of ZIGZAG pattern with bit oder reversed on lower part (starts on upper part)
