@@ -213,6 +213,9 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _color_G_offset;
   uint8_t _color_B_offset;
 
+  // Are we running PixelTest or PatternTest
+  bool _test_mode;
+
   // Panel Brightness
   uint8_t _brightness;
 
@@ -844,13 +847,13 @@ void PxMATRIX::set_mux(uint8_t value)
       digitalWrite(_A_PIN,HIGH);
     else
       digitalWrite(_A_PIN,LOW);
-    if (_mux_delay_A) delayMicroseconds(_mux_delay_A);
+    if (!_test_mode && _mux_delay_A) delayMicroseconds(_mux_delay_A);
 
     if (value & 0x02)
       digitalWrite(_B_PIN,HIGH);
     else
       digitalWrite(_B_PIN,LOW);
-    if (_mux_delay_B) delayMicroseconds(_mux_delay_B);
+    if (!_test_mode && _mux_delay_B) delayMicroseconds(_mux_delay_B);
 
     if (_row_pattern>=8)
     {
@@ -859,7 +862,7 @@ void PxMATRIX::set_mux(uint8_t value)
       digitalWrite(_C_PIN,HIGH);
       else
       digitalWrite(_C_PIN,LOW);
-      if (_mux_delay_C) delayMicroseconds(_mux_delay_C);
+      if (!_test_mode && _mux_delay_C) delayMicroseconds(_mux_delay_C);
     }
 
 
@@ -869,7 +872,7 @@ void PxMATRIX::set_mux(uint8_t value)
           digitalWrite(_D_PIN,HIGH);
       else
           digitalWrite(_D_PIN,LOW);
-      if (_mux_delay_D) delayMicroseconds(_mux_delay_D);
+      if (!_test_mode && _mux_delay_D) delayMicroseconds(_mux_delay_D);
     }
 
     if (_row_pattern>=32)
@@ -878,7 +881,7 @@ void PxMATRIX::set_mux(uint8_t value)
           digitalWrite(_E_PIN,HIGH);
       else
           digitalWrite(_E_PIN,LOW);
-      if (_mux_delay_E) delayMicroseconds(_mux_delay_E);
+      if (!_test_mode && _mux_delay_E) delayMicroseconds(_mux_delay_E);
     }
   }
 
@@ -957,6 +960,7 @@ void PxMATRIX::latch(uint16_t show_time )
 
 
 void PxMATRIX::display(uint16_t show_time) {
+_test_mode=false;
   if (show_time < 10)
     show_time =10;
   unsigned long start_time=0;
@@ -1087,6 +1091,7 @@ void PxMATRIX::flushDisplay(void) {
 }
 
 void PxMATRIX::displayTestPattern(uint16_t show_time) {
+  _test_mode=true;
 
   if ((millis()-_test_last_call)>500)
   {
@@ -1126,6 +1131,7 @@ void PxMATRIX::displayTestPattern(uint16_t show_time) {
 }
 
 void PxMATRIX::displayTestPixel(uint16_t show_time) {
+  _test_mode=true;
 
   if ((millis()-_test_last_call)>500)
   {
