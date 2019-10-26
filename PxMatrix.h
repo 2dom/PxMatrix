@@ -14,19 +14,36 @@ BSD license, check license.txt for more information
 #define PxMATRIX_COLOR_DEPTH 8
 #endif
 
+// Defines the buffer height / the maximum height of the matrix
 #ifndef PxMATRIX_MAX_HEIGHT
 #define PxMATRIX_MAX_HEIGHT 64
 #endif
 
+// Defines the buffer width / the maximum width of the matrix
 #ifndef PxMATRIX_MAX_WIDTH
 #define PxMATRIX_MAX_WIDTH 64
 #endif
 
+// Defines how long we display things by default 
 #ifndef PxMATRIX_DEFAULT_SHOWTIME
 #define PxMATRIX_DEFAULT_SHOWTIME 30
 #endif
 
-//#define double_buffer
+// Defines the speed of the SPI bus (reducing this may help if you experience noisy images) 
+#ifndef PxMATRIX_SPI_FREQEUNCY
+#define PxMATRIX_SPI_FREQEUNCY 20000000
+#endif
+
+// Creates a second buffer for backround drawing (doubles the required RAM) 
+#ifndef PxMATRIX_double_buffer
+#define PxMATRIX_double_buffer false
+#endif
+
+// Legacy suppport
+#ifndef double_buffer
+#define PxMATRIX_double_buffer true
+#endif
+
 
 #include "Adafruit_GFX.h"
 #include "Arduino.h"
@@ -182,7 +199,7 @@ class PxMATRIX : public Adafruit_GFX {
 
  // the display buffer for the LED matrix
   uint8_t PxMATRIX_buffer[PxMATRIX_COLOR_DEPTH][buffer_size];
-#ifdef double_buffer
+#ifdef PxMATRIX_double_buffer
   uint8_t PxMATRIX_buffer2[PxMATRIX_COLOR_DEPTH][buffer_size];
 #endif
 
@@ -341,7 +358,7 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
 
 
   clearDisplay(0);
-#ifdef double_buffer
+#ifdef PxMATRIX_double_buffer
   clearDisplay(1);
 #endif
 }
@@ -708,7 +725,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
 
   uint8_t (*PxMATRIX_bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 
-#ifdef double_buffer
+#ifdef PxMATRIX_double_buffer
   PxMATRIX_bufferp = selected_buffer ? &PxMATRIX_buffer2 : &PxMATRIX_buffer;
 #endif
 
@@ -738,7 +755,7 @@ inline void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color) {
   uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
   uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
   uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
-#ifdef double_buffer
+#ifdef PxMATRIX_double_buffer
   fillMatrixBuffer(x, y, r, g, b, !_active_buffer);
 #else
   fillMatrixBuffer(x, y, r, g, b, false);
@@ -746,7 +763,7 @@ inline void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color) {
 }
 
 inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b) {
-#ifdef double_buffer
+#ifdef PxMATRIX_double_buffer
   fillMatrixBuffer(x, y, r, g, b, !_active_buffer);
 #else
   fillMatrixBuffer(x, y, r, g, b, false);
@@ -785,7 +802,7 @@ void PxMATRIX::spi_init(){
 
     SPI.setDataMode(SPI_MODE0);
     SPI.setBitOrder(MSBFIRST);
-    SPI.setFrequency(20000000);
+    SPI.setFrequency(PxMATRIX_SPI_FREQEUNCY);
 
 }
 
@@ -966,7 +983,7 @@ void PxMATRIX::display(uint16_t show_time) {
 
 uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 
-#ifdef double_buffer
+#ifdef PxMATRIX_double_buffer
   if(_active_buffer)
     bufferp=&PxMATRIX_buffer2;
   else
@@ -1186,7 +1203,7 @@ void PxMATRIX::displayTestPixel(uint16_t show_time) {
 }
 
 void PxMATRIX::clearDisplay(void) {
-#ifdef double_buffer
+#ifdef PxMATRIX_double_buffer
   clearDisplay(!_active_buffer);
 #else
   clearDisplay(false);
@@ -1196,7 +1213,7 @@ void PxMATRIX::clearDisplay(void) {
 
 // clear everything
 void PxMATRIX::clearDisplay(bool selected_buffer) {
-#ifdef double_buffer
+#ifdef PxMATRIX_double_buffer
   if(selected_buffer)
     memset(PxMATRIX_buffer2, 0, PxMATRIX_COLOR_DEPTH*buffer_size);
   else
