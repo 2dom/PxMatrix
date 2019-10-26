@@ -129,6 +129,7 @@ void display_update_enable(bool is_enable)
 
 
 void setup() {
+  
  Serial.begin(9600);
   // Define your display layout here, e.g. 1/8 step, and optional SPI pins begin(row_pattern, CLK, MOSI, MISO, SS)
   display.begin(8);
