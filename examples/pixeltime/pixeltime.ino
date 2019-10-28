@@ -7,17 +7,18 @@
 // Defines the buffer width / the maximum width of the matrix
 //#define PxMATRIX_MAX_WIDTH 64
 
-// Defines how long we display things by default 
+// Defines how long we display things by default
 //#define PxMATRIX_DEFAULT_SHOWTIME 30
 
-// Defines the speed of the SPI bus (reducing this may help if you experience noisy images) 
+// Defines the speed of the SPI bus (reducing this may help if you experience noisy images)
 //#define PxMATRIX_SPI_FREQEUNCY 20000000
 
-// Creates a second buffer for backround drawing (doubles the required RAM) 
+// Creates a second buffer for backround drawing (doubles the required RAM)
 //#define PxMATRIX_double_buffer true
 
 #include <PxMatrix.h>
 
+// Pins for LED MATRIX
 #ifdef ESP32
 
 #define P_LAT 22
@@ -45,7 +46,6 @@ Ticker display_ticker;
 #define P_OE 2
 
 #endif
-// Pins for LED MATRIX
 
 #define matrix_width 32
 #define matrix_height 16
@@ -129,7 +129,7 @@ void display_update_enable(bool is_enable)
 
 
 void setup() {
-  
+
  Serial.begin(9600);
   // Define your display layout here, e.g. 1/8 step, and optional SPI pins begin(row_pattern, CLK, MOSI, MISO, SS)
   display.begin(8);
@@ -261,6 +261,5 @@ void loop() {
     display.setBrightness(dimm);
     delay(5);
   }
-
 
 }

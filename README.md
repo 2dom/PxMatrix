@@ -4,7 +4,7 @@
 
 ## Overview
 
-This driver controls chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in diffent layouts and resolutions:
+This driver controls Chinese RGB LED Matrix modules without any additional components whatsoever. These panels are commonly used in large-scale LED displays and come in different layouts and resolutions:
 
 Pitch (mm)| Size | Resolution | Rows-scan pattern
 ----|----|----|----
@@ -20,7 +20,7 @@ P5   | 320mmx160mm | 64x32 | 1/16
 P2.5 | 160mmx160mm | 64x64 | 1/32
 P3   | 192mmx192mm | 64x64 | 1/32
 
-Multiple panels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266 and ESP32 microcontrollers. However, it should be rather straightforward to port it to Atmel-based Arduinos. This readme gives an overview over the the library - for a more detailed guide you may consider @witnessmenow's detailed [tutorial](http://www.instructables.com/id/RGB-LED-Matrix-With-an-ESP8266/).
+Multiple panels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266, ESP32 and Atmel-based Arduinos (only up to 64x32). This readme gives an overview over the library - for a more detailed guide you may consider @witnessmenow's detailed [tutorial](http://www.instructables.com/id/RGB-LED-Matrix-With-an-ESP8266/).
 
 ## Display structure
 
@@ -63,17 +63,17 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   Connect panel input (PI) to the ESP8266 / ESP32 as follows:
 
-  PI  | ESP8266 (NodeMCU) | ESP32 | NOTE
+  PI  | ESP8266 (NodeMCU) | ESP32 | AVR |NOTE
   ----|----|----|----
-  STB/LAT |  16 - (D0) | 22
-  A   |  05 - (D1) | 19
-  B   |  04 - (D2) | 23
-  C   |  15 - (D8) | 18 | only for 1/8, 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
-  D   |  12 - (D6) | 5 | only for 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
-  E   |  00 - (D3) | 15 | only for 1/32 scan
-  P_OE|  02 - (D4) | 2
-  CLK |  14 - (D5) | 14
-  R1  |  13 - (D7) | 13
+  A   |  05 - (D1) | 19 | 2
+  B   |  04 - (D2) | 23 | 3
+  C   |  15 - (D8) | 18 | 4 | only for 1/8, 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
+  D   |  12 - (D6) | 5 | 5 | only for 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
+  E   |  00 - (D3) | 15 | 6 | only for 1/32 scan
+  STB/LAT |  16 - (D0) | 22 | 7
+  P_OE|  02 - (D4) | 2  | 8
+  CLK |  14 - (D5) | 14 | 13
+  R1  |  13 - (D7) | 13 | 11
 
 * If your panel input connector has "R0" in the top left corner:
 
@@ -91,17 +91,17 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   Connect panel input (PI) to the ESP8266 / ESP32 as follows:
 
-  PI  | ESP8266 (NodeMCU) | ESP32 | NOTE
+  PI  | ESP8266 (NodeMCU) | ESP32 | AVR | NOTE
   ----|----|----|----
-  STB/LAT |  16 - (D0) | 22
-  A   |  05 - (D1) | 19
-  B   |  04 - (D2) | 23
-  C   |  15 - (D8) | 18 | only for 1/8, 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
-  D   |  12 - (D6) | 5 | only for 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
-  E   |  00 - (D3) | 15 | only for 1/32 scan
-  P_OE|  02 - (D4) | 2
-  CLK |  14 - (D5) | 14
-  R0  |  13 - (D7) | 13
+  A   |  05 - (D1) | 19 | 2
+  B   |  04 - (D2) | 23 | 3
+  C   |  15 - (D8) | 18 | 4 | only for 1/8, 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
+  D   |  12 - (D6) | 5 | 5 | only for 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
+  E   |  00 - (D3) | 15 | 6 | only for 1/32 scan
+  STB/LAT |  16 - (D0) | 22 | 7
+  P_OE|  02 - (D4) | 2 | 8
+  CLK |  14 - (D5) | 14 | 13
+  R0  |  13 - (D7) | 13 | 11
 
 You should end up with something like this (VCC/supply not connected here yet):
 

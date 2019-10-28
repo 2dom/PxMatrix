@@ -24,26 +24,36 @@ BSD license, check license.txt for more information
 #define PxMATRIX_MAX_WIDTH 64
 #endif
 
-// Defines how long we display things by default 
+// Defines how long we display things by default
 #ifndef PxMATRIX_DEFAULT_SHOWTIME
 #define PxMATRIX_DEFAULT_SHOWTIME 30
 #endif
 
-// Defines the speed of the SPI bus (reducing this may help if you experience noisy images) 
-#ifndef PxMATRIX_SPI_FREQEUNCY
-#define PxMATRIX_SPI_FREQEUNCY 20000000
-#endif
-
-// Creates a second buffer for backround drawing (doubles the required RAM) 
-#ifndef PxMATRIX_double_buffer
-#define PxMATRIX_double_buffer false
+// Defines the speed of the SPI bus (reducing this may help if you experience noisy images)
+#ifndef PxMATRIX_SPI_FREQUENCY
+#define PxMATRIX_SPI_FREQUENCY 20000000
 #endif
 
 // Legacy suppport
-#ifndef double_buffer
+#ifdef double_buffer
 #define PxMATRIX_double_buffer true
 #endif
 
+#ifndef _BV
+#define _BV(x) (1 << (x))
+#endif
+
+#if defined(ESP8266) || defined(ESP32)
+  #define SPI_TRANSFER(x,y) SPI.writeBytes(x,y)
+  #define SPI_BYTE(x) SPI.write(x)
+  #define SPI_2BYTE(x) SPI.write16(x)
+#endif
+
+#ifdef __AVR__
+  #define SPI_TRANSFER(x,y) SPI.transfer(x,y)
+  #define SPI_BYTE(x) SPI.transfer(x)
+  #define SPI_2BYTE(x) SPI.transfer16(x)
+#endif
 
 #include "Adafruit_GFX.h"
 #include "Arduino.h"
@@ -59,9 +69,7 @@ BSD license, check license.txt for more information
 #include <util/delay.h>
 #endif
 
-#ifndef _BV
-#define _BV(x) (1 << (x))
-#endif
+
 
 #include <stdlib.h>
 
@@ -71,15 +79,22 @@ BSD license, check license.txt for more information
 #define ADAFRUIT_GFX_EXTRA 0
 #endif
 
+
+
 #ifdef ESP8266
   #define GPIO_REG_SET(val) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS,val)
   #define GPIO_REG_CLEAR(val) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS,val)
 #endif
-
-
 #ifdef ESP32
   #define GPIO_REG_SET(val) GPIO.out_w1ts = val
   #define GPIO_REG_CLEAR(val) GPIO.out_w1tc = val
+#endif
+#ifdef __AVR__
+  #define GPIO_REG_SET(val) (val < 8) ? PORTD |= _BV(val) : PORTB |= _BV(val-8)
+  #define GPIO_REG_CLEAR(val) (val < 8) ? PORTD &= ~_BV(val) : PORTD &= ~_BV(val-8)
+#endif
+
+#ifdef ESP32
 
   #include "soc/spi_struct.h"
   #include "esp32-hal-gpio.h"
@@ -370,7 +385,7 @@ inline void PxMATRIX::fm612xWriteRegister(uint16_t reg_value, uint8_t reg_positi
     // reg_value = 0x1234;  debug
 
     for(int i=0; i<47; i++)
-      SPI.write16(reg_value);
+      SPI_2BYTE(reg_value);
 
     spiSimpleTransaction(spi);
 
@@ -388,7 +403,7 @@ inline void PxMATRIX::fm612xWriteRegister(uint16_t reg_value, uint8_t reg_positi
     while(spi->dev->cmd.usr);
     spiEndTransaction(spi);
 
-    SPI.write(reg_value&0xff);
+    SPI_BYTE(reg_value&0xff);
 
     GPIO_REG_CLEAR(1 << _LATCH_PIN);
 
@@ -793,16 +808,18 @@ void PxMATRIX::begin(uint8_t row_pattern, uint8_t CLK, uint8_t MOSI, uint8_t MIS
 
 void PxMATRIX::spi_init(){
 
-  #ifdef ESP8266
-    SPI.begin();
-  #endif
   #ifdef ESP32
     SPI.begin(_SPI_CLK, _SPI_MISO, _SPI_MOSI, _SPI_SS);
+  #else
+    SPI.begin();
+  #endif
+
+  #if defined(ESP32) || defined(ESP8266)
+    SPI.setFrequency(PxMATRIX_SPI_FREQUENCY);
   #endif
 
     SPI.setDataMode(SPI_MODE0);
     SPI.setBitOrder(MSBFIRST);
-    SPI.setFrequency(PxMATRIX_SPI_FREQEUNCY);
 
 }
 
@@ -1009,7 +1026,7 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
         digitalWrite(_LATCH_PIN,LOW);
         delayMicroseconds(1);
 
-        SPI.writeBytes(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
+        SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
 
         while ((micros()-start_time)<show_time)
           delayMicroseconds(1);
@@ -1018,7 +1035,16 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
       else
       {
         set_mux(i);
-        SPI.writeBytes(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
+#ifdef __AVR__
+  uint8_t this_byte;
+  for (uint32_t byte_cnt=0; byte_cnt<_send_buffer_size;byte_cnt++)
+  {
+    this_byte=(*bufferp)[_display_color][i*_send_buffer_size+byte_cnt];
+    SPI_BYTE(this_byte);
+  }
+#else
+  SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
+#endif
         latch(show_time*((uint16_t)_brightness)/255);
       }
     }
@@ -1054,9 +1080,11 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
       spiEndTransaction(spi);
       set_mux(i);
     #else
-      pinMode(_SPI_CLK, SPECIAL);
-      pinMode(_SPI_MOSI, SPECIAL);
-      SPI.writeBytes(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size-1);
+      #if defined(ESP8266) || defined(ESP32)
+        pinMode(_SPI_CLK, SPECIAL);
+        pinMode(_SPI_MOSI, SPECIAL);
+      #endif
+      SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size-1);
       pinMode(_SPI_CLK, OUTPUT);
       pinMode(_SPI_MOSI, OUTPUT);
       pinMode(_SPI_MISO, OUTPUT);
@@ -1100,7 +1128,7 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 
 void PxMATRIX::flushDisplay(void) {
   for (int ii=0;ii<_send_buffer_size;ii++)
-    SPI.write(0x00);
+    SPI_BYTE(0x00);
 }
 
 void PxMATRIX::displayTestPattern(uint16_t show_time) {
@@ -1109,7 +1137,7 @@ void PxMATRIX::displayTestPattern(uint16_t show_time) {
   {
     flushDisplay();
     for (int ii=0;ii<=_test_pixel_counter;ii++)
-      SPI.write(0xFF);
+      SPI_BYTE(0xFF);
     _test_last_call=millis();
     _test_pixel_counter++;
   }
@@ -1156,9 +1184,9 @@ void PxMATRIX::displayTestPixel(uint16_t show_time) {
   {
     flushDisplay();
     uint16_t blanks = _test_pixel_counter/8;
-    SPI.write(1<<_test_pixel_counter%8);
+    SPI_BYTE(1<<_test_pixel_counter%8);
     while (blanks){
-      SPI.write(0x00);
+      SPI_BYTE(0x00);
       blanks--;
     }
     _test_last_call=millis();
