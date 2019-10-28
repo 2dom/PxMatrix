@@ -63,7 +63,7 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   Connect panel input (PI) to the ESP8266 / ESP32 as follows:
 
-  PI  | ESP8266 (NodeMCU) | ESP32 | AVR |NOTE
+  PI  | ESP8266 (NodeMCU) | ESP32 | ATMEGA |NOTE
   ----|----|----|----
   A   |  05 - (D1) | 19 | 2
   B   |  04 - (D2) | 23 | 3
@@ -72,8 +72,8 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   E   |  00 - (D3) | 15 | 6 | only for 1/32 scan
   STB/LAT |  16 - (D0) | 22 | 7
   P_OE|  02 - (D4) | 2  | 8
-  CLK |  14 - (D5) | 14 | 13
-  R1  |  13 - (D7) | 13 | 11
+  CLK |  14 - (D5) | 14 | 13(168/328), 52(2560) 
+  R1  |  13 - (D7) | 13 | 11(168/328), 51(2560) 
 
 * If your panel input connector has "R0" in the top left corner:
 
@@ -91,7 +91,7 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   Connect panel input (PI) to the ESP8266 / ESP32 as follows:
 
-  PI  | ESP8266 (NodeMCU) | ESP32 | AVR | NOTE
+  PI  | ESP8266 (NodeMCU) | ESP32 | ATMEGA | NOTE
   ----|----|----|----
   A   |  05 - (D1) | 19 | 2
   B   |  04 - (D2) | 23 | 3
@@ -100,8 +100,8 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   E   |  00 - (D3) | 15 | 6 | only for 1/32 scan
   STB/LAT |  16 - (D0) | 22 | 7
   P_OE|  02 - (D4) | 2 | 8
-  CLK |  14 - (D5) | 14 | 13
-  R0  |  13 - (D7) | 13 | 11
+  CLK |  14 - (D5) | 14 | 13(168/328), 52(2560) 
+  R0  |  13 - (D7) | 13 | 11(168/328), 51(2560) 
 
 You should end up with something like this (VCC/supply not connected here yet):
 
