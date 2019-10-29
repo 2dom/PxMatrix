@@ -479,11 +479,7 @@ inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
 
 inline void PxMATRIX::setRBG(bool rbg)
 {
-  if (rbg) {
-    _rbg = true;
-  } else {
-    _rbg = false;
-  }
+  _rbg = rbg;
 }
 
 inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
