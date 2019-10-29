@@ -209,6 +209,8 @@ class PxMATRIX : public Adafruit_GFX {
   // Set driver chip type
   inline void setDriverChip(driver_chips driver_chip);
 
+  // Color type (some panels are RGB others RBG)
+  inline void setRBG(bool rbg);
 
  private:
 
@@ -244,6 +246,9 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _color_R_offset;
   uint8_t _color_G_offset;
   uint8_t _color_B_offset;
+  
+  // Color type (some panels are RGB others RBG)
+  bool _rbg;
 
   // Panel Brightness
   uint8_t _brightness;
@@ -351,6 +356,8 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _color_R_offset=0;
   _color_G_offset=0;
   _color_B_offset=0;
+  
+  _rbg=false;
 
   _test_last_call=0;
   _test_pixel_counter=0;
@@ -469,6 +476,15 @@ inline void PxMATRIX::writeRegister(uint16_t reg_value, uint8_t reg_position)
 
 }
 #endif
+
+inline void PxMATRIX::setRBG(bool rbg)
+{
+  if (rbg) {
+    _rbg = true;
+  } else {
+    _rbg = false;
+  }
+}
 
 inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
 {
@@ -771,17 +787,33 @@ inline void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color) {
   uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
   uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
 #ifdef PxMATRIX_double_buffer
-  fillMatrixBuffer(x, y, r, g, b, !_active_buffer);
+  if(_rbg) {
+    fillMatrixBuffer(x, y, r, b, g, !_active_buffer);
+  } else {
+    fillMatrixBuffer(x, y, r, g, b, !_active_buffer);
+  }
 #else
-  fillMatrixBuffer(x, y, r, g, b, false);
+  if(_rbg) {
+    fillMatrixBuffer(x, y, r, b, g, false);
+  } else {
+    fillMatrixBuffer(x, y, r, g, b, false);
+  }
 #endif
 }
 
 inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b) {
 #ifdef PxMATRIX_double_buffer
-  fillMatrixBuffer(x, y, r, g, b, !_active_buffer);
+  if(_rbg) {
+    fillMatrixBuffer(x, y, r, b, g, !_active_buffer);
+  } else {
+    fillMatrixBuffer(x, y, r, g, b, !_active_buffer);
+  }
 #else
-  fillMatrixBuffer(x, y, r, g, b, false);
+  if(_rbg) {
+    fillMatrixBuffer(x, y, r, b, g, false);
+  } else {
+    fillMatrixBuffer(x, y, r, g, b, false);
+  }
 #endif
 }
 
