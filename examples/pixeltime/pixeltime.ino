@@ -52,7 +52,7 @@ Ticker display_ticker;
 
 // This defines the 'on' time of the display is us. The larger this number,
 // the brighter the display. If too large the ESP will crash
-uint8_t display_draw_time=10; //10-50 is usually fine
+uint8_t display_draw_time=20; //10-50 is usually fine
 
 PxMATRIX display(32,16,P_LAT, P_OE,P_A,P_B,P_C);
 //PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
@@ -251,6 +251,7 @@ void loop() {
     display.drawLine(xx+16,6,xx+16,10,display.color565(0,xx*16,0));
     display.drawLine(xx+16,11,xx+16,15,display.color565(0,0,xx*16));
   }
+  delay(1000);
   for (uint8_t dimm=255; dimm>0; dimm--)
   {
     display.setBrightness(dimm);

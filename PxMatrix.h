@@ -686,6 +686,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
         total_offset_r=base_offset-row_sector__offset*row_sector;
       if ((yy+_row_pattern<=y) && (y<yy+2*_row_pattern))
         total_offset_r=base_offset-row_sector__offset*row_sector;
+
       row_sector++;
     }
   }
