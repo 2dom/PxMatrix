@@ -72,7 +72,7 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   E   |  00 - (D3) | 15 | 6 | only for 1/32 scan
   STB/LAT |  16 - (D0) | 22 | 7
   P_OE|  02 - (D4) | 2  | 8
-  CLK |  14 - (D5) | 14 | 13(168/328), 52(2560) 
+  CLK |  14 - (D5) | 14 | 13(168/328), 52(2560)
   R1  |  13 - (D7) | 13 | 11(168/328), 51(2560) 
 
 * If your panel input connector has "R0" in the top left corner:
