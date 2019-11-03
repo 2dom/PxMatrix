@@ -644,8 +644,8 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   if (_color_order!= RRGGBB)
   {
     uint8_t r_temp=r;
-    uint8_t g_temp=b;
-    uint8_t b_temp=g;
+    uint8_t g_temp=g;
+    uint8_t b_temp=b;
 
 
     switch (_color_order)
