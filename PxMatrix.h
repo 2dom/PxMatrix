@@ -91,7 +91,7 @@ BSD license, check license.txt for more information
 #endif
 #ifdef __AVR__
   #define GPIO_REG_SET(val) (val < 8) ? PORTD |= _BV(val) : PORTB |= _BV(val-8)
-  #define GPIO_REG_CLEAR(val) (val < 8) ? PORTD &= ~_BV(val) : PORTD &= ~_BV(val-8)
+  #define GPIO_REG_CLEAR(val) (val < 8) ? PORTD &= ~_BV(val) : PORTB &= ~_BV(val-8)
 #endif
 
 #ifdef ESP32
@@ -122,10 +122,12 @@ enum mux_patterns {BINARY, STRAIGHT};
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
 enum scan_patterns {LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG};
 
-// Specify s speciffic driver chip. Most panels implement a standard shifted
+// Specifies speciffic driver chip. Most panels implement a standard shifted
 // register (SHIFT). Other chips/panels may need special treatment in oder to work
 enum driver_chips {SHIFT, FM6124, FM6126A};
 
+// Specify the color order
+enum color_orders {RRGGBB, RRBBGG, GGRRBB, GGBBRR, BBRRGG, BBGGRR};
 
 #define max_matrix_pixels (PxMATRIX_MAX_HEIGHT * PxMATRIX_MAX_WIDTH)
 #define color_step (256 / PxMATRIX_COLOR_DEPTH)
@@ -192,6 +194,9 @@ class PxMATRIX : public Adafruit_GFX {
 
   // Set the multiplex implemention {BINARY, STRAIGHT} (default is BINARY)
   inline void setMuxPattern(mux_patterns mux_pattern);
+
+    // Set the color order
+  inline void setColorOrder(color_orders color_order);
 
   // Set the time in microseconds that we pause after selecting each mux channel
   // (May help if some rows are missing / the mux chip is too slow)
@@ -274,6 +279,9 @@ class PxMATRIX : public Adafruit_GFX {
 
   // Holds multiplex pattern
   mux_patterns _mux_pattern;
+
+  //Holdes the color order
+  color_orders _color_order;
 
   uint8_t _mux_delay_A;
   uint8_t _mux_delay_B;
@@ -519,6 +527,13 @@ inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
 }
 
 
+inline void PxMATRIX::setColorOrder(color_orders color_order)
+{
+  _color_order=color_order;
+}
+
+
+
 inline void PxMATRIX::setMuxDelay(uint8_t mux_delay_A, uint8_t mux_delay_B, uint8_t mux_delay_C, uint8_t mux_delay_D, uint8_t mux_delay_E)
 {
   _mux_delay_A=mux_delay_A;
@@ -625,6 +640,25 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   if (!_flip)
     x =_width - 1 -x;
 
+  
+  if (_color_order!= RRGGBB)
+  {
+    uint8_t r_temp=r;
+    uint8_t g_temp=b;
+    uint8_t b_temp=g;
+
+
+    switch (_color_order)
+    {
+      RRGGBB: break;
+      RRBBGG: g=b_temp; b=g_temp; break;
+      GGRRBB: r=g_temp; g=r_temp; break;
+      GGBBRR: r=g_temp; g=b_temp; b=r_temp; break;
+      BBRRGG: r=b_temp; g=r_temp; b=g_temp; break;
+      BBGGRR: r=b_temp; g=g_temp; b=r_temp; break;
+    }
+  }
+  
   uint32_t base_offset;
   uint32_t total_offset_r=0;
   uint32_t total_offset_g=0;
@@ -833,6 +867,7 @@ void PxMATRIX::begin(uint8_t row_pattern) {
   if (_row_pattern==4)
     _scan_pattern=ZIGZAG;
   _mux_pattern = BINARY;
+  _color_order=RRGGBB;
 
   _pattern_color_bytes=(_height/_row_pattern)*(_width/8);
   _row_sets_per_buffer = _rows_per_buffer/_row_pattern;

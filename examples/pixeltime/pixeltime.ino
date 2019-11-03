@@ -156,6 +156,9 @@ void setup() {
   // Set the multiplex implemention {BINARY, STRAIGHT} (default is BINARY)
   //display.setMuxPattern(BINARY);
 
+  // Set the color order {RRGGBB, RRBBGG, GGRRBB, GGBBRR, BBRRGG, BBGGRR} (default is RRGGBB)
+  //display.setColorOrder(RRGGBB);
+
   // Set the time in microseconds that we pause after selecting each mux channel
   // (May help if some rows are missing / the mux chip is too slow)
   //display.setMuxDelay(0,1,0,0,0);
