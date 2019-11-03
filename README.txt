@@ -1,4 +1,4 @@
-This is a library for Chinese P10 32x16 LED matrix displays
+This is a library for Chinese LED matrix displays
 
 It is based on the 5110 library by Adafruit
 
