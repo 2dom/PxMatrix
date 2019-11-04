@@ -650,12 +650,12 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
 
     switch (_color_order)
     {
-      RRGGBB: break;
-      RRBBGG: g=b_temp; b=g_temp; break;
-      GGRRBB: r=g_temp; g=r_temp; break;
-      GGBBRR: r=g_temp; g=b_temp; b=r_temp; break;
-      BBRRGG: r=b_temp; g=r_temp; b=g_temp; break;
-      BBGGRR: r=b_temp; g=g_temp; b=r_temp; break;
+      case (RRGGBB): break;
+      case (RRBBGG): g=b_temp; b=g_temp; break;
+      case (GGRRBB): r=g_temp; g=r_temp; break;
+      case (GGBBRR): r=g_temp; g=b_temp; b=r_temp; break;
+      case (BBRRGG): r=b_temp; g=r_temp; b=g_temp; break;
+      case (BBGGRR): r=b_temp; g=g_temp; b=r_temp; break;
     }
   }
   
