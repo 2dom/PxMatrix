@@ -116,7 +116,7 @@ BSD license, check license.txt for more information
 
 // Either the panel handles the multiplexing and we feed BINARY to A-E pins
 // or we handle the multiplexing and activate one of A-D pins (STRAIGHT)
-enum mux_patterns {BINARY, STRAIGHT};
+enum mux_patterns {BINARY, STRAIGHT, ABC};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
@@ -910,6 +910,21 @@ void PxMATRIX::begin(uint8_t row_pattern) {
 
 void PxMATRIX::set_mux(uint8_t value)
 {
+
+  if (_mux_pattern==ABC)
+  {
+    for (int activate = 0; activate < _row_pattern; activate++) {
+      digitalWrite(_A_PIN,LOW);
+      if (activate == _row_pattern - 1 - value) {
+        digitalWrite(_C_PIN,HIGH);
+      } else {
+        digitalWrite(_C_PIN,LOW);
+      }
+      digitalWrite(_A_PIN,HIGH);
+    }
+    digitalWrite(_C_PIN,LOW);
+    digitalWrite(_A_PIN,LOW);
+  }
 
   if (_mux_pattern==BINARY)
   {
