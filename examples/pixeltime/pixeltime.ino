@@ -11,7 +11,7 @@
 //#define PxMATRIX_DEFAULT_SHOWTIME 30
 
 // Defines the speed of the SPI bus (reducing this may help if you experience noisy images)
-//#define PxMATRIX_SPI_FREQEUNCY 20000000
+//#define PxMATRIX_SPI_FREQUENCY 20000000
 
 // Creates a second buffer for backround drawing (doubles the required RAM)
 //#define PxMATRIX_double_buffer true
