@@ -628,8 +628,7 @@ inline void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
 
 inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint8_t b,bool selected_buffer)
 {
-  if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
-    return;
+ 
   if (_rotate){
     uint16_t temp_x=x;
     x=y;
@@ -639,6 +638,9 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
 
   if (!_flip)
     x =_width - 1 -x;
+  
+   if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
+    return;
 
   
   if (_color_order!= RRGGBB)
