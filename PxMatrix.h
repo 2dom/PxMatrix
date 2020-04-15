@@ -116,7 +116,7 @@ BSD license, check license.txt for more information
 
 // Either the panel handles the multiplexing and we feed BINARY to A-E pins
 // or we handle the multiplexing and activate one of A-D pins (STRAIGHT)
-enum mux_patterns {BINARY, STRAIGHT};
+enum mux_patterns {BINARY, STRAIGHT, SHIFTREG};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
@@ -523,6 +523,13 @@ inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
   {
     pinMode(_C_PIN, OUTPUT);
     pinMode(_D_PIN, OUTPUT);
+  }
+
+  if (_mux_pattern==SHIFTREG)
+  {
+    pinMode(_A_PIN, OUTPUT);
+    pinMode(_B_PIN, OUTPUT);
+    pinMode(_C_PIN, OUTPUT);
   }
 }
 
@@ -978,6 +985,22 @@ void PxMATRIX::set_mux(uint8_t value)
       digitalWrite(_D_PIN,LOW);
     else
       digitalWrite(_D_PIN,HIGH);
+  }
+
+  if (_mux_pattern==SHIFTREG) {
+    // A,B,C are connected to a shift register Clock, Latch, Data
+    uint32_t rowmask;
+    rowmask = (1<<value);
+    digitalWrite(_C_PIN,LOW);
+    if(_row_pattern > 16) {
+      shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>24);
+      shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>16);
+    }
+    shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>8);
+    shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask);
+    // Latch
+    digitalWrite(_B_PIN,HIGH);
+    digitalWrite(_B_PIN,LOW);
   }
 }
 
