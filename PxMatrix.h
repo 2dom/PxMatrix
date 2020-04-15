@@ -1061,10 +1061,10 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 
         set_mux((i+_row_pattern-1)%_row_pattern);
         digitalWrite(_LATCH_PIN,HIGH);
-        digitalWrite(_OE_PIN,0);
+        digitalWrite(_LATCH_PIN,LOW);
+        digitalWrite(_OE_PIN,LOW);
         start_time = micros();
 
-        digitalWrite(_LATCH_PIN,LOW);
         delayMicroseconds(1);
 
         SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
