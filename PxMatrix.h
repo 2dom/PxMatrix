@@ -114,8 +114,10 @@ BSD license, check license.txt for more information
 #define SPI_BUS_MISO 12
 #define SPI_BUS_SS 4
 
-// Either the panel handles the multiplexing and we feed BINARY to A-E pins
-// or we handle the multiplexing and activate one of A-D pins (STRAIGHT)
+// Specify how the Panel handles row muxing:
+// BINARY: Pins A-E map to rows 1-32 via binary decoding (default)
+// STRAIGHT: Pins A-D are directly mapped to rows 1-4
+// SHIFTREG: A, B, C on Panel are connected to a shift register Clock, Latch, Data
 enum mux_patterns {BINARY, STRAIGHT, SHIFTREG};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
@@ -192,7 +194,7 @@ class PxMATRIX : public Adafruit_GFX {
   // Control the minimum color values that result in an active pixel
   inline void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
 
-  // Set the multiplex implemention {BINARY, STRAIGHT} (default is BINARY)
+  // Set the multiplex implemention {BINARY, STRAIGHT, SHIFTREG} (default is BINARY)
   inline void setMuxPattern(mux_patterns mux_pattern);
 
     // Set the color order
@@ -527,9 +529,7 @@ inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
 
   if (_mux_pattern==SHIFTREG)
   {
-    pinMode(_A_PIN, OUTPUT);
-    pinMode(_B_PIN, OUTPUT);
-    pinMode(_C_PIN, OUTPUT);
+    pinMode(_B_PIN, OUTPUT); // B is used as MUX_LATCH
   }
 }
 
@@ -988,16 +988,15 @@ void PxMATRIX::set_mux(uint8_t value)
   }
 
   if (_mux_pattern==SHIFTREG) {
-    // A,B,C are connected to a shift register Clock, Latch, Data
-    uint32_t rowmask;
-    rowmask = (1<<value);
-    digitalWrite(_C_PIN,LOW);
+    // A, B, C on Panel are connected to a shift register Clock, Latch, Data
+    uint8_t rowmask[4] = {0,0,0,0};
     if(_row_pattern > 16) {
-      shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>24);
-      shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>16);
+      rowmask[(31-value)/8] = (1<<(value%8));
+      SPI_TRANSFER(rowmask,4);
+    } else {
+      rowmask[(15-value)/8] = (1<<(value%8));
+      SPI_TRANSFER(rowmask,2);
     }
-    shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>8);
-    shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask);
     // Latch
     digitalWrite(_B_PIN,HIGH);
     digitalWrite(_B_PIN,LOW);
@@ -1082,9 +1081,9 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
         // timing sensitive and may lead to flicker however promises reduced
         // update times and increased brightness
 
-        set_mux((i+_row_pattern-1)%_row_pattern);
         digitalWrite(_LATCH_PIN,HIGH);
         digitalWrite(_LATCH_PIN,LOW);
+        set_mux((i+_row_pattern-1)%_row_pattern);
         digitalWrite(_OE_PIN,LOW);
         start_time = micros();
 
