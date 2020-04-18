@@ -118,7 +118,7 @@ BSD license, check license.txt for more information
 // BINARY: Pins A-E map to rows 1-32 via binary decoding (default)
 // STRAIGHT: Pins A-D are directly mapped to rows 1-4
 // SHIFTREG: A, B, C on Panel are connected to a shift register Clock, Latch, Data
-enum mux_patterns {BINARY, STRAIGHT, SHIFTREG};
+enum mux_patterns {BINARY, STRAIGHT, SHIFTREG_ABC, SHIFTREG_SPI_PA, SHIFTREG_SPI_SE};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
@@ -216,6 +216,12 @@ class PxMATRIX : public Adafruit_GFX {
   // Set driver chip type
   inline void setDriverChip(driver_chips driver_chip);
 
+  // Set MUX SPI Frequency (only for Pattern SHIFTREG_SPI_PA)
+  inline void setMuxSPIFrequency(uint32_t freq);
+
+  // Set OE settle Time in microseconds
+  inline void setMuxSettleDelay(uint8_t us_settle);
+
 
  private:
 
@@ -290,6 +296,10 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _mux_delay_C;
   uint8_t _mux_delay_D;
   uint8_t _mux_delay_E;
+
+
+  uint32_t _mux_spi_freq;
+  uint8_t _mux_settle;
 
 
   // Holds the scan pattern
@@ -379,7 +389,8 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _mux_delay_D=0;
   _mux_delay_E=0;
 
-
+  _mux_settle = 0;
+  _mux_spi_freq = PxMATRIX_SPI_FREQUENCY;
 
 
   clearDisplay(0);
@@ -527,9 +538,16 @@ inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
     pinMode(_D_PIN, OUTPUT);
   }
 
-  if (_mux_pattern==SHIFTREG)
+  if (_mux_pattern==SHIFTREG_SPI_PA)
   {
+    pinMode(_B_PIN, OUTPUT); // B is used as MUX_LATCH; A/C share CLK/DATA
+  }
+
+  if (_mux_pattern==SHIFTREG_ABC)
+  {
+    pinMode(_A_PIN, OUTPUT); // A is used as MUX_CLK
     pinMode(_B_PIN, OUTPUT); // B is used as MUX_LATCH
+    pinMode(_C_PIN, OUTPUT); // C is used as MUX_DATA
   }
 }
 
@@ -987,9 +1005,14 @@ void PxMATRIX::set_mux(uint8_t value)
       digitalWrite(_D_PIN,HIGH);
   }
 
-  if (_mux_pattern==SHIFTREG) {
+  if (_mux_pattern==SHIFTREG_SPI_PA || _mux_pattern==SHIFTREG_SPI_SE) {
     // A, B, C on Panel are connected to a shift register Clock, Latch, Data
     uint8_t rowmask[4] = {0,0,0,0};
+    #if defined(ESP32) || defined(ESP8266)
+      if(_mux_pattern==SHIFTREG_SPI_PA && _mux_spi_freq!=PxMATRIX_SPI_FREQUENCY ) {
+        SPI.setFrequency(_mux_spi_freq);
+      }
+    #endif
     if(_row_pattern > 16) {
       rowmask[(31-value)/8] = (1<<(value%8));
       SPI_TRANSFER(rowmask,4);
@@ -997,10 +1020,34 @@ void PxMATRIX::set_mux(uint8_t value)
       rowmask[(15-value)/8] = (1<<(value%8));
       SPI_TRANSFER(rowmask,2);
     }
+    if(_mux_pattern==SHIFTREG_SPI_PA) {
+      // Latch
+      digitalWrite(_B_PIN,HIGH);
+      digitalWrite(_B_PIN,LOW);
+      #if defined(ESP32) || defined(ESP8266)
+        if(_mux_spi_freq!=PxMATRIX_SPI_FREQUENCY) {
+          SPI.setFrequency(PxMATRIX_SPI_FREQUENCY);
+        }
+      #endif
+    }
+  }
+
+  if (_mux_pattern==SHIFTREG_ABC) {
+    // A,B,C are connected to a shift register Clock, Latch, Data
+    uint32_t rowmask;
+    rowmask = (1<<value);
+    digitalWrite(_C_PIN,LOW);
+    if(_row_pattern > 16) {
+      shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>24);
+      shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>16);
+    }
+    shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>8);
+    shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask);
     // Latch
     digitalWrite(_B_PIN,HIGH);
     digitalWrite(_B_PIN,LOW);
   }
+
 }
 
 void PxMATRIX::latch(uint16_t show_time )
@@ -1313,4 +1360,14 @@ void PxMATRIX::clearDisplay(bool selected_buffer) {
     memset(PxMATRIX_buffer, 0, PxMATRIX_COLOR_DEPTH*buffer_size);
 #endif
 }
+
+void PxMATRIX::setMuxSPIFrequency(uint32_t freq) {
+  _mux_spi_freq = freq;
+}
+
+void PxMATRIX::setMuxSettleDelay(uint8_t us_settle) {
+  _mux_settle = us_settle;
+}
+
+
 #endif
