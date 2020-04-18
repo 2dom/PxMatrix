@@ -216,13 +216,6 @@ class PxMATRIX : public Adafruit_GFX {
   // Set driver chip type
   inline void setDriverChip(driver_chips driver_chip);
 
-  // Set MUX SPI Frequency (only for Pattern SHIFTREG_SPI_PA)
-  inline void setMuxSPIFrequency(uint32_t freq);
-
-  // Set OE settle Time in microseconds
-  inline void setMuxSettleDelay(uint8_t us_settle);
-
-
  private:
 
  // the display buffer for the LED matrix
@@ -296,11 +289,6 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _mux_delay_C;
   uint8_t _mux_delay_D;
   uint8_t _mux_delay_E;
-
-
-  uint32_t _mux_spi_freq;
-  uint8_t _mux_settle;
-
 
   // Holds the scan pattern
   scan_patterns _scan_pattern;
@@ -388,9 +376,6 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _mux_delay_C=0;
   _mux_delay_D=0;
   _mux_delay_E=0;
-
-  _mux_settle = 0;
-  _mux_spi_freq = PxMATRIX_SPI_FREQUENCY;
 
 
   clearDisplay(0);
@@ -1008,11 +993,6 @@ void PxMATRIX::set_mux(uint8_t value)
   if (_mux_pattern==SHIFTREG_SPI_PA || _mux_pattern==SHIFTREG_SPI_SE) {
     // A, B, C on Panel are connected to a shift register Clock, Latch, Data
     uint8_t rowmask[4] = {0,0,0,0};
-    #if defined(ESP32) || defined(ESP8266)
-      if(_mux_pattern==SHIFTREG_SPI_PA && _mux_spi_freq!=PxMATRIX_SPI_FREQUENCY ) {
-        SPI.setFrequency(_mux_spi_freq);
-      }
-    #endif
     if(_row_pattern > 16) {
       rowmask[(31-value)/8] = (1<<(value%8));
       SPI_TRANSFER(rowmask,4);
@@ -1024,11 +1004,6 @@ void PxMATRIX::set_mux(uint8_t value)
       // Latch
       digitalWrite(_B_PIN,HIGH);
       digitalWrite(_B_PIN,LOW);
-      #if defined(ESP32) || defined(ESP8266)
-        if(_mux_spi_freq!=PxMATRIX_SPI_FREQUENCY) {
-          SPI.setFrequency(PxMATRIX_SPI_FREQUENCY);
-        }
-      #endif
     }
   }
 
@@ -1360,14 +1335,5 @@ void PxMATRIX::clearDisplay(bool selected_buffer) {
     memset(PxMATRIX_buffer, 0, PxMATRIX_COLOR_DEPTH*buffer_size);
 #endif
 }
-
-void PxMATRIX::setMuxSPIFrequency(uint32_t freq) {
-  _mux_spi_freq = freq;
-}
-
-void PxMATRIX::setMuxSettleDelay(uint8_t us_settle) {
-  _mux_settle = us_settle;
-}
-
 
 #endif
