@@ -62,9 +62,6 @@ void setup() {
   // Flip display
   //display.setFlip(true);
 
-  // Helps to reduce display update latency on larger displays
-  //display.setFastUpdate(true);
-
   // Control the minimum color values that result in an active pixel
   //display.setColorOffset(5, 5,5);
 
@@ -84,8 +81,6 @@ void setup() {
   // Set driver chip type
   //display.setDriverChip(FM6124);
 
-
-  //display.setFastUpdate(true);
   display.clearDisplay();
   display.setTextColor(myCYAN);
   display.setCursor(2,0);

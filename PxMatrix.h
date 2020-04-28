@@ -9,9 +9,9 @@ BSD license, check license.txt for more information
 #ifndef _PxMATRIX_H
 #define _PxMATRIX_H
 
-// This is how many color levels the display shows - the more the slower the update
+// Color depth per primary color - the more the slower the update
 #ifndef PxMATRIX_COLOR_DEPTH
-#define PxMATRIX_COLOR_DEPTH 8
+#define PxMATRIX_COLOR_DEPTH 4
 #endif
 
 // Defines the buffer height / the maximum height of the matrix
@@ -183,9 +183,6 @@ class PxMATRIX : public Adafruit_GFX {
   // Flip display
   inline void setFlip(bool flip);
 
-  // Helps to reduce display update latency on larger displays
-  inline void setFastUpdate(bool fast_update);
-
   // When using double buffering, this displays the draw buffer
   inline void showBuffer();
 
@@ -275,7 +272,6 @@ class PxMATRIX : public Adafruit_GFX {
   // Hols configuration
   bool _rotate;
   bool _flip;
-  bool _fast_update;
 
   // Holds multiplex pattern
   mux_patterns _mux_pattern;
@@ -365,7 +361,6 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _test_line_counter=0;
   _rotate=0;
   _flip=0;
-  _fast_update=0;
 
   _row_pattern=0;
   _scan_pattern=LINE;
@@ -559,10 +554,6 @@ inline void PxMATRIX::setRotate(bool rotate) {
 
 inline void PxMATRIX::setFlip(bool flip) {
   _flip=flip;
-}
-
-inline void PxMATRIX::setFastUpdate(bool fast_update) {
-  _fast_update=fast_update;
 }
 
 inline void PxMATRIX::setBrightness(uint8_t brightness) {
@@ -784,25 +775,27 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   PxMATRIX_bufferp = selected_buffer ? &PxMATRIX_buffer2 : &PxMATRIX_buffer;
 #endif
 
+  r = r >> (8-PxMATRIX_COLOR_DEPTH);
+  g = g >> (8-PxMATRIX_COLOR_DEPTH);
+  b = b >> (8-PxMATRIX_COLOR_DEPTH);
+  
   //Color interlacing
-  for (int this_color=0; this_color<PxMATRIX_COLOR_DEPTH; this_color++)
+  for (int this_color_bit=0; this_color_bit<PxMATRIX_COLOR_DEPTH; this_color_bit++)
   {
-    uint8_t color_tresh = this_color*color_step+color_half_step;
-
-    if (r > color_tresh+_color_R_offset)
-      (*PxMATRIX_bufferp)[this_color][total_offset_r] |=_BV(bit_select);
+    if ((r >> this_color_bit) & 0x01)
+      (*PxMATRIX_bufferp)[this_color_bit][total_offset_r] |=_BV(bit_select);
     else
-      (*PxMATRIX_bufferp)[this_color][total_offset_r] &= ~_BV(bit_select);
+      (*PxMATRIX_bufferp)[this_color_bit][total_offset_r] &= ~_BV(bit_select);
 
-    if (g > color_tresh+_color_G_offset)
-      (*PxMATRIX_bufferp)[(this_color+color_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_g] |=_BV(bit_select);
+    if ((g >> this_color_bit) & 0x01)
+      (*PxMATRIX_bufferp)[this_color_bit][total_offset_g] |=_BV(bit_select);
     else
-      (*PxMATRIX_bufferp)[(this_color+color_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_g] &= ~_BV(bit_select);
+      (*PxMATRIX_bufferp)[this_color_bit][total_offset_g] &= ~_BV(bit_select);
 
-    if (b > color_tresh+_color_B_offset)
-      (*PxMATRIX_bufferp)[(this_color+color_two_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_b] |=_BV(bit_select);
+    if ((b >> this_color_bit) & 0x01)
+      (*PxMATRIX_bufferp)[this_color_bit][total_offset_b] |=_BV(bit_select);
     else
-      (*PxMATRIX_bufferp)[(this_color+color_two_third_step)%PxMATRIX_COLOR_DEPTH][total_offset_b] &= ~_BV(bit_select);
+      (*PxMATRIX_bufferp)[this_color_bit][total_offset_b] &= ~_BV(bit_select);
   }
 }
 
@@ -1051,30 +1044,6 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
   for (uint8_t i=0;i<_row_pattern;i++)
   {
     if(_driver_chip == SHIFT) {
-      if (_fast_update && (_brightness==255)){
-
-        // This will clock data into the display while the outputs are still
-        // latched (LEDs on). We therefore utilize SPI transfer latency as LED
-        // ON time and can reduce the waiting time (show_time). This is rather
-        // timing sensitive and may lead to flicker however promises reduced
-        // update times and increased brightness
-
-        set_mux((i+_row_pattern-1)%_row_pattern);
-        digitalWrite(_LATCH_PIN,HIGH);
-        digitalWrite(_OE_PIN,0);
-        start_time = micros();
-
-        digitalWrite(_LATCH_PIN,LOW);
-        delayMicroseconds(1);
-
-        SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
-
-        while ((micros()-start_time)<show_time)
-          delayMicroseconds(1);
-        digitalWrite(_OE_PIN,1);
-      }
-      else
-      {
         set_mux(i);
 #ifdef __AVR__
   uint8_t this_byte;
@@ -1086,9 +1055,9 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 #else
   SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
 #endif
-        latch(show_time*((uint16_t)_brightness)/255);
-      }
+        latch((show_time*(1<<_display_color)*_brightness)/255/3); // Division by 3 for legacy compatibility
     }
+    
     if (_driver_chip == FM6124 || _driver_chip == FM6126A) // _driver_chip == FM6124
     {
     #ifdef ESP32
