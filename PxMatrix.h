@@ -1025,8 +1025,8 @@ void PxMATRIX::latch(uint16_t show_time )
 
 
 void PxMATRIX::display(uint16_t show_time) {
-  if (show_time < 10)
-    show_time =10;
+  if (show_time == 0)
+    show_time =1;
   unsigned long start_time=0;
 #ifdef ESP8266
   ESP.wdtFeed();
