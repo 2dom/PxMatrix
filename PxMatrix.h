@@ -1055,7 +1055,7 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 #else
   SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
 #endif
-        latch((show_time*(1<<_display_color)*_brightness)/255/3); // Division by 3 for legacy compatibility
+        latch((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 3 for legacy compatibility
     }
     
     if (_driver_chip == FM6124 || _driver_chip == FM6126A) // _driver_chip == FM6124
