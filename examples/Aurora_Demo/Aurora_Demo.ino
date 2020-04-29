@@ -189,7 +189,7 @@ void setup() {
   display.setTextColor(myMAGENTA);
   display.setCursor(2,8);
   display.print("Time");
-  display_update_enable(false);
+  display_update_enable(true);
 
   delay(3000);
   // setup the effects generator
@@ -264,11 +264,8 @@ void loop()
     if ( next_frame < ms_current)
     {
       next_frame = patterns.drawFrame() + ms_current;   
-     display.showBuffer();
+      display.showBuffer();  
     }
-    display.display(10);
-      
-      
 }
 
 void listPatterns() {
