@@ -14,7 +14,7 @@
 //#define PxMATRIX_SPI_FREQUENCY 20000000
 
 // Creates a second buffer for backround drawing (doubles the required RAM)
-//#define PxMATRIX_double_buffer true
+#define PxMATRIX_double_buffer true
 
 #include <PxMatrix.h>
 
@@ -123,7 +123,7 @@ void display_update_enable(bool is_enable)
   {
     timer = timerBegin(0, 80, true);
     timerAttachInterrupt(timer, &display_updater, true);
-    timerAlarmWrite(timer, 1000, true);
+    timerAlarmWrite(timer, 2000, true);
     timerAlarmEnable(timer);
   }
   else
@@ -189,7 +189,7 @@ void setup() {
   display.setTextColor(myMAGENTA);
   display.setCursor(2,8);
   display.print("Time");
-  display_update_enable(true);
+  display_update_enable(false);
 
   delay(3000);
   // setup the effects generator
@@ -262,7 +262,13 @@ void loop()
     }
  
     if ( next_frame < ms_current)
-      next_frame = patterns.drawFrame() + ms_current;     
+    {
+      next_frame = patterns.drawFrame() + ms_current;   
+     display.showBuffer();
+    }
+    display.display(10);
+      
+      
 }
 
 void listPatterns() {
