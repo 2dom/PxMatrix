@@ -210,7 +210,7 @@ void display_update_enable(bool is_enable)
 
 #ifdef ESP8266
   if (is_enable)
-    display_ticker.attach(0.002, display_updater);
+    display_ticker.attach(0.004, display_updater);
   else
     display_ticker.detach();
 #endif
@@ -220,7 +220,7 @@ void display_update_enable(bool is_enable)
   {
     timer = timerBegin(0, 80, true);
     timerAttachInterrupt(timer, &display_updater, true);
-    timerAlarmWrite(timer, 2000, true);
+    timerAlarmWrite(timer, 4000, true);
     timerAlarmEnable(timer);
   }
   else
@@ -245,7 +245,6 @@ void setup() {
   // Define multiplex implemention here {BINARY, STRAIGHT} (default is BINARY)
   //display.setMuxPattern(BINARY);
 
-  display.setFastUpdate(true);
   display.clearDisplay();
   display.setTextColor(myCYAN);
   display.setCursor(2,0);
