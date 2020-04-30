@@ -1036,7 +1036,8 @@ void PxMATRIX::latch(uint16_t show_time )
 void PxMATRIX::display(uint16_t show_time) {
   if (show_time == 0)
     show_time =1;
-  uint16_t latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 2 for legacy compatibility
+  static uint16_t latch_time = 1;
+  if(!_fast_update) latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 2 for legacy compatibility
   
   unsigned long start_time=0;
 #ifdef ESP8266
@@ -1076,6 +1077,7 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
         while ((micros()-start_time)<latch_time)
           delayMicroseconds(1);
         digitalWrite(_OE_PIN,1);
+        if(i==0) latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 2 for legacy compatibility
       }
       else
       {
