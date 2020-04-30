@@ -1036,7 +1036,7 @@ void PxMATRIX::latch(uint16_t show_time )
 void PxMATRIX::display(uint16_t show_time) {
   if (show_time == 0)
     show_time =1;
-  uint16_t latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 3 for legacy compatibility
+  uint16_t latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 2 for legacy compatibility
   
   unsigned long start_time=0;
 #ifdef ESP8266
@@ -1055,7 +1055,7 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
   for (uint8_t i=0;i<_row_pattern;i++)
   {
     if(_driver_chip == SHIFT) {
-      if (_fast_update && (_brightness==255)){
+      if (_fast_update){
 
         // This will clock data into the display while the outputs are still
         // latched (LEDs on). We therefore utilize SPI transfer latency as LED
