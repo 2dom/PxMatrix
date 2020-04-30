@@ -52,7 +52,7 @@ Ticker display_ticker;
 
 // This defines the 'on' time of the display is us. The larger this number,
 // the brighter the display. If too large the ESP will crash
-uint8_t display_draw_time=20; //10-50 is usually fine
+uint8_t display_draw_time=60; //30-70 is usually fine
 
 PxMATRIX display(32,16,P_LAT, P_OE,P_A,P_B,P_C);
 //PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
@@ -105,7 +105,7 @@ void display_update_enable(bool is_enable)
 
 #ifdef ESP8266
   if (is_enable)
-    display_ticker.attach(0.002, display_updater);
+    display_ticker.attach(0.004, display_updater);
   else
     display_ticker.detach();
 #endif
@@ -115,7 +115,7 @@ void display_update_enable(bool is_enable)
   {
     timer = timerBegin(0, 80, true);
     timerAttachInterrupt(timer, &display_updater, true);
-    timerAlarmWrite(timer, 2000, true);
+    timerAlarmWrite(timer, 4000, true);
     timerAlarmEnable(timer);
   }
   else
@@ -147,9 +147,6 @@ void setup() {
   // Flip display
   //display.setFlip(true);
 
-  // Helps to reduce display update latency on larger displays
-  //display.setFastUpdate(true);
-
   // Control the minimum color values that result in an active pixel
   //display.setColorOffset(5, 5,5);
 
@@ -172,8 +169,6 @@ void setup() {
   // Set driver chip type
   //display.setDriverChip(FM6124);
 
-
-  display.setFastUpdate(true);
   display.clearDisplay();
   display.setTextColor(myCYAN);
   display.setCursor(2,0);

@@ -73,13 +73,13 @@ Serial.begin(9600);
   display.setTextWrap(false);
 
   #ifdef ESP8266
-    display_ticker.attach(0.002, display_updater);
+    display_ticker.attach(0.004, display_updater);
   #endif
 
   #ifdef ESP32
     timer = timerBegin(0, 80, true);
     timerAttachInterrupt(timer, &display_updater, true);
-    timerAlarmWrite(timer, 2000, true);
+    timerAlarmWrite(timer, 4000, true);
     timerAlarmEnable(timer);
   #endif
 

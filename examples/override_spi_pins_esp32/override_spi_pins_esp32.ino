@@ -94,7 +94,7 @@ if (is_enable)
 {
     timer = timerBegin(0, 80, true);
     timerAttachInterrupt(timer, &display_updater, true);
-    timerAlarmWrite(timer, 2000, true);
+    timerAlarmWrite(timer, 4000, true);
     timerAlarmEnable(timer);
 }
 else
@@ -120,7 +120,6 @@ display.begin(16, SPI_BUS_CLK, 27, SPI_BUS_MISO, SPI_BUS_SS);
 // Define multiplex implemention here {BINARY, STRAIGHT} (default is BINARY)
 //display.setMuxPattern(BINARY);
 
-display.setFastUpdate(true);
 display.clearDisplay();
 display.setTextColor(myCYAN);
 display.setCursor(2, 0);
