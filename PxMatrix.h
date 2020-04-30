@@ -183,6 +183,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Flip display
   inline void setFlip(bool flip);
 
+  // Helps to reduce display update latency on larger displays
+  inline void setFastUpdate(bool fast_update);
+
   // When using double buffering, this displays the draw buffer
   inline void showBuffer();
 
@@ -272,6 +275,7 @@ class PxMATRIX : public Adafruit_GFX {
   // Hols configuration
   bool _rotate;
   bool _flip;
+  bool _fast_update;
 
   // Holds multiplex pattern
   mux_patterns _mux_pattern;
@@ -361,6 +365,7 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _test_line_counter=0;
   _rotate=0;
   _flip=0;
+  _fast_update=0;
 
   _row_pattern=0;
   _scan_pattern=LINE;
@@ -554,6 +559,10 @@ inline void PxMATRIX::setRotate(bool rotate) {
 
 inline void PxMATRIX::setFlip(bool flip) {
   _flip=flip;
+}
+
+inline void PxMATRIX::setFastUpdate(bool fast_update) {
+  _fast_update=fast_update;
 }
 
 inline void PxMATRIX::setBrightness(uint8_t brightness) {
@@ -1027,6 +1036,8 @@ void PxMATRIX::latch(uint16_t show_time )
 void PxMATRIX::display(uint16_t show_time) {
   if (show_time == 0)
     show_time =1;
+  uint16_t latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 3 for legacy compatibility
+  
   unsigned long start_time=0;
 #ifdef ESP8266
   ESP.wdtFeed();
@@ -1044,6 +1055,30 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
   for (uint8_t i=0;i<_row_pattern;i++)
   {
     if(_driver_chip == SHIFT) {
+      if (_fast_update && (_brightness==255)){
+
+        // This will clock data into the display while the outputs are still
+        // latched (LEDs on). We therefore utilize SPI transfer latency as LED
+        // ON time and can reduce the waiting time (show_time). This is rather
+        // timing sensitive and may lead to flicker however promises reduced
+        // update times and increased brightness
+
+        set_mux((i+_row_pattern-1)%_row_pattern);
+        digitalWrite(_LATCH_PIN,HIGH);
+        digitalWrite(_OE_PIN,0);
+        start_time = micros();
+
+        digitalWrite(_LATCH_PIN,LOW);
+        delayMicroseconds(1);
+
+        SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
+
+        while ((micros()-start_time)<latch_time)
+          delayMicroseconds(1);
+        digitalWrite(_OE_PIN,1);
+      }
+      else
+      {
         set_mux(i);
 #ifdef __AVR__
   uint8_t this_byte;
@@ -1055,7 +1090,8 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 #else
   SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
 #endif
-        latch((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 3 for legacy compatibility
+        latch(latch_time); 
+      }
     }
     
     if (_driver_chip == FM6124 || _driver_chip == FM6126A) // _driver_chip == FM6124

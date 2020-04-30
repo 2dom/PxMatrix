@@ -60,7 +60,7 @@ unsigned long next_frame = 0;
 
 // This defines the 'on' time of the display is us. The larger this number,
 // the brighter the display. If too large the ESP will crash
-uint8_t display_draw_time=10; //30-60 is usually fine
+uint8_t display_draw_time=1; //30-60 is usually fine
 
 PxMATRIX display(32,16,P_LAT, P_OE,P_A,P_B,P_C);
 //PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
@@ -141,6 +141,7 @@ void setup() {
  Serial.begin(9600);
   // Define your display layout here, e.g. 1/8 step, and optional SPI pins begin(row_pattern, CLK, MOSI, MISO, SS)
   display.begin(8);
+  display.setFastUpdate(true);
   //display.begin(8, 14, 13, 12, 4);
 
   // Define multiplex implemention here {BINARY, STRAIGHT} (default is BINARY)
