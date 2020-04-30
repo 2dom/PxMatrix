@@ -14,6 +14,10 @@ BSD license, check license.txt for more information
 #define PxMATRIX_COLOR_DEPTH 4
 #endif
 
+#if PxMATRIX_COLOR_DEPTH > 8 || PxMATRIX_COLOR_DEPTH < 1
+#error "PxMATRIX_COLOR_DEPTH must be 1 to 8 bits maximum"
+#endif
+
 // Defines the buffer height / the maximum height of the matrix
 #ifndef PxMATRIX_MAX_HEIGHT
 #define PxMATRIX_MAX_HEIGHT 64
