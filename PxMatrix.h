@@ -650,8 +650,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     x =_width - 1 -x;
   
    if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
-    return;
-
+    return;  
   
   if (_color_order!= RRGGBB)
   {
@@ -1099,7 +1098,7 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
   for (uint8_t i=0;i<_row_pattern;i++)
   {
     if(_driver_chip == SHIFT) {
-      if (_fast_update){
+      if ((_fast_update)&&(_brightness==255)){
 
         // This will clock data into the display while the outputs are still
         // latched (LEDs on). We therefore utilize SPI transfer latency as LED
@@ -1201,7 +1200,7 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
       digitalWrite(_OE_PIN, 0); //<<<< insert this
       unsigned long start_time = micros();
 
-      while ((micros()-start_time)<show_time)
+      while ((micros()-start_time)<latch_time)
         delayMicroseconds(1);
       //GPIO_REG_CLEAR( 1 << _OE_PIN);
       digitalWrite(_OE_PIN, 1);
