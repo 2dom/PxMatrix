@@ -1079,6 +1079,7 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
         }
         else 
         { 
+          // This pre-buffers the data for the first row pattern of the next _display_color
           SPI_TRANSFER(&(*bufferp)[((_display_color+1)%PxMATRIX_COLOR_DEPTH)][0],_send_buffer_size); 
         }
        
