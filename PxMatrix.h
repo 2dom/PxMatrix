@@ -14,6 +14,10 @@ BSD license, check license.txt for more information
 #define PxMATRIX_COLOR_DEPTH 4
 #endif
 
+#if PxMATRIX_COLOR_DEPTH > 8 || PxMATRIX_COLOR_DEPTH < 1
+#error "PxMATRIX_COLOR_DEPTH must be 1 to 8 bits maximum"
+#endif
+
 // Defines the buffer height / the maximum height of the matrix
 #ifndef PxMATRIX_MAX_HEIGHT
 #define PxMATRIX_MAX_HEIGHT 64
@@ -1035,7 +1039,8 @@ void PxMATRIX::latch(uint16_t show_time )
 void PxMATRIX::display(uint16_t show_time) {
   if (show_time == 0)
     show_time =1;
-  uint16_t latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 2 for legacy compatibility
+  static uint16_t latch_time = 1;
+  if(!_fast_update) latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 2 for legacy compatibility
   
   unsigned long start_time=0;
 #ifdef ESP8266
@@ -1064,10 +1069,10 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 
         set_mux((i+_row_pattern-1)%_row_pattern);
         digitalWrite(_LATCH_PIN,HIGH);
-        digitalWrite(_OE_PIN,0);
+        digitalWrite(_LATCH_PIN,LOW);
+        digitalWrite(_OE_PIN,LOW);
         start_time = micros();
 
-        digitalWrite(_LATCH_PIN,LOW);
         delayMicroseconds(1);
 
         SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
@@ -1075,6 +1080,7 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
         while ((micros()-start_time)<latch_time)
           delayMicroseconds(1);
         digitalWrite(_OE_PIN,1);
+        if(i==0) latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 2 for legacy compatibility
       }
       else
       {
