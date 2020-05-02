@@ -14,6 +14,10 @@ BSD license, check license.txt for more information
 #define PxMATRIX_COLOR_DEPTH 4
 #endif
 
+#if PxMATRIX_COLOR_DEPTH > 8 || PxMATRIX_COLOR_DEPTH < 1
+#error "PxMATRIX_COLOR_DEPTH must be 1 to 8 bits maximum"
+#endif
+
 // Defines the buffer height / the maximum height of the matrix
 #ifndef PxMATRIX_MAX_HEIGHT
 #define PxMATRIX_MAX_HEIGHT 64
@@ -273,7 +277,7 @@ class PxMATRIX : public Adafruit_GFX {
   // This is for double buffering
   bool _active_buffer;
 
-  // Hols configuration
+  // Display and color engine
   bool _rotate;
   bool _flip;
   bool _fast_update;
@@ -376,7 +380,6 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _mux_delay_C=0;
   _mux_delay_D=0;
   _mux_delay_E=0;
-
 
   clearDisplay(0);
 #ifdef PxMATRIX_double_buffer
@@ -1075,12 +1078,13 @@ void PxMATRIX::latch(uint16_t show_time )
   display(PxMATRIX_DEFAULT_SHOWTIME);
 }
 
-
 void PxMATRIX::display(uint16_t show_time) {
   if (show_time == 0)
     show_time =1;
-  uint16_t latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2); // Division by 2 for legacy compatibility
   
+  // How long do we keep the pixels on
+  uint16_t latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2);
+
   unsigned long start_time=0;
 #ifdef ESP8266
   ESP.wdtFeed();
@@ -1106,19 +1110,29 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
         // timing sensitive and may lead to flicker however promises reduced
         // update times and increased brightness
 
+        set_mux(i);
         digitalWrite(_LATCH_PIN,HIGH);
         digitalWrite(_LATCH_PIN,LOW);
-        set_mux((i+_row_pattern-1)%_row_pattern);
         digitalWrite(_OE_PIN,LOW);
         start_time = micros();
+        
 
         delayMicroseconds(1);
-
-        SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
-
+        if (i<_row_pattern-1)
+        {
+          // This pre-buffers the data for the next row pattern of this _display_color
+          SPI_TRANSFER(&(*bufferp)[_display_color][(i+1)*_send_buffer_size],_send_buffer_size);
+        }
+        else 
+        { 
+          // This pre-buffers the data for the first row pattern of the next _display_color
+          SPI_TRANSFER(&(*bufferp)[((_display_color+1)%PxMATRIX_COLOR_DEPTH)][0],_send_buffer_size); 
+        }
+       
         while ((micros()-start_time)<latch_time)
           delayMicroseconds(1);
-        digitalWrite(_OE_PIN,1);
+        digitalWrite(_OE_PIN,HIGH);
+
       }
       else
       {
