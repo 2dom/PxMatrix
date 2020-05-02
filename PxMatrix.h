@@ -122,7 +122,7 @@ BSD license, check license.txt for more information
 // BINARY: Pins A-E map to rows 1-32 via binary decoding (default)
 // STRAIGHT: Pins A-D are directly mapped to rows 1-4
 // SHIFTREG: A, B, C on Panel are connected to a shift register Clock, Latch, Data
-enum mux_patterns {BINARY, STRAIGHT, SHIFTREG_ABC, SHIFTREG_SPI_PA, SHIFTREG_SPI_SE};
+enum mux_patterns {BINARY, STRAIGHT, SHIFTREG_ABC, SHIFTREG_SPI_SE};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
@@ -315,7 +315,7 @@ inline void init(uint16_t width, uint16_t height ,uint8_t LATCH, uint8_t OE, uin
 inline void latch(uint16_t show_time );
 
   // Set row multiplexer
-inline void set_mux(uint8_t value);
+inline void set_mux(uint8_t value, boolean random_access);
 
 inline void spi_init();
 
@@ -526,16 +526,18 @@ inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
     pinMode(_D_PIN, OUTPUT);
   }
 
-  if (_mux_pattern==SHIFTREG_SPI_PA)
+  if (_mux_pattern==SHIFTREG_SPI_SE)
   {
-    pinMode(_B_PIN, OUTPUT); // B is used as MUX_LATCH; A/C share CLK/DATA
+    pinMode(_B_PIN, OUTPUT); // B is used as /Enable for row mux
+    digitalWrite(_B_PIN,LOW); // Enable output of row mux
   }
 
   if (_mux_pattern==SHIFTREG_ABC)
   {
     pinMode(_A_PIN, OUTPUT); // A is used as MUX_CLK
-    pinMode(_B_PIN, OUTPUT); // B is used as MUX_LATCH
+    pinMode(_B_PIN, OUTPUT); // B is used as MUX_ENABLE
     pinMode(_C_PIN, OUTPUT); // C is used as MUX_DATA
+    digitalWrite(_B_PIN,LOW); // Enable output of row mux
   }
 }
 
@@ -924,7 +926,7 @@ void PxMATRIX::begin(uint8_t row_pattern) {
 
 }
 
-void PxMATRIX::set_mux(uint8_t value)
+void PxMATRIX::set_mux(uint8_t value, boolean random_access = false)
 {
 
   if (_mux_pattern==BINARY)
@@ -994,8 +996,8 @@ void PxMATRIX::set_mux(uint8_t value)
       digitalWrite(_D_PIN,HIGH);
   }
 
-  if (_mux_pattern==SHIFTREG_SPI_PA || _mux_pattern==SHIFTREG_SPI_SE) {
-    // A, B, C on Panel are connected to a shift register Clock, Latch, Data
+  if (_mux_pattern==SHIFTREG_SPI_SE) {
+    // A, B, C on Panel are connected to a shift register Clock, /enable, Data
     uint8_t rowmask[4] = {0,0,0,0};
     if(_row_pattern > 16) {
       rowmask[(31-value)/8] = (1<<(value%8));
@@ -1004,27 +1006,24 @@ void PxMATRIX::set_mux(uint8_t value)
       rowmask[(15-value)/8] = (1<<(value%8));
       SPI_TRANSFER(rowmask,2);
     }
-    if(_mux_pattern==SHIFTREG_SPI_PA) {
-      // Latch
-      digitalWrite(_B_PIN,HIGH);
-      digitalWrite(_B_PIN,LOW);
-    }
   }
 
   if (_mux_pattern==SHIFTREG_ABC) {
-    // A,B,C are connected to a shift register Clock, Latch, Data
-    uint32_t rowmask;
-    rowmask = (1<<value);
-    digitalWrite(_C_PIN,LOW);
-    if(_row_pattern > 16) {
-      shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>24);
-      shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>16);
+    // A,B,C are connected to a shift register Clock, /Enable, Data
+    if(random_access) {
+      // Clock out all row mux bits to make sure random access is possible
+      uint8_t r = _row_pattern;
+      while(r-- > 0) {
+        digitalWrite(_C_PIN, (value==r) ); // Shift out 1 for selected row
+        digitalWrite(_A_PIN, HIGH); // Clock out this bit
+        digitalWrite(_A_PIN, LOW);
+      }
+    } else {
+      // Just shift the row mux by one for incremental access
+      digitalWrite(_C_PIN, (value==0) ); // Shift out 1 for line 0, 0 otherwise
+      digitalWrite(_A_PIN, HIGH); // Clock out this bit
+      digitalWrite(_A_PIN, LOW);
     }
-    shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask>>8);
-    shiftOut(_C_PIN,_A_PIN,MSBFIRST,rowmask);
-    // Latch
-    digitalWrite(_B_PIN,HIGH);
-    digitalWrite(_B_PIN,LOW);
   }
 
 }
@@ -1277,7 +1276,7 @@ void PxMATRIX::displayTestPattern(uint16_t show_time) {
   delayMicroseconds(1);
   digitalWrite(_E_PIN,LOW);
   delayMicroseconds(1);
-  set_mux(_test_line_counter);
+  set_mux(_test_line_counter, true);
 
   latch(show_time);
 }
@@ -1328,7 +1327,7 @@ void PxMATRIX::displayTestPixel(uint16_t show_time) {
   digitalWrite(_E_PIN,LOW);
   delayMicroseconds(1);
 
-  set_mux(_test_line_counter);
+  set_mux(_test_line_counter, true);
 
   latch(show_time);
 }
