@@ -33,15 +33,23 @@ For example, the 32x16 displays work like this (other varieties operate accordin
 Such LED matrix are usually used as a sub-module for larger displays and therefore feature an output connector for daisy chaining. On the output connector you will find the identical signals to the input connector where A,B,C,LAT,CLK are simply routed through and (R,G,B) pins are the outputs of the shift registers on the module.
 
 ## Configure the library for your panel
-There are three parameters that define how the panel works. The first one is the basic row scanning layout explained above. You can specify this in the `display.begin(x)` call where x={4,8,16,32} is the scanning layout. Secondly, you may have to specify a different scanning pattern to the default LINE scanning. This can be achieved by calling `display.setScanPattern(x)` where x={LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG}. Finally, your panel may not handle BINARY row multiplexing by itself but we need to handle it in the library and select rows STRAIGHT via the A,B,C,D lines. This can be achieved by calling `display.setMuxPattern(x)` where x={BINARY, STRAIGHT}.
- So for some very strange displays you may have execute:
+The number of required address lines (A,B,C ...) in the constructor depends on the row-scan pattern and the multiplex pattern. See cabling-section for that. There are also three parameters that define how the panel works. 
+### Row scanning
+The first one is the basic row scanning layout explained above. You can specify this in the `display.begin(x)` call where x={4,8,16,32} is the scanning layout. 
+### Scan pattern
+Secondly, you may have to specify a different scanning pattern to the default LINE scanning. This can be achieved by calling `display.setScanPattern(x)` where x={LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG}. This defines where parts of your picture end up on the matrix. Change this if your picture is broken up into pieces at the wrong spots.
+### Mux pattern
+Finally, most panels use BINARY mapping of inputs A,B,C,D,E to the physical rows. But your panel may handle row multiplexing differntly. Some panels with 1/2 or 1/4 row scanning will map A,B,C,D(,E) STRAIGHT through to rows 0-4. Others may use a Shift-Register connected to A,B,C for row selection (SHIFTREG_ABC), like ones with Chip RT5957. For those, alternative cabling which frees up some IOs is possible with SHIFTREG_SPI_SE. See cabling section. However, this mode is barely tested and will not work with `setFastUpdate(true)`!
+
+### Selection
+Select the right pattern by calling `display.setMuxPattern(x)` where x={BINARY, STRAIGHT, SHIFTREG_ABC, SHIFTREG_SPI_SE}.
+So for some very strange displays you may have execute:
 
 ```
 display.begin(4);
 display.setScanPattern(ZAGGIZ);
 display.setMuxPattern(STRAIGHT);
 ```
-The number of required address lines (A,B,C ...) in the constructor depends on the row-scan pattern and the multiplex pattern. For example a 1/4 scan display with scan pattern BINARY will require A,B where a STRAIGHT display will require A,B,C,D. A good hint is usally the connector labeling on your matrix.
 
 ## Set-up and cabling
 
@@ -93,9 +101,9 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   PI  | ESP8266 (NodeMCU) | ESP32 | ATMEGA | NOTE
   ----|----|----|----|----
-  A   |  05 - (D1) | 19 | 2
-  B   |  04 - (D2) | 23 | 3
-  C   |  15 - (D8) | 18 | 4 | only for 1/8, 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
+  A   |  05 - (D1) | 19 | 2 | 
+  B   |  04 - (D2) | 23 | 3 | optional on SHIFTREG_ABC (always LOW)
+  C   |  15 - (D8) | 18 | 4 | only for 1/8, 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern or SHIFTREG_ABC mux pattern
   D   |  12 - (D6) | 5 | 5 | only for 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
   E   |  00 - (D3) | 15 | 6 | only for 1/32 scan
   STB/LAT |  16 - (D0) | 22 | 7
@@ -112,6 +120,21 @@ If you want it more professional, some users have created custom PCBs to get rid
   * [Mike](https://github.com/mike-rankin/ESP8266_RGB_Matrix_Cable_Version)
   * [Peppe](http://www.instructables.com/id/tabuled)
   * [Brian Lough (@witnessmenow)](https://www.tindie.com/products/brianlough/esp32-matrix-shield-mini-32/)
+
+## ABCDE cabling depending on mux pattern
+
+### BINARY (default)
+A 1/4 scan display with scan pattern BINARY will require only A and B. 1/8 requires A-C, 1/16 A-D and 1/32 A-E to be connected. A good hint is usally the connector labeling on your matrix.
+
+### STRAIGHT 
+A STRAIGHT 1/2 display will require A and B. A 1/4 A-D.
+
+### SHIFTREG_ABC 
+SHIFTREG_ABC (with RT5957 or other Shift-Register for row selection) will always require connecting A,B,C with B always beeing LOW (you may connect GND instead and reuse the IO for other stuff).
+
+### SHIFTREG_SPI_SE
+SHIFTREG_SPI_SE is a special variant of SHIFTREG_ABC where you actually connect the A,B,C inputs of the panel not to IOs on your microcontroller, but to the output of your last panel, reusing the SPI signal to also drive the row selection.
+A (IN) needs to be connected to Clock (OUT), C (IN) to Data/Blue_2 (OUT), B (IN) to GND. This frees up three IOs. 
 
 ## Colors
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.

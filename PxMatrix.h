@@ -121,7 +121,8 @@ BSD license, check license.txt for more information
 // Specify how the Panel handles row muxing:
 // BINARY: Pins A-E map to rows 1-32 via binary decoding (default)
 // STRAIGHT: Pins A-D are directly mapped to rows 1-4
-// SHIFTREG: A, B, C on Panel are connected to a shift register Clock, Latch, Data
+// SHIFTREG: A, B, C on Panel are connected to a shift register Clock, /Enable, Data
+// SHIFTREG_SPI_SE: Like SHIFTREG, but you connect A and C on Panel to its Clock and Data output (and ground B). This will not work with fast_update enabled!
 enum mux_patterns {BINARY, STRAIGHT, SHIFTREG_ABC, SHIFTREG_SPI_SE};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
