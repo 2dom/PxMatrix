@@ -121,7 +121,9 @@ If you want it more professional, some users have created custom PCBs to get rid
   * [Peppe](http://www.instructables.com/id/tabuled)
   * [Brian Lough (@witnessmenow)](https://www.tindie.com/products/brianlough/esp32-matrix-shield-mini-32/)
 
-## ABCDE cabling depending on mux pattern
+## ABCDE cabling 
+The ABCDE cabling depends on the mux pattern used by your panel. For the majority of panels ABCDE is connected as shown in the previous section, however, for some variants e.g. using RT5957 chips, it is different.
+
 
 ### BINARY (default)
 A 1/4 scan display with scan pattern BINARY will require only A and B. 1/8 requires A-C, 1/16 A-D and 1/32 A-E to be connected. A good hint is usally the connector labeling on your matrix.
@@ -129,12 +131,11 @@ A 1/4 scan display with scan pattern BINARY will require only A and B. 1/8 requi
 ### STRAIGHT 
 A STRAIGHT 1/2 display will require A and B. A 1/4 A-D.
 
-### SHIFTREG_ABC 
-SHIFTREG_ABC (with RT5957 or other Shift-Register for row selection) will always require connecting A,B,C with B always beeing LOW (you may connect GND instead and reuse the IO for other stuff).
+### SHIFTREG_ABC - for RT5957 panels
+SHIFTREG_ABC (with RT5957 or other Shift-Register for row selection) will require connecting A,B,C with B always beeing LOW (you may connect GND instead and reuse the IO for other stuff). So this needs extra pins on your microcontroller.
 
-### SHIFTREG_SPI_SE
-SHIFTREG_SPI_SE is a special variant of SHIFTREG_ABC where you actually connect the A,B,C inputs of the panel not to IOs on your microcontroller, but to the output of your last panel, reusing the SPI signal to also drive the row selection.
-A (IN) needs to be connected to Clock (OUT), C (IN) to Data/Blue_2 (OUT), B (IN) to GND. This frees up three IOs. 
+### SHIFTREG_SPI_SE - for RT5957 panels (experimental)
+SHIFTREG_SPI_SE is a functionally identical variant of SHIFTREG_ABC where we use the SPI signal carrying the display data also for the row selection logic. This frees up three exta I/O pins required by SHIFTREG_ABC. To make this work you will have to connect the outputs of your last panel to the ABC inputs of the first panel - in particular A (IN) needs to be connected to Clock (OUT), C (IN) to Data/Blue_2 (OUT), B (IN) to GND. 
 
 ## Colors
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.
