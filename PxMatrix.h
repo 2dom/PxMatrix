@@ -118,9 +118,12 @@ BSD license, check license.txt for more information
 #define SPI_BUS_MISO 12
 #define SPI_BUS_SS 4
 
-// Either the panel handles the multiplexing and we feed BINARY to A-E pins
-// or we handle the multiplexing and activate one of A-D pins (STRAIGHT)
-enum mux_patterns {BINARY, STRAIGHT};
+// Specify how the Panel handles row muxing:
+// BINARY: Pins A-E map to rows 1-32 via binary decoding (default)
+// STRAIGHT: Pins A-D are directly mapped to rows 1-4
+// SHIFTREG: A, B, C on Panel are connected to a shift register Clock, /Enable, Data
+// SHIFTREG_SPI_SE: Like SHIFTREG, but you connect A and C on Panel to its Clock and Data output (and ground B). This will not work with fast_update enabled!
+enum mux_patterns {BINARY, STRAIGHT, SHIFTREG_ABC, SHIFTREG_SPI_SE};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
@@ -196,7 +199,7 @@ class PxMATRIX : public Adafruit_GFX {
   // Control the minimum color values that result in an active pixel
   inline void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
 
-  // Set the multiplex implemention {BINARY, STRAIGHT} (default is BINARY)
+  // Set the multiplex implemention {BINARY, STRAIGHT, SHIFTREG} (default is BINARY)
   inline void setMuxPattern(mux_patterns mux_pattern);
 
     // Set the color order
@@ -217,7 +220,6 @@ class PxMATRIX : public Adafruit_GFX {
 
   // Set driver chip type
   inline void setDriverChip(driver_chips driver_chip);
-
 
  private:
 
@@ -293,7 +295,6 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _mux_delay_D;
   uint8_t _mux_delay_E;
 
-
   // Holds the scan pattern
   scan_patterns _scan_pattern;
 
@@ -315,7 +316,7 @@ inline void init(uint16_t width, uint16_t height ,uint8_t LATCH, uint8_t OE, uin
 inline void latch(uint16_t show_time );
 
   // Set row multiplexer
-inline void set_mux(uint8_t value);
+inline void set_mux(uint8_t value, boolean random_access);
 
 inline void spi_init();
 
@@ -524,6 +525,20 @@ inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
   {
     pinMode(_C_PIN, OUTPUT);
     pinMode(_D_PIN, OUTPUT);
+  }
+
+  if (_mux_pattern==SHIFTREG_SPI_SE)
+  {
+    pinMode(_B_PIN, OUTPUT); // B is used as /Enable for row mux
+    digitalWrite(_B_PIN,LOW); // Enable output of row mux
+  }
+
+  if (_mux_pattern==SHIFTREG_ABC)
+  {
+    pinMode(_A_PIN, OUTPUT); // A is used as MUX_CLK
+    pinMode(_B_PIN, OUTPUT); // B is used as MUX_ENABLE
+    pinMode(_C_PIN, OUTPUT); // C is used as MUX_DATA
+    digitalWrite(_B_PIN,LOW); // Enable output of row mux
   }
 }
 
@@ -912,7 +927,7 @@ void PxMATRIX::begin(uint8_t row_pattern) {
 
 }
 
-void PxMATRIX::set_mux(uint8_t value)
+void PxMATRIX::set_mux(uint8_t value, boolean random_access = false)
 {
 
   if (_mux_pattern==BINARY)
@@ -981,6 +996,37 @@ void PxMATRIX::set_mux(uint8_t value)
     else
       digitalWrite(_D_PIN,HIGH);
   }
+
+  if (_mux_pattern==SHIFTREG_SPI_SE) {
+    // A, B, C on Panel are connected to a shift register Clock, /enable, Data
+    uint8_t rowmask[4] = {0,0,0,0};
+    if(_row_pattern > 16) {
+      rowmask[(31-value)/8] = (1<<(value%8));
+      SPI_TRANSFER(rowmask,4);
+    } else {
+      rowmask[(15-value)/8] = (1<<(value%8));
+      SPI_TRANSFER(rowmask,2);
+    }
+  }
+
+  if (_mux_pattern==SHIFTREG_ABC) {
+    // A,B,C are connected to a shift register Clock, /Enable, Data
+    if(random_access) {
+      // Clock out all row mux bits to make sure random access is possible
+      uint8_t r = _row_pattern;
+      while(r-- > 0) {
+        digitalWrite(_C_PIN, (value==r) ); // Shift out 1 for selected row
+        digitalWrite(_A_PIN, HIGH); // Clock out this bit
+        digitalWrite(_A_PIN, LOW);
+      }
+    } else {
+      // Just shift the row mux by one for incremental access
+      digitalWrite(_C_PIN, (value==0) ); // Shift out 1 for line 0, 0 otherwise
+      digitalWrite(_A_PIN, HIGH); // Clock out this bit
+      digitalWrite(_A_PIN, LOW);
+    }
+  }
+
 }
 
 void PxMATRIX::latch(uint16_t show_time )
@@ -1231,7 +1277,7 @@ void PxMATRIX::displayTestPattern(uint16_t show_time) {
   delayMicroseconds(1);
   digitalWrite(_E_PIN,LOW);
   delayMicroseconds(1);
-  set_mux(_test_line_counter);
+  set_mux(_test_line_counter, true);
 
   latch(show_time);
 }
@@ -1282,7 +1328,7 @@ void PxMATRIX::displayTestPixel(uint16_t show_time) {
   digitalWrite(_E_PIN,LOW);
   delayMicroseconds(1);
 
-  set_mux(_test_line_counter);
+  set_mux(_test_line_counter, true);
 
   latch(show_time);
 }
@@ -1307,4 +1353,5 @@ void PxMATRIX::clearDisplay(bool selected_buffer) {
     memset(PxMATRIX_buffer, 0, PxMATRIX_COLOR_DEPTH*buffer_size);
 #endif
 }
+
 #endif
