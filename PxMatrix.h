@@ -40,7 +40,7 @@ BSD license, check license.txt for more information
 
 // Legacy suppport
 #ifdef double_buffer
-#define PxMATRIX_double_buffer true
+#define PxMATRIX_DOUBLE_BUFFER true
 #endif
 
 #ifndef _BV
@@ -223,7 +223,7 @@ class PxMATRIX : public Adafruit_GFX {
 
  // the display buffer for the LED matrix
   uint8_t PxMATRIX_buffer[PxMATRIX_COLOR_DEPTH][buffer_size];
-#ifdef PxMATRIX_double_buffer
+#ifdef PxMATRIX_DOUBLE_BUFFER
   uint8_t PxMATRIX_buffer2[PxMATRIX_COLOR_DEPTH][buffer_size];
 #endif
 
@@ -382,7 +382,7 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _mux_delay_E=0;
 
   clearDisplay(0);
-#ifdef PxMATRIX_double_buffer
+#ifdef PxMATRIX_DOUBLE_BUFFER
   clearDisplay(1);
 #endif
 }
@@ -780,7 +780,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
 
   uint8_t (*PxMATRIX_bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 
-#ifdef PxMATRIX_double_buffer
+#ifdef PxMATRIX_DOUBLE_BUFFER
   PxMATRIX_bufferp = selected_buffer ? &PxMATRIX_buffer2 : &PxMATRIX_buffer;
 #endif
 
@@ -812,7 +812,7 @@ inline void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color) {
   uint8_t r = ((((color >> 11) & 0x1F) * 527) + 23) >> 6;
   uint8_t g = ((((color >> 5) & 0x3F) * 259) + 33) >> 6;
   uint8_t b = (((color & 0x1F) * 527) + 23) >> 6;
-#ifdef PxMATRIX_double_buffer
+#ifdef PxMATRIX_DOUBLE_BUFFER
   fillMatrixBuffer(x, y, r, g, b, !_active_buffer);
 #else
   fillMatrixBuffer(x, y, r, g, b, false);
@@ -820,7 +820,7 @@ inline void PxMATRIX::drawPixelRGB565(int16_t x, int16_t y, uint16_t color) {
 }
 
 inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g,uint8_t b) {
-#ifdef PxMATRIX_double_buffer
+#ifdef PxMATRIX_DOUBLE_BUFFER
   fillMatrixBuffer(x, y, r, g, b, !_active_buffer);
 #else
   fillMatrixBuffer(x, y, r, g, b, false);
@@ -1046,7 +1046,7 @@ void PxMATRIX::display(uint16_t show_time) {
 
 uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
 
-#ifdef PxMATRIX_double_buffer
+#ifdef PxMATRIX_DOUBLE_BUFFER
   if(_active_buffer)
     bufferp=&PxMATRIX_buffer2;
   else
@@ -1069,8 +1069,6 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
         digitalWrite(_LATCH_PIN,LOW);
         digitalWrite(_OE_PIN,LOW);
         start_time = micros();
-        
-
         delayMicroseconds(1);
         if (i<_row_pattern-1)
         {
@@ -1288,7 +1286,7 @@ void PxMATRIX::displayTestPixel(uint16_t show_time) {
 }
 
 void PxMATRIX::clearDisplay(void) {
-#ifdef PxMATRIX_double_buffer
+#ifdef PxMATRIX_DOUBLE_BUFFER
   clearDisplay(!_active_buffer);
 #else
   clearDisplay(false);
@@ -1298,7 +1296,7 @@ void PxMATRIX::clearDisplay(void) {
 
 // clear everything
 void PxMATRIX::clearDisplay(bool selected_buffer) {
-#ifdef PxMATRIX_double_buffer
+#ifdef PxMATRIX_DOUBLE_BUFFER
   if(selected_buffer)
     memset(PxMATRIX_buffer2, 0, PxMATRIX_COLOR_DEPTH*buffer_size);
   else
