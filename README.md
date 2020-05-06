@@ -71,7 +71,7 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   Connect panel input (PI) to the ESP8266 / ESP32 as follows:
 
-  PI  | ESP8266 (NodeMCU) | ESP32 | ATMEGA |NOTE
+  PI  | ESP8266 GPIO (NodeMCU) | ESP32 GPIO | ATMEGA GPIO |NOTE
   ----|----|----|----|----
   A   |  05 - (D1) | 19 | 2
   B   |  04 - (D2) | 23 | 3
@@ -99,7 +99,7 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
 
   Connect panel input (PI) to the ESP8266 / ESP32 as follows:
 
-  PI  | ESP8266 (NodeMCU) | ESP32 | ATMEGA | NOTE
+  PI  | ESP8266 GPIO (NodeMCU) | ESP32 GPIO | ATMEGA GPIO | NOTE
   ----|----|----|----|----
   A   |  05 - (D1) | 19 | 2 | 
   B   |  04 - (D2) | 23 | 3 | optional on SHIFTREG_ABC (always LOW)
