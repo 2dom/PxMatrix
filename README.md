@@ -122,7 +122,7 @@ If you want it more professional, some users have created custom PCBs to get rid
   * [Brian Lough (@witnessmenow)](https://www.tindie.com/products/brianlough/esp32-matrix-shield-mini-32/)
 
 ## ABCDE cabling 
-The ABCDE cabling depends on the mux pattern used by your panel. For the majority of panels ABCDE is connected as shown in the previous section, however, for some variants e.g. using RT5957 chips, it is different.
+The ABCDE cabling depends on the mux pattern used by your panel. For the majority of panels ABCDE is connected as shown in the previous section, however, for some variants e.g. using RT5957 chips, it may be different.
 
 
 ### BINARY (default)
