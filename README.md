@@ -126,10 +126,10 @@ The ABCDE cabling depends on the mux pattern used by your panel. For the majorit
 
 
 ### BINARY (default)
-A 1/4 scan display with scan pattern BINARY will require only A and B. 1/8 requires A-C, 1/16 A-D and 1/32 A-E to be connected. A good hint is usally the connector labeling on your matrix.
+A 1/4 scan display with scan pattern BINARY will require only A and B. 1/8 requires A-C, 1/16 A-D and 1/32 A-E to be connected as above. A good hint is usally the connector labeling on your matrix.
 
 ### STRAIGHT 
-A STRAIGHT 1/2 display will require A and B. A 1/4 A-D.
+A STRAIGHT 1/2 display will require A and B, A 1/4 A-D to be connected as above.
 
 ### SHIFTREG_ABC - for RT5957 panels
 SHIFTREG_ABC (with RT5957 or other Shift-Register for row selection) will require connecting A,B,C with B always beeing LOW (you may connect GND instead and reuse the IO for other stuff). So this needs extra pins on your microcontroller.
