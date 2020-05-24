@@ -196,6 +196,11 @@ class PxMATRIX : public Adafruit_GFX {
   // When using double buffering, this displays the draw buffer
   inline void showBuffer();
 
+#ifdef PxMATRIX_DOUBLE_BUFFER
+  // This copies the display buffer to the drawing buffer (or reverse)
+  inline void copyBuffer(bool reverse);
+#endif
+
   // Control the minimum color values that result in an active pixel
   inline void setColorOffset(uint8_t r, uint8_t g,uint8_t b);
 
@@ -619,6 +624,19 @@ inline void PxMATRIX::drawPixel(int16_t x, int16_t y, uint16_t color) {
 inline void PxMATRIX::showBuffer() {
   _active_buffer=!_active_buffer;
 }
+
+#ifdef PxMATRIX_DOUBLE_BUFFER
+inline void PxMATRIX::copyBuffer(bool reverse = false) {
+  // This copies the display buffer to the drawing buffer (or reverse)
+  // You may need this in case you rely on the framebuffer to always contain the last frame
+  // _active_buffer = true means that PxMATRIX_buffer2 is displayed
+  if(_active_buffer ^ reverse) {
+    memcpy(PxMATRIX_buffer, PxMATRIX_buffer2, PxMATRIX_COLOR_DEPTH*buffer_size);
+  } else {
+    memcpy(PxMATRIX_buffer2, PxMATRIX_buffer, PxMATRIX_COLOR_DEPTH*buffer_size);
+  }
+}
+#endif
 
 inline void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
 {
