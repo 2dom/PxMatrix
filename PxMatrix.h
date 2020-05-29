@@ -249,8 +249,8 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _SPI_MISO = SPI_BUS_MISO;
   uint8_t _SPI_SS = SPI_BUS_SS;
 
-  uint8_t _width;
-  uint8_t _height;
+  uint16_t _width;
+  uint16_t _height;
   uint8_t _panels_width;
   uint8_t _rows_per_buffer;
   uint8_t _row_sets_per_buffer;
