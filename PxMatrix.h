@@ -546,6 +546,16 @@ inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
     pinMode(_C_PIN, OUTPUT); // C is used as MUX_DATA
     digitalWrite(_B_PIN,LOW); // Enable output of row mux
   }
+
+  if (_mux_pattern==SHIFTREG_ABC_BIN_DE)
+  {
+    pinMode(_A_PIN, OUTPUT); // A is used as MUX_CLK
+    pinMode(_B_PIN, OUTPUT); // B is used as MUX_DATA
+    pinMode(_C_PIN, OUTPUT); // C is used as MUX_ENABLE
+    pinMode(_D_PIN, OUTPUT); // D is 4th bit of row
+    pinMode(_E_PIN, OUTPUT); // E is 5th bit of row
+    digitalWrite(_C_PIN,LOW); // Enable output of row mux
+  }
 }
 
 
