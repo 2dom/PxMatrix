@@ -322,7 +322,7 @@ inline void init(uint16_t width, uint16_t height ,uint8_t LATCH, uint8_t OE, uin
 inline void latch(uint16_t show_time );
 
   // Set row multiplexer
-inline void set_mux(uint8_t value, boolean random_access);
+inline void set_mux(uint8_t value, bool random_access);
 
 inline void spi_init();
 
@@ -946,7 +946,7 @@ void PxMATRIX::begin(uint8_t row_pattern) {
 
 }
 
-void PxMATRIX::set_mux(uint8_t value, boolean random_access = false)
+void PxMATRIX::set_mux(uint8_t value, bool random_access = false)
 {
 
   if (_mux_pattern==BINARY)
