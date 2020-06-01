@@ -127,7 +127,7 @@ enum mux_patterns {BINARY, STRAIGHT, SHIFTREG_ABC, SHIFTREG_SPI_SE};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
-enum scan_patterns {LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG};
+enum scan_patterns {LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG, WZAGZIG2};
 
 // Specifies speciffic driver chip. Most panels implement a standard shifted
 // register (SHIFT). Other chips/panels may need special treatment in oder to work
@@ -214,7 +214,7 @@ class PxMATRIX : public Adafruit_GFX {
   // (May help if some rows are missing / the mux chip is too slow)
   inline void setMuxDelay(uint8_t mux_delay_A, uint8_t mux_delay_B, uint8_t mux_delay_C, uint8_t mux_delay_D, uint8_t mux_delay_E);
 
-  // Set the multiplex pattern {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG} (default is LINE)
+  // Set the multiplex pattern {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG, WZAGZIG2} (default is LINE)
   inline void setScanPattern(scan_patterns scan_pattern);
 
   // Set the number of panels that make up the display area width (default is 1)
@@ -699,7 +699,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   uint32_t total_offset_g=0;
   uint32_t total_offset_b=0;
 
-  if (_scan_pattern==WZAGZIG || _scan_pattern==VZAG)
+  if (_scan_pattern==WZAGZIG || _scan_pattern==VZAG || _scan_pattern==WZAGZIG2)
   {
     // get block coordinates and constraints
     uint8_t rows_per_buffer = _height/2;
@@ -725,7 +725,10 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     uint8_t block_y_inv = 1 - block_y;
     uint8_t block_x_inv = blocks_x_per_panel - block_x - 1;
     uint8_t block_linear_index;
-    if (_scan_pattern==WZAGZIG)
+    if (_scan_pattern==WZAGZIG2) {
+      block_linear_index = block_x_inv * 2 + block_y;
+    }
+    else if (_scan_pattern==WZAGZIG)
     {
       // apply x/y block transform for WZAGZIG, only works for height/pattern=4
       block_linear_index = block_x_inv * 2 + block_y_inv;
@@ -743,7 +746,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   }
 
   // This code sections computes the byte in the buffer that will be manipulated.
-  if (_scan_pattern!=LINE && _scan_pattern!=WZAGZIG && _scan_pattern!=VZAG)
+  if (_scan_pattern!=LINE && _scan_pattern!=WZAGZIG && _scan_pattern!=VZAG && _scan_pattern!=WZAGZIG2)
   {
     // Precomputed row offset values
     base_offset=_row_offset[y]-(x/8)*2;
