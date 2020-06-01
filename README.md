@@ -174,7 +174,7 @@ display.setPanelsWidth(3);
   * Run the "pattern_test.ino" and check if the scanning pattern is appearing ok. For a 8 row-step display with LINE scanning pattern it should look like this (red then yellow then white line progressing): <br><img src=./images/8step.gif width="400">
 
 ## Thanks to
-  * <xsrf/> for many useful additions and working the trenches in the issue tracker
+  * xsrf for many useful additions and working the trenches in the issue tracker
   * Kinsey Moore for improving the code
   * Jean Carlos for testing the chaining
   * Dave Davenport for FM62126A support
