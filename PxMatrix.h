@@ -219,7 +219,7 @@ class PxMATRIX : public Adafruit_GFX {
  // the display buffer for the LED matrix
   uint8_t *PxMATRIX_buffer;
 #ifdef PxMATRIX_DOUBLE_BUFFER
-  uint8_t *PxMATRIX_buffer2
+  uint8_t *PxMATRIX_buffer2;
 #endif
 
   // GPIO pins
@@ -1097,7 +1097,7 @@ void PxMATRIX::display(uint16_t show_time) {
 uint8_t *PxMATRIX_bufferp = PxMATRIX_buffer;
 
 #ifdef PxMATRIX_DOUBLE_BUFFER
-  PxMATRIX_bufferp = selected_buffer ? PxMATRIX_buffer2 : PxMATRIX_buffer;
+  PxMATRIX_bufferp = _active_buffer ? PxMATRIX_buffer2 : PxMATRIX_buffer;
 #endif
 
   for (uint8_t i=0;i<_row_pattern;i++)
