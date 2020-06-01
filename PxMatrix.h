@@ -18,16 +18,6 @@ BSD license, check license.txt for more information
 #error "PxMATRIX_COLOR_DEPTH must be 1 to 8 bits maximum"
 #endif
 
-// Defines the buffer height / the maximum height of the matrix
-#ifndef PxMATRIX_MAX_HEIGHT
-#define PxMATRIX_MAX_HEIGHT 64
-#endif
-
-// Defines the buffer width / the maximum width of the matrix
-#ifndef PxMATRIX_MAX_WIDTH
-#define PxMATRIX_MAX_WIDTH 64
-#endif
-
 // Defines how long we display things by default
 #ifndef PxMATRIX_DEFAULT_SHOWTIME
 #define PxMATRIX_DEFAULT_SHOWTIME 30
@@ -136,13 +126,11 @@ enum driver_chips {SHIFT, FM6124, FM6126A};
 // Specify the color order
 enum color_orders {RRGGBB, RRBBGG, GGRRBB, GGBBRR, BBRRGG, BBGGRR};
 
-#define max_matrix_pixels (PxMATRIX_MAX_HEIGHT * PxMATRIX_MAX_WIDTH)
+
 #define color_step (256 / PxMATRIX_COLOR_DEPTH)
 #define color_half_step (int(color_step / 2))
 #define color_third_step (int(color_step / 3))
 #define color_two_third_step (int(color_third_step*2))
-
-#define buffer_size (max_matrix_pixels * 3 / 8)
 
 class PxMATRIX : public Adafruit_GFX {
  public:
@@ -229,9 +217,9 @@ class PxMATRIX : public Adafruit_GFX {
  private:
 
  // the display buffer for the LED matrix
-  uint8_t PxMATRIX_buffer[PxMATRIX_COLOR_DEPTH][buffer_size];
+  uint8_t *PxMATRIX_buffer;
 #ifdef PxMATRIX_DOUBLE_BUFFER
-  uint8_t PxMATRIX_buffer2[PxMATRIX_COLOR_DEPTH][buffer_size];
+  uint8_t *PxMATRIX_buffer2
 #endif
 
   // GPIO pins
@@ -268,7 +256,7 @@ class PxMATRIX : public Adafruit_GFX {
   uint8_t _display_color;
 
   // Holds some pre-computed values for faster pixel drawing
-  uint32_t _row_offset[PxMATRIX_MAX_HEIGHT];
+  uint32_t *_row_offset;
 
   // Holds the display row pattern type
   uint8_t _row_pattern;
@@ -278,6 +266,7 @@ class PxMATRIX : public Adafruit_GFX {
 
   // Total number of bytes that is pushed to the display at a time
   // 3 * _pattern_color_bytes
+  uint16_t _buffer_size;
   uint16_t _send_buffer_size;
 
   // This is for double buffering
@@ -344,20 +333,11 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _A_PIN = A;
   _B_PIN = B;
 
-  if (width > PxMATRIX_MAX_WIDTH){
-    #ifdef DEBUG_ESP_PORT
-      DEBUG_ESP_PORT.print("[PxMatrix] Width larger than PxMATRIX_MAX_WIDTH.\n");
-    #endif
-  }
-
- if (height > PxMATRIX_MAX_HEIGHT){
-    #ifdef DEBUG_ESP_PORT
-      DEBUG_ESP_PORT.print("[PxMatrix] Height larger than PxMATRIX_MAX_HEIGHT.\n");
-    #endif
-  }
-
   _width = width;
   _height = height;
+
+  _buffer_size = (_width*_height * 3 / 8);
+
   _brightness=255;
   _panels_width = 1;
 
@@ -387,10 +367,11 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
   _mux_delay_D=0;
   _mux_delay_E=0;
 
-  clearDisplay(0);
-#ifdef PxMATRIX_DOUBLE_BUFFER
-  clearDisplay(1);
-#endif
+    PxMATRIX_buffer= new uint8_t[PxMATRIX_COLOR_DEPTH*_buffer_size];
+  #ifdef PxMATRIX_DOUBLE_BUFFER
+    PxMATRIX_buffer2=new uint8_t[PxMATRIX_COLOR_DEPTH*_buffer_size];
+  #endif
+
 }
 
 #ifdef ESP32
@@ -631,9 +612,9 @@ inline void PxMATRIX::copyBuffer(bool reverse = false) {
   // You may need this in case you rely on the framebuffer to always contain the last frame
   // _active_buffer = true means that PxMATRIX_buffer2 is displayed
   if(_active_buffer ^ reverse) {
-    memcpy(PxMATRIX_buffer, PxMATRIX_buffer2, PxMATRIX_COLOR_DEPTH*buffer_size);
+    memcpy(PxMATRIX_buffer, PxMATRIX_buffer2, PxMATRIX_COLOR_DEPTH*_buffer_size);
   } else {
-    memcpy(PxMATRIX_buffer2, PxMATRIX_buffer, PxMATRIX_COLOR_DEPTH*buffer_size);
+    memcpy(PxMATRIX_buffer2, PxMATRIX_buffer, PxMATRIX_COLOR_DEPTH*_buffer_size);
   }
 }
 #endif
@@ -811,10 +792,10 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   total_offset_g=total_offset_r-_pattern_color_bytes;
   total_offset_b=total_offset_g-_pattern_color_bytes;
 
-  uint8_t (*PxMATRIX_bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
+uint8_t *PxMATRIX_bufferp = PxMATRIX_buffer;
 
 #ifdef PxMATRIX_DOUBLE_BUFFER
-  PxMATRIX_bufferp = selected_buffer ? &PxMATRIX_buffer2 : &PxMATRIX_buffer;
+  PxMATRIX_bufferp = selected_buffer ? PxMATRIX_buffer2 : PxMATRIX_buffer;
 #endif
 
   r = r >> (8-PxMATRIX_COLOR_DEPTH);
@@ -825,19 +806,19 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   for (int this_color_bit=0; this_color_bit<PxMATRIX_COLOR_DEPTH; this_color_bit++)
   {
     if ((r >> this_color_bit) & 0x01)
-      (*PxMATRIX_bufferp)[this_color_bit][total_offset_r] |=_BV(bit_select);
+      PxMATRIX_bufferp[this_color_bit*_buffer_size+total_offset_r] |=_BV(bit_select);
     else
-      (*PxMATRIX_bufferp)[this_color_bit][total_offset_r] &= ~_BV(bit_select);
+      PxMATRIX_bufferp[this_color_bit*_buffer_size+total_offset_r] &= ~_BV(bit_select);
 
     if ((g >> this_color_bit) & 0x01)
-      (*PxMATRIX_bufferp)[this_color_bit][total_offset_g] |=_BV(bit_select);
+      PxMATRIX_bufferp[this_color_bit*_buffer_size+total_offset_g] |=_BV(bit_select);
     else
-      (*PxMATRIX_bufferp)[this_color_bit][total_offset_g] &= ~_BV(bit_select);
+      PxMATRIX_bufferp[this_color_bit*_buffer_size+total_offset_g] &= ~_BV(bit_select);
 
     if ((b >> this_color_bit) & 0x01)
-      (*PxMATRIX_bufferp)[this_color_bit][total_offset_b] |=_BV(bit_select);
+      PxMATRIX_bufferp[this_color_bit*_buffer_size+total_offset_b] |=_BV(bit_select);
     else
-      (*PxMATRIX_bufferp)[this_color_bit][total_offset_b] &= ~_BV(bit_select);
+      PxMATRIX_bufferp[this_color_bit*_buffer_size+total_offset_b] &= ~_BV(bit_select);
   }
 }
 
@@ -873,6 +854,7 @@ inline void PxMATRIX::begin()
 
 void PxMATRIX::begin(uint8_t row_pattern, uint8_t CLK, uint8_t MOSI, uint8_t MISO, uint8_t SS)
 {
+  
   _SPI_CLK = CLK;
   _SPI_MOSI = MOSI;
   _SPI_MISO = MISO;
@@ -900,12 +882,15 @@ void PxMATRIX::spi_init(){
 
 void PxMATRIX::begin(uint8_t row_pattern) {
 
+
+
   _row_pattern=row_pattern;
   if (_row_pattern==4)
     _scan_pattern=ZIGZAG;
   _mux_pattern = BINARY;
   _color_order=RRGGBB;
 
+   
   _pattern_color_bytes=(_height/_row_pattern)*(_width/8);
   _row_sets_per_buffer = _rows_per_buffer/_row_pattern;
   _send_buffer_size=_pattern_color_bytes*3;
@@ -940,6 +925,7 @@ void PxMATRIX::begin(uint8_t row_pattern) {
   }
 
   // Precompute row offset values
+  _row_offset=new uint32_t[_height];
   for (uint8_t yy=0; yy<_height;yy++)
       _row_offset[yy]=((yy)%_row_pattern)*_send_buffer_size+_send_buffer_size-1;
 
@@ -1108,13 +1094,10 @@ void PxMATRIX::display(uint16_t show_time) {
   ESP.wdtFeed();
 #endif
 
-uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
+uint8_t *PxMATRIX_bufferp = PxMATRIX_buffer;
 
 #ifdef PxMATRIX_DOUBLE_BUFFER
-  if(_active_buffer)
-    bufferp=&PxMATRIX_buffer2;
-  else
-    bufferp=&PxMATRIX_buffer;
+  PxMATRIX_bufferp = selected_buffer ? PxMATRIX_buffer2 : PxMATRIX_buffer;
 #endif
 
   for (uint8_t i=0;i<_row_pattern;i++)
@@ -1137,12 +1120,12 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
         if (i<_row_pattern-1)
         {
           // This pre-buffers the data for the next row pattern of this _display_color
-          SPI_TRANSFER(&(*bufferp)[_display_color][(i+1)*_send_buffer_size],_send_buffer_size);
+          SPI_TRANSFER(&PxMATRIX_bufferp[_display_color*_buffer_size+(i+1)*_send_buffer_size],_send_buffer_size);
         }
         else 
         { 
           // This pre-buffers the data for the first row pattern of the next _display_color
-          SPI_TRANSFER(&(*bufferp)[((_display_color+1)%PxMATRIX_COLOR_DEPTH)][0],_send_buffer_size); 
+          SPI_TRANSFER(&PxMATRIX_bufferp[((_display_color+1)%PxMATRIX_COLOR_DEPTH)*_buffer_size],_send_buffer_size); 
         }
        
         while ((micros()-start_time)<latch_time)
@@ -1157,11 +1140,11 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
   uint8_t this_byte;
   for (uint32_t byte_cnt=0; byte_cnt<_send_buffer_size;byte_cnt++)
   {
-    this_byte=(*bufferp)[_display_color][i*_send_buffer_size+byte_cnt];
+    this_byte=PxMATRIX_bufferp[_display_color*_buffer_size+i*_send_buffer_size+byte_cnt];
     SPI_BYTE(this_byte);
   }
 #else
-  SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size);
+  SPI_TRANSFER(&PxMATRIX_bufferp[_display_color*_buffer_size+i*_send_buffer_size],_send_buffer_size);
 #endif
         latch(latch_time); 
       }
@@ -1172,7 +1155,7 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
     #ifdef ESP32
 
       GPIO_REG_CLEAR( 1 << _OE_PIN);
-      uint8_t* bf = &(*bufferp)[_display_color][i*_send_buffer_size];
+      uint8_t* bf = PxMATRIX_bufferp[_display_color*_buffer_size+i*_send_buffer_size];
 
       spi_t * spi = SPI.bus();
       spiSimpleTransaction(spi);
@@ -1203,14 +1186,14 @@ uint8_t (*bufferp)[PxMATRIX_COLOR_DEPTH][buffer_size] = &PxMATRIX_buffer;
         pinMode(_SPI_CLK, SPECIAL);
         pinMode(_SPI_MOSI, SPECIAL);
       #endif
-      SPI_TRANSFER(&(*bufferp)[_display_color][i*_send_buffer_size],_send_buffer_size-1);
+      SPI_TRANSFER(&PxMATRIX_bufferp[_display_color*_buffer_size+i*_send_buffer_size],_send_buffer_size-1);
       pinMode(_SPI_CLK, OUTPUT);
       pinMode(_SPI_MOSI, OUTPUT);
       pinMode(_SPI_MISO, OUTPUT);
       pinMode(_SPI_SS, OUTPUT);
       set_mux(i);
 
-      uint8_t v = (*bufferp)[_display_color][i*_send_buffer_size + _send_buffer_size - 1];
+      uint8_t v = PxMATRIX_bufferp[_display_color*_buffer_size+i*_send_buffer_size + _send_buffer_size - 1];
       for (uint8_t this_byte = 0; this_byte < 8; this_byte++) {
         if (((v >> (7 - this_byte)) & 1))
           GPIO_REG_SET( 1 << _SPI_MOSI);
@@ -1362,11 +1345,11 @@ void PxMATRIX::clearDisplay(void) {
 void PxMATRIX::clearDisplay(bool selected_buffer) {
 #ifdef PxMATRIX_DOUBLE_BUFFER
   if(selected_buffer)
-    memset(PxMATRIX_buffer2, 0, PxMATRIX_COLOR_DEPTH*buffer_size);
+    memset(PxMATRIX_buffer2, 0, PxMATRIX_COLOR_DEPTH*_buffer_size);
   else
-    memset(PxMATRIX_buffer, 0, PxMATRIX_COLOR_DEPTH*buffer_size);
+    memset(PxMATRIX_buffer, 0, PxMATRIX_COLOR_DEPTH*_buffer_size);
 #else
-    memset(PxMATRIX_buffer, 0, PxMATRIX_COLOR_DEPTH*buffer_size);
+    memset(PxMATRIX_buffer, 0, PxMATRIX_COLOR_DEPTH*_buffer_size);
 #endif
 }
 
