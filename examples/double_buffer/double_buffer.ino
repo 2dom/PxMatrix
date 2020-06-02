@@ -10,7 +10,7 @@
 #define P_C 18
 #define P_D 5
 #define P_E 15
-#define P_OE 2
+#define P_OE 16
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
@@ -39,7 +39,7 @@ PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);
 // ISR for display refresh
 void display_updater()
 {
-  display.display(70);
+  display.display(20);
 }
 #endif
 
@@ -47,7 +47,7 @@ void display_updater()
 void IRAM_ATTR display_updater(){
   // Increment the counter and set the time of ISR
   portENTER_CRITICAL_ISR(&timerMux);
-  display.display(70);
+  display.display(20);
   portEXIT_CRITICAL_ISR(&timerMux);
 }
 #endif

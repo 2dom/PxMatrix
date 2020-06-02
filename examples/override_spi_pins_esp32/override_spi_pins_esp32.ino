@@ -34,7 +34,7 @@
 #define P_C 18
 #define P_D 5
 #define P_E 15
-#define P_OE 26 // For the TinyPICO
+#define P_OE 16 // For the TinyPICO
 //#define P_OE 2
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;

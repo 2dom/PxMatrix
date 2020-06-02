@@ -1,14 +1,5 @@
 // This is how many color levels the display shows - the more the slower the update
-//#define PxMATRIX_COLOR_DEPTH 8
-
-// Defines the buffer height / the maximum height of the matrix
-//#define PxMATRIX_MAX_HEIGHT 64
-
-// Defines the buffer width / the maximum width of the matrix
-//#define PxMATRIX_MAX_WIDTH 64
-
-// Defines how long we display things by default
-//#define PxMATRIX_DEFAULT_SHOWTIME 30
+//#define PxMATRIX_COLOR_DEPTH 4
 
 // Defines the speed of the SPI bus (reducing this may help if you experience noisy images)
 //#define PxMATRIX_SPI_FREQUENCY 20000000
@@ -27,7 +18,7 @@
 #define P_C 18
 #define P_D 5
 #define P_E 15
-#define P_OE 2
+#define P_OE 16
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
@@ -52,7 +43,7 @@ Ticker display_ticker;
 
 // This defines the 'on' time of the display is us. The larger this number,
 // the brighter the display. If too large the ESP will crash
-uint8_t display_draw_time=60; //30-70 is usually fine
+uint8_t display_draw_time=10; //30-70 is usually fine
 
 PxMATRIX display(32,16,P_LAT, P_OE,P_A,P_B,P_C);
 //PxMATRIX display(64,32,P_LAT, P_OE,P_A,P_B,P_C,P_D);

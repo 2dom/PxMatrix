@@ -37,7 +37,7 @@ The number of required address lines (A,B,C ...) in the constructor depends on t
 ### Row scanning
 The first one is the basic row scanning layout explained above. You can specify this in the `display.begin(x)` call where x={4,8,16,32} is the scanning layout. 
 ### Scan pattern
-Secondly, you may have to specify a different scanning pattern to the default LINE scanning. This can be achieved by calling `display.setScanPattern(x)` where x={LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG}. This defines where parts of your picture end up on the matrix. Change this if your picture is broken up into pieces at the wrong spots.
+Secondly, you may have to specify a different scanning pattern to the default LINE scanning. This can be achieved by calling `display.setScanPattern(x)` where x={LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG, WZAGZIG2}. This defines where parts of your picture end up on the matrix. Change this if your picture is broken up into pieces at the wrong spots.
 ### Mux pattern
 Finally, most panels use BINARY mapping of inputs A,B,C,D,E to the physical rows. But your panel may handle row multiplexing differntly. Some panels with 1/2 or 1/4 row scanning will map A,B,C,D(,E) STRAIGHT through to rows 0-4. Others may use a Shift-Register connected to A,B,C for row selection (SHIFTREG_ABC), like ones with Chip RT5957. For those, alternative cabling which frees up some IOs is possible with SHIFTREG_SPI_SE. See cabling section. However, this mode is barely tested and will not work with `setFastUpdate(true)`!
 
@@ -79,7 +79,7 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   D   |  12 - (D6) | 5 | 5 | only for 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
   E   |  00 - (D3) | 15 | 6 | only for 1/32 scan
   STB/LAT |  16 - (D0) | 22 | 7
-  P_OE|  02 - (D4) | 2  | 8
+  P_OE|  02 - (D4) | 16  | 8
   CLK |  14 - (D5) | 14 | 13(168/328), 52(2560)
   R1  |  13 - (D7) | 13 | 11(168/328), 51(2560) 
 
@@ -107,7 +107,7 @@ When driving a long chain of LED modules in a row, parallel color data lines mak
   D   |  12 - (D6) | 5 | 5 | only for 1/16, 1/32 scan BINARY mux pattern or 1/4 STRAIGHT mux pattern
   E   |  00 - (D3) | 15 | 6 | only for 1/32 scan
   STB/LAT |  16 - (D0) | 22 | 7
-  P_OE|  02 - (D4) | 2 | 8
+  P_OE|  02 - (D4) | 16 | 8
   CLK |  14 - (D5) | 14 | 13(168/328), 52(2560) 
   R0  |  13 - (D7) | 13 | 11(168/328), 51(2560) 
 
