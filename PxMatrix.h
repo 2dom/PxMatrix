@@ -1158,7 +1158,7 @@ uint8_t *PxMATRIX_bufferp = PxMATRIX_buffer;
     #ifdef ESP32
 
       GPIO_REG_CLEAR( 1 << _OE_PIN);
-      uint8_t* bf = PxMATRIX_bufferp[_display_color*_buffer_size+i*_send_buffer_size];
+      uint8_t* bf = &PxMATRIX_bufferp[_display_color*_buffer_size+i*_send_buffer_size];
 
       spi_t * spi = SPI.bus();
       spiSimpleTransaction(spi);
