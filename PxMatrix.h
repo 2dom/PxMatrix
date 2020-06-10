@@ -115,6 +115,13 @@ BSD license, check license.txt for more information
 // SHIFTREG_SPI_SE: Like SHIFTREG, but you connect A and C on Panel to its Clock and Data output (and ground B). This will not work with fast_update enabled!
 enum mux_patterns {BINARY, STRAIGHT, SHIFTREG_ABC, SHIFTREG_SPI_SE};
 
+// Specifies what blocking pattern the panel is using 
+// |AB|,|DB|
+// |CD|,|CA|
+// |AB|,|DB|
+// |CD|,|CA|
+enum block_patterns {ABCD, DBCA};
+
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
 enum scan_patterns {LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG, WZAGZIG2};
@@ -205,6 +212,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Set the multiplex pattern {LINE, ZIGZAG, ZAGGIZ, WZAGZIG, VZAG, WZAGZIG2} (default is LINE)
   inline void setScanPattern(scan_patterns scan_pattern);
 
+ // Set the block pattern {ABCD, DBCA} (default is ABCD)
+  inline void setBlockPattern(block_patterns block_pattern);
+
   // Set the number of panels that make up the display area width (default is 1)
   inline void setPanelsWidth(uint8_t panels);
 
@@ -292,6 +302,9 @@ class PxMATRIX : public Adafruit_GFX {
   // Holds the scan pattern
   scan_patterns _scan_pattern;
 
+  // Holds the block pattern
+  block_patterns _block_pattern;
+
   // Holds the used driver chip
   driver_chips _driver_chip;
 
@@ -359,6 +372,7 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
 
   _row_pattern=0;
   _scan_pattern=LINE;
+  _block_pattern=ABCD;
   _driver_chip=SHIFT;
 
   _mux_delay_A=0;
@@ -550,6 +564,11 @@ inline void PxMATRIX::setScanPattern(scan_patterns scan_pattern)
   _scan_pattern=scan_pattern;
 }
 
+inline void PxMATRIX::setBlockPattern(block_patterns block_pattern)
+{
+  _block_pattern=block_pattern;
+}
+
 inline void PxMATRIX::setPanelsWidth(uint8_t panels) {
   _panels_width=panels;
   _panel_width_bytes = (_width/_panels_width)/8;
@@ -650,12 +669,37 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     y=_height-1-temp_x;
   }
 
-
   if (!_flip)
     x =_width - 1 -x;
   
-   if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
-    return;  
+  if (_block_pattern==DBCA)
+  {
+      uint8_t y_block = y/_height/4;
+      uint8_t x_block = x/_width/2;
+
+      if (y_block % 2) // Odd y block
+      {
+        if (x_block==0) // Left side
+        {
+          x+=_width/2;
+          y+=_height/2;
+         }
+      }
+      else // Even y block
+      {
+        if (x_block==1) // Right side
+        {
+          x-=_width/2;
+          y-=_height/2;
+         
+        } 
+      }
+
+
+  }
+  
+  if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
+    return; 
   
   if (_color_order!= RRGGBB)
   {
@@ -758,7 +802,11 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     total_offset_r = _row_offset[y] - in_row_byte_offset - _panel_width_bytes*(_row_sets_per_buffer*(_panels_width*which_buffer + which_panel) + vert_index_in_buffer);
   }
 
+
   uint8_t bit_select = x%8;
+
+  
+
   //Some panels have a byte wise row-changing scanning pattern and/or a bit changing pattern that will be taken care of here.
   if ((y%(_row_pattern*2))<_row_pattern)
   {
@@ -772,6 +820,8 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     if (_scan_pattern==ZAGZIG)
       total_offset_r--;
 
+    
+
     // Byte split pattern (lower part)
     if (_scan_pattern==ZZAGG)
         if (bit_select>3) total_offset_r--;
@@ -779,6 +829,8 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   else
   {
     if (_scan_pattern==ZIGZAG) total_offset_r--;
+
+  
 
     // Byte split pattern (upper part)
     if (_scan_pattern==ZZAGG)
