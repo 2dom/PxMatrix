@@ -663,11 +663,7 @@ inline void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
 inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t g, uint8_t b,bool selected_buffer)
 {
  
-  if (_rotate){
-    uint16_t temp_x=x;
-    x=y;
-    y=_height-1-temp_x;
-  }
+
 
    
   if (_block_pattern==DBCA)
@@ -699,6 +695,12 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
          
         } 
       }
+  }
+
+    if (_rotate){
+    uint16_t temp_x=x;
+    x=y;
+    y=_height-1-temp_x;
   }
 
   // Panels are naturally flipped
