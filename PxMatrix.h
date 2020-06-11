@@ -672,9 +672,16 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
    
   if (_block_pattern==DBCA)
   {
+      // Every matrix is segmented in 8 blocks - 2 in X, 4 in Y direction
+      // |AB|
+      // |CD|
+      // |AB|
+      // |CD|
+      
       uint16_t y_block = y*4/_height;
       uint16_t x_block = x*2*_panels_width/_width;
 
+      // Swapping A & D
       if (!(y_block%2)) // Even y block
       {
         if (!(x_block%2)) // Left side of panel
@@ -694,6 +701,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       }
   }
 
+  // Panels are naturally flipped
   if (!_flip)
     x =_width - 1 -x;
   
