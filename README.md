@@ -137,6 +137,9 @@ SHIFTREG_ABC (with RT5957 or other Shift-Register for row selection) will requir
 ### SHIFTREG_SPI_SE - for RT5957 panels (experimental)
 SHIFTREG_SPI_SE is a functionally identical variant of SHIFTREG_ABC where we use the SPI signal carrying the display data also for the row selection logic. This frees up three exta I/O pins required by SHIFTREG_ABC. To make this work you will have to connect the outputs of your last panel to the ABC inputs of the first panel - in particular A (IN) needs to be connected to Clock (OUT), C (IN) to Data/Blue_2 (OUT), B (IN) to GND. 
 
+### SHIFTREG_ABC_BIN_DE
+SHIFTREG_ABC_BIN_DE is for really weird panels using a combination of Shift-Register (e.g. SM5266PH) and also binary decoding for addressing the rows. A,B,C are connected to a 8 rows wide Shift-register Clock, Data, /Enable. Additionally, D-E control which block of 8 rows is used through binary decoding. This is for 1/16 and 1/32 panels only.
+
 ## Colors
 The number of color levels can be selected in the header file. The default (8 color levels per primary RGB color) works well with hardly any flickering. Note that the number of color levels determines the achievable display refresh rate. Hence, the more color levels are selected, the more flickering is to be expected. If you run into problems with flickering it is a good idea to increase the CPU frequency to 160MHz. This way the processor has more headroom to compute the display updates and refresh the display in time.
 
