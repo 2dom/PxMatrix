@@ -693,7 +693,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       {
         if (!(x_block%2)) // Left side of panel
         {
-          x+=_width/2;
+          x+=_width/2/_panels_width;
           y+=_height/4;
          }
       }
@@ -701,7 +701,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       {
         if (x_block%2) // Right side of panel
         {
-          x-=_width/2;
+          x-=_width/2/_panels_width;
           y-=_height/4;
          
         } 
@@ -866,7 +866,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   }
   else
   {
-    // Row changing pattern (starts on lower part)
+       // Byte split pattern - like ZAGZIG but after every 4 bit (starts on upper part)  
     if (_scan_pattern == ZZIAGG )
     {
 
