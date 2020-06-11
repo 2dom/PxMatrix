@@ -669,34 +669,34 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     y=_height-1-temp_x;
   }
 
-  if (!_flip)
-    x =_width - 1 -x;
+  
   
   if (_block_pattern==DBCA)
   {
-      uint8_t y_block = y/_height/4;
-      uint8_t x_block = x/_width/2;
+      uint16_t y_block = y*4/_height;
+      uint16_t x_block = x*2/_width;
 
-      if (y_block % 2) // Odd y block
+      if (!(y_block%2)) // Even y block
       {
         if (x_block==0) // Left side
         {
           x+=_width/2;
-          y+=_height/2;
+          y+=_height/4;
          }
       }
-      else // Even y block
+      else // Odd y block
       {
         if (x_block==1) // Right side
         {
           x-=_width/2;
-          y-=_height/2;
+          y-=_height/4;
          
         } 
       }
-
-
   }
+
+  if (!_flip)
+    x =_width - 1 -x;
   
   if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
     return; 
