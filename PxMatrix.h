@@ -669,16 +669,15 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     y=_height-1-temp_x;
   }
 
-  
-  
+   
   if (_block_pattern==DBCA)
   {
       uint16_t y_block = y*4/_height;
-      uint16_t x_block = x*2/_width;
+      uint16_t x_block = x*2*_panels_width/_width;
 
       if (!(y_block%2)) // Even y block
       {
-        if (x_block==0) // Left side
+        if (!(x_block%2)) // Left side of panel
         {
           x+=_width/2;
           y+=_height/4;
@@ -686,7 +685,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       }
       else // Odd y block
       {
-        if (x_block==1) // Right side
+        if (x_block%2) // Right side of panel
         {
           x-=_width/2;
           y-=_height/4;
