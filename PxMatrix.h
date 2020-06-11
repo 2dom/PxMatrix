@@ -112,8 +112,9 @@ BSD license, check license.txt for more information
 // BINARY: Pins A-E map to rows 1-32 via binary decoding (default)
 // STRAIGHT: Pins A-D are directly mapped to rows 1-4
 // SHIFTREG: A, B, C on Panel are connected to a shift register Clock, /Enable, Data
+// SHIFTREG_ABC_BIN_DE: A-C are connected to Shift-Register Clock, Data, /Enable, D-E to binary decoder (crazy shit)
 // SHIFTREG_SPI_SE: Like SHIFTREG, but you connect A and C on Panel to its Clock and Data output (and ground B). This will not work with fast_update enabled!
-enum mux_patterns {BINARY, STRAIGHT, SHIFTREG_ABC, SHIFTREG_SPI_SE};
+enum mux_patterns {BINARY, STRAIGHT, SHIFTREG_ABC, SHIFTREG_SPI_SE, SHIFTREG_ABC_BIN_DE};
 
 // Specifies what blocking pattern the panel is using 
 // |AB|,|DB|
@@ -323,7 +324,7 @@ inline void init(uint16_t width, uint16_t height ,uint8_t LATCH, uint8_t OE, uin
 inline void latch(uint16_t show_time );
 
   // Set row multiplexer
-inline void set_mux(uint8_t value, boolean random_access);
+inline void set_mux(uint8_t value, bool random_access);
 
 inline void spi_init();
 
@@ -539,6 +540,16 @@ inline void PxMATRIX::setMuxPattern(mux_patterns mux_pattern)
     pinMode(_B_PIN, OUTPUT); // B is used as MUX_ENABLE
     pinMode(_C_PIN, OUTPUT); // C is used as MUX_DATA
     digitalWrite(_B_PIN,LOW); // Enable output of row mux
+  }
+
+  if (_mux_pattern==SHIFTREG_ABC_BIN_DE)
+  {
+    pinMode(_A_PIN, OUTPUT); // A is used as MUX_CLK
+    pinMode(_B_PIN, OUTPUT); // B is used as MUX_DATA
+    pinMode(_C_PIN, OUTPUT); // C is used as MUX_ENABLE
+    pinMode(_D_PIN, OUTPUT); // D is 4th bit of row
+    pinMode(_E_PIN, OUTPUT); // E is 5th bit of row
+    digitalWrite(_C_PIN,LOW); // Enable output of row mux
   }
 }
 
@@ -993,7 +1004,7 @@ void PxMATRIX::begin(uint8_t row_pattern) {
 
 }
 
-void PxMATRIX::set_mux(uint8_t value, boolean random_access = false)
+void PxMATRIX::set_mux(uint8_t value, bool random_access = false)
 {
 
   if (_mux_pattern==BINARY)
@@ -1088,6 +1099,28 @@ void PxMATRIX::set_mux(uint8_t value, boolean random_access = false)
     } else {
       // Just shift the row mux by one for incremental access
       digitalWrite(_C_PIN, (value==0) ); // Shift out 1 for line 0, 0 otherwise
+      digitalWrite(_A_PIN, HIGH); // Clock out this bit
+      digitalWrite(_A_PIN, LOW);
+    }
+  }
+
+  if (_mux_pattern==SHIFTREG_ABC_BIN_DE) {
+    // A-C are connected to Shift-Register Clock, Data, /Enable, D-E to binary decoder (crazy shit)
+    // Shift-Register is 8 rows wide, D-E select different Blocks of 8 rows
+    digitalWrite(_D_PIN, (value>>3)&1 );
+    digitalWrite(_E_PIN, (value>>4)&1 );
+    value = value % 8;
+    if(random_access) {
+      // Clock out all row mux bits to make sure random access is possible
+      uint8_t r = 8;
+      while(r-- > 0) {
+        digitalWrite(_B_PIN, (value==r) ); // Shift out 1 for selected row
+        digitalWrite(_A_PIN, HIGH); // Clock out this bit
+        digitalWrite(_A_PIN, LOW);
+      }
+    } else {
+      // Just shift the row mux by one for incremental access
+      digitalWrite(_B_PIN, (value==0) ); // Shift out 1 for line 0, 0 otherwise
       digitalWrite(_A_PIN, HIGH); // Clock out this bit
       digitalWrite(_A_PIN, LOW);
     }
