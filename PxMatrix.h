@@ -125,7 +125,7 @@ enum block_patterns {ABCD, DBCA};
 
 // This is how the scanning is implemented. LINE just scans it left to right,
 // ZIGZAG jumps 4 rows after every byte, ZAGGII alse revereses every second byte
-enum scan_patterns {LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG, WZAGZIG2};
+enum scan_patterns {LINE, ZIGZAG,ZZAGG, ZAGGIZ, WZAGZIG, VZAG, ZAGZIG, WZAGZIG2, ZZIAGG};
 
 // Specifies speciffic driver chip. Most panels implement a standard shifted
 // register (SHIFT). Other chips/panels may need special treatment in oder to work
@@ -840,7 +840,17 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     if (_scan_pattern==ZAGZIG)
       total_offset_r--;
 
-    
+      // Byte split pattern     
+    if (_scan_pattern == ZZIAGG )
+    {
+      if (bit_select<=3)
+      {
+        total_offset_r--;
+      }
+      else
+        bit_select -=4;
+        
+    }
 
     // Byte split pattern (lower part)
     if (_scan_pattern==ZZAGG)
@@ -849,8 +859,6 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   else
   {
     if (_scan_pattern==ZIGZAG) total_offset_r--;
-
-  
 
     // Byte split pattern (upper part)
     if (_scan_pattern==ZZAGG)
