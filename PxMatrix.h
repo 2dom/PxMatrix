@@ -679,11 +679,13 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
    
   if (_block_pattern==DBCA)
   {
+    
       // Every matrix is segmented in 8 blocks - 2 in X, 4 in Y direction
       // |AB|
       // |CD|
       // |AB|
       // |CD|
+      // Have to move this block suff somewhere to the scan patterns - this will only work for chaining up to 2 panels
       
       uint16_t y_block = y*4/_height;
       uint16_t x_block = x*2*_panels_width/_width;
@@ -705,6 +707,13 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
           y-=_height/4;
          
         } 
+      }
+      if (_panels_width>1)
+      {
+        if ((x>=_width/4)&&(x<_width/2))
+          x+=_width/_panels_width;
+        if ((x>=_width/2)&&(x<_width*3/4))
+          x-=_width/_panels_width;
       }
   }
 
@@ -830,6 +839,8 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   // Normally the bytes in one buffer would be sequencial, e.g.
   // 0-1-2-3-
   // 0-1-2-3-
+  // hence the upper and lower row start with [OL|OH]. 
+  //
   // However some panels have a byte wise row-changing scanning pattern and/or a bit changing pattern that we have to take case of
   // For example  [1L|1H] [3L|3H] for ZIGZAG or [0L|0H] [2L|2H] for ZAGZIG
   //                 |   \   |   \                 |   /   |   /
@@ -840,8 +851,9 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   //              [0L|1H] [2L|3H]               [0H|1H] [2H|3H]
 
 
-  // In oder to map a certain byte in the standard pattern to this changed pattern we subtract or add to the index and selected bit to 
-  // make the pattern start on both rows with [0L|0H] 
+  //
+  //
+  // In order to make the pattern start on both rows with [0L|0H] we have to add / subtract values to / from total_offset_r and bit_select
   if ((y%(_row_pattern*2))<_row_pattern)
   {
     // Variant of ZAGZIG pattern with bit oder reversed on lower part (starts on upper part)
@@ -871,6 +883,10 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   }
   else
   {
+
+    if (_scan_pattern==ZIGZAG)
+      total_offset_r--;
+
        // Byte split pattern - like ZAGZIG but after every 4 bit (starts on upper part)  
     if (_scan_pattern == ZZIAGG )
     {
