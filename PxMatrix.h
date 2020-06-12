@@ -831,9 +831,9 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   // 4-5-6-7
   // 0-1-2-3-
   // However some panels have a byte wise row-changing scanning pattern and/or a bit changing pattern that we have to take case of
-  // For example  1 3 5 7 for ZIGZAG
-  //              |\|\|\| 
-  //              0 2 4 6
+  // For example  1 3 5 7 for ZIGZAG or  0 2 4 6 for ZAGZIG
+  //              |\|\|\|                |/|/|/|
+  //              0 2 4 6                1 3 5 7
   // In oder to map a certain byte in the standard pattern to this changed pattern we multiply the byte index by two (taken care of in total_offset_r) and 
   // subtract one if we want to access the upper row 
   if ((y%(_row_pattern*2))<_row_pattern)
@@ -852,12 +852,10 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     // Byte split pattern - like ZAGZIG but after every 4 bit (starts on upper part)     
     if (_scan_pattern == ZZIAGG )
     {
-
-      if (bit_select>3)
-        total_offset_r--;
-      else
+      if (bit_select<=3)
          bit_select +=4;
-       
+      else
+        total_offset_r--;   
     }
 
     // Byte split pattern (lower part)
@@ -870,11 +868,11 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     if (_scan_pattern == ZZIAGG )
     {
 
-      if (bit_select>3)
-      {
+      if (bit_select<=3)
         total_offset_r++;
+      else
         bit_select -=4;
-      }
+      
     }
 
     // Byte split pattern (upper part)
