@@ -828,18 +828,23 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
 
   
   // Normally the bytes in one buffer would be sequencial, e.g.
-  // 4-5-6-7
+  // 0-1-2-3-
   // 0-1-2-3-
   // However some panels have a byte wise row-changing scanning pattern and/or a bit changing pattern that we have to take case of
-  // For example  1 3 5 7 for ZIGZAG or  0 2 4 6 for ZAGZIG
-  //              |\|\|\|                |/|/|/|
-  //              0 2 4 6                1 3 5 7
-  // In oder to map a certain byte in the standard pattern to this changed pattern we multiply the byte index by two (taken care of in total_offset_r) and 
-  // subtract or add one to the index to jump between rows.
-  // The goal is to make the pattern like ZIGZAG 
+  // For example  [1L|1H] [3L|3H] for ZIGZAG or [0L|0H] [2L|2H] for ZAGZIG
+  //                 |   \   |   \                 |   /   |   /
+  //              [0L|0H] [2L|2H]               [1L|1H] [3L|3H]
+  //
+  // For example  [0H|1L] [2H|3L] for ZZAGG  or [0L|1L] [2L|3L] for ZZIAGG
+  //                 |   \   |   \                 |   /   |   /
+  //              [0L|1H] [2L|3H]               [0H|1H] [2H|3H]
+
+
+  // In oder to map a certain byte in the standard pattern to this changed pattern we subtract or add to the index and selected bit to 
+  // make the pattern start on both rows with [0L|0H] 
   if ((y%(_row_pattern*2))<_row_pattern)
   {
-    // Variant of ZIGZAG pattern with bit oder reversed on lower part (starts on upper part)
+    // Variant of ZAGZIG pattern with bit oder reversed on lower part (starts on upper part)
     if (_scan_pattern==ZAGGIZ)
     {
         total_offset_r--;
@@ -854,7 +859,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     if (_scan_pattern == ZZIAGG )
     {
       if (bit_select>3)
-      {
+      
          bit_select +=4;
       else
         total_offset_r--;   
