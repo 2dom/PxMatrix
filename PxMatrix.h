@@ -692,7 +692,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       {
         if ((x>=_width/4) && (x<_width/2))
           x+=_width/4;
-        if ((x>=_width/2) && (x<_width*3/4))
+        else if ((x>=_width/2) && (x<_width*3/4))
           x-=_width/4;
       }
 
