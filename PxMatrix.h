@@ -680,6 +680,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   if (_block_pattern==DBCA)
   {
     
+    
       // Every matrix is segmented in 8 blocks - 2 in X, 4 in Y direction
       // |AB|
       // |CD|
@@ -687,6 +688,14 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       // |CD|
       // Have to rewrite this block suff and move to the scan pattern section - this will only work for chaining up to 2 panels
       
+      if (_panels_width>1) // Only works for two panels
+      {
+        if ((x>=_width/4) && (x<_width/2))
+          x+=_width/4;
+        if ((x>=_width/2) && (x<_width*3/4))
+          x-=_width/4;
+      }
+
       uint16_t y_block = y*4/_height;
       uint16_t x_block = x*2*_panels_width/_width;
 
@@ -708,13 +717,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
          
         } 
       }
-      if (_panels_width>1) // Only works for two panels
-      {
-        if ((x>=_width/4)&&(x<_width/2))
-          x+=_width/4;
-        if ((x>=_width/2)&&(x<_width*3/4))
-          x-=_width/4;
-      }
+     
   }
 
     if (_rotate){
