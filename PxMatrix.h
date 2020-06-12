@@ -685,7 +685,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
       // |CD|
       // |AB|
       // |CD|
-      // Have to move this block suff somewhere to the scan patterns - this will only work for chaining up to 2 panels
+      // Have to rewrite this block suff and move to the scan pattern section - this will only work for chaining up to 2 panels
       
       uint16_t y_block = y*4/_height;
       uint16_t x_block = x*2*_panels_width/_width;
@@ -708,12 +708,12 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
          
         } 
       }
-      if (_panels_width>1)
+      if (_panels_width>1) // Only works for two panels
       {
         if ((x>=_width/4)&&(x<_width/2))
-          x+=_width/_panels_width;
+          x+=_width/4;
         if ((x>=_width/2)&&(x<_width*3/4))
-          x-=_width/_panels_width;
+          x-=_width/4;
       }
   }
 
@@ -849,8 +849,6 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   // For example  [0H|1L] [2H|3L] for ZZAGG  or [0L|1L] [2L|3L] for ZZIAGG
   //                 |   \   |   \                 |   /   |   /
   //              [0L|1H] [2L|3H]               [0H|1H] [2H|3H]
-
-
   //
   //
   // In order to make the pattern start on both rows with [0L|0H] we have to add / subtract values to / from total_offset_r and bit_select
