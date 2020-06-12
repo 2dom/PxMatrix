@@ -835,7 +835,8 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   //              |\|\|\|                |/|/|/|
   //              0 2 4 6                1 3 5 7
   // In oder to map a certain byte in the standard pattern to this changed pattern we multiply the byte index by two (taken care of in total_offset_r) and 
-  // subtract one if we want to access the upper row 
+  // subtract or add one to the index to jump between rows.
+  // The goal is to make the pattern like ZIGZAG 
   if ((y%(_row_pattern*2))<_row_pattern)
   {
     // Variant of ZIGZAG pattern with bit oder reversed on lower part (starts on upper part)
@@ -852,7 +853,8 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     // Byte split pattern - like ZAGZIG but after every 4 bit (starts on upper part)     
     if (_scan_pattern == ZZIAGG )
     {
-      if (bit_select<=3)
+      if (bit_select>3)
+      {
          bit_select +=4;
       else
         total_offset_r--;   
@@ -868,17 +870,18 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     if (_scan_pattern == ZZIAGG )
     {
 
-      if (bit_select<=3)
-        total_offset_r++;
-      else
+      if (bit_select>3)
+      {
+        total_offset_r--;
         bit_select -=4;
-      
+      }
     }
 
     // Byte split pattern (upper part)
     if (_scan_pattern==ZZAGG)
     {
-      if (bit_select<=3) bit_select += 4;
+      if (bit_select<=3)
+        bit_select += 4;
       else
       {
         bit_select -=4;
