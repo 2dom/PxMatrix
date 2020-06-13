@@ -1,6 +1,6 @@
 # PxMatrix - LED matrix panel driver for ESP8266, ESP32 and ATMEL
 
-<img src=./images/blm.gif>
+<center><img src=./images/blm.gif></center>
 
 ## Overview
 
