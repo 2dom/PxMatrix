@@ -651,21 +651,6 @@ inline void PxMATRIX::copyBuffer(bool reverse = false) {
 
 inline void PxMATRIX::setColorOffset(uint8_t r, uint8_t g,uint8_t b)
 {
-  if ((color_half_step+r)<0)
-    r=-color_half_step;
-  if ((color_half_step+r)>255)
-      r=255-color_half_step;
-
-  if ((color_half_step+g)<0)
-    g=-color_half_step;
-  if ((color_half_step+g)>255)
-      g=255-color_half_step;
-
-  if ((color_half_step+b)<0)
-    b=-color_half_step;
-  if ((color_half_step+b)>255)
-      b=255-color_half_step;
-
     _color_R_offset=r;
     _color_G_offset=g;
     _color_B_offset=b;
@@ -675,7 +660,18 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
 {
  
 
-
+  if (r>_color_R_offset)
+    r-=_color_R_offset;
+  else
+    r=0;
+  if (g>_color_G_offset)
+    g-=_color_G_offset;
+  else  
+    g=0;
+  if (b>_color_B_offset)
+    b-=_color_B_offset;
+  else  
+    b=0;
    
   if (_block_pattern==DBCA)
   {
