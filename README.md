@@ -20,7 +20,10 @@ P5   | 320mmx160mm | 64x32 | 1/16
 P2.5 | 160mmx160mm | 64x64 | 1/32
 P3   | 192mmx192mm | 64x64 | 1/32
 
-Multiple panels may be chained together to build larger displays. The driver is Adafruit GFX compatible and currently works with ESP8266, ESP32 and Atmel-based Arduinos (only up to 64x32). This readme gives an overview over the library - for a more detailed guide you may consider @witnessmenow's detailed [tutorial](http://www.instructables.com/id/RGB-LED-Matrix-With-an-ESP8266/).
+Multiple panels may be chained together to build larger displays. The driver is Adafruit GFX compatible and is optimized for low pin count. It does not require DMA capabilities and works with ESP8266, ESP32 and Atmel-based Arduinos (only up to 64x32). If your microcontroller has anought I/O pins and dedicated DMA hardware you may want to consider more optimized libraries such as the [ESP32 I2S library](https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA) by mrfaptastic.
+
+This readme gives an overview over the library - for a more detailed guide check out @witnessmenow's detailed [tutorial](http://www.instructables.com/id/RGB-LED-Matrix-With-an-ESP8266/).
+
 
 ## Display structure
 
