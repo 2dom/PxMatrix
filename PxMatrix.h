@@ -961,7 +961,7 @@ inline void PxMATRIX::drawPixelRGB888(int16_t x, int16_t y, uint8_t r, uint8_t g
 }
 
 // the most basic function, get a single pixel
-inline uint8_t PxMATRIX::getPixel(int8_t x, int8_t y) {
+inline uint8_t PxMATRIX::getPixel(int8_t x __attribute__((unused)), int8_t y __attribute__((unused))) {
   return (0);//PxMATRIX_buffer[x+ (y/8)*LCDWIDTH] >> (y%8)) & 0x1;
 }
 
