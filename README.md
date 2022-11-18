@@ -1,4 +1,5 @@
 # PxMatrix - LED matrix panel driver for ESP8266, ESP32 and ATMEL
+[![Compile Examples](https://github.com/2dom/PxMatrix/workflows/Compile%20Examples/badge.svg)](https://github.com/2dom/PxMatrix/actions?workflow=Compile+Examples)
 
 <center><img src=./images/front_anim2.gif></center>
 
