@@ -96,7 +96,7 @@ BSD license, check license.txt for more information
   struct spi_struct_t {
       spi_dev_t * dev;
   #if !CONFIG_DISABLE_HAL_LOCKS
-      xSemaphoreHandle lock;
+      SemaphoreHandle_t lock;
   #endif
       uint8_t num;
   };
@@ -777,7 +777,7 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
     // invert block_y so remaining translation will be more sane
     uint8_t block_y_inv = 1 - block_y;
     uint8_t block_x_inv = blocks_x_per_panel - block_x - 1;
-    uint8_t block_linear_index;
+    uint8_t block_linear_index = 0;
     if (_scan_pattern==WZAGZIG2) {
       block_linear_index = block_x_inv * 2 + block_y;
     }
