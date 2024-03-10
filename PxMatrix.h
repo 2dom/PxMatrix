@@ -717,9 +717,29 @@ inline void PxMATRIX::fillMatrixBuffer(int16_t x, int16_t y, uint8_t r, uint8_t 
   }
 
     if (_rotate){
-    uint16_t temp_x=x;
+    int16_t temp_x=x;
     x=y;
     y=_height-1-temp_x;
+  }
+  
+  switch (rotation) {
+  case 1: {
+    int16_t temp_x=x;
+    x = WIDTH - 1 - y;
+    y = temp_x;
+    break;
+  }
+  case 2: {
+    x = WIDTH - 1 - x;
+    y = HEIGHT - 1 - y;
+    break;
+  }
+  case 3: {
+    int16_t temp_x=x;
+	x = y;
+	y = HEIGHT - 1 - temp_x;
+	break;
+    }
   }
 
   // Panels are naturally flipped
@@ -1027,17 +1047,17 @@ void PxMATRIX::begin(uint8_t row_pattern) {
   digitalWrite(_B_PIN, LOW);
   digitalWrite(_OE_PIN, HIGH);
 
-  if (_row_pattern >=8)
+  if (_row_pattern > 4)
   {
     pinMode(_C_PIN, OUTPUT);
     digitalWrite(_C_PIN, LOW);
   }
-  if (_row_pattern >=16)
+  if (_row_pattern > 8)
   {
     pinMode(_D_PIN, OUTPUT);
     digitalWrite(_D_PIN, LOW);
   }
-  if (_row_pattern >=32)
+  if (_row_pattern > 16)
   {
     pinMode(_E_PIN, OUTPUT);
     digitalWrite(_E_PIN, LOW);
@@ -1067,7 +1087,7 @@ void PxMATRIX::set_mux(uint8_t value, bool random_access = false)
       digitalWrite(_B_PIN,LOW);
     if (_mux_delay_B) delayMicroseconds(_mux_delay_B);
 
-    if (_row_pattern>=8)
+    if (_row_pattern>4)
     {
 
       if (value & 0x04)
@@ -1078,7 +1098,7 @@ void PxMATRIX::set_mux(uint8_t value, bool random_access = false)
     }
 
 
-    if (_row_pattern>=16)
+    if (_row_pattern>8)
     {
       if (value & 0x08)
           digitalWrite(_D_PIN,HIGH);
@@ -1087,7 +1107,7 @@ void PxMATRIX::set_mux(uint8_t value, bool random_access = false)
       if (_mux_delay_D) delayMicroseconds(_mux_delay_D);
     }
 
-    if (_row_pattern>=32)
+    if (_row_pattern>16)
     {
       if (value & 0x10)
           digitalWrite(_E_PIN,HIGH);
