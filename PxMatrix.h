@@ -37,13 +37,13 @@ BSD license, check license.txt for more information
 #define _BV(x) (1 << (x))
 #endif
 
-#if defined(ESP8266) || defined(ESP32)
+#if defined (ESP8266) || defined (ESP32)
   #define SPI_TRANSFER(x,y) SPI.writeBytes(x,y)
   #define SPI_BYTE(x) SPI.write(x)
   #define SPI_2BYTE(x) SPI.write16(x)
 #endif
 
-#ifdef __AVR__
+#if defined (__AVR__)
   #define SPI_TRANSFER(x,y) SPI.transfer(x,y)
   #define SPI_BYTE(x) SPI.transfer(x)
   #define SPI_2BYTE(x) SPI.transfer16(x)
@@ -53,17 +53,20 @@ BSD license, check license.txt for more information
 #include "Arduino.h"
 #include <SPI.h>
 
-#if defined(ARDUINO) && ARDUINO >= 100
+#if defined (ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #else
 #include "WProgram.h"
 #endif
 
-#ifdef __AVR__
+#if defined (__AVR__)
 #include <util/delay.h>
 #endif
 
-
+#if defined (ESP32)
+  #include "soc/gpio_struct.h"
+  #include "soc/spi_struct.h"
+#endif
 
 #include <stdlib.h>
 
@@ -74,24 +77,20 @@ BSD license, check license.txt for more information
 #endif
 
 
-
-#ifdef ESP8266
+#if defined (ESP8266)
   #define GPIO_REG_SET(val) GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS,val)
   #define GPIO_REG_CLEAR(val) GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS,val)
 #endif
-#ifdef ESP32
+#if defined (ESP32)
   #define GPIO_REG_SET(val) GPIO.out_w1ts = val
   #define GPIO_REG_CLEAR(val) GPIO.out_w1tc = val
 #endif
-#ifdef __AVR__
+#if defined (__AVR__)
   #define GPIO_REG_SET(val) (val < 8) ? PORTD |= _BV(val) : PORTB |= _BV(val-8)
   #define GPIO_REG_CLEAR(val) (val < 8) ? PORTD &= ~_BV(val) : PORTB &= ~_BV(val-8)
 #endif
 
-#ifdef ESP32
-
-  #include "soc/spi_struct.h"
-  #include "esp32-hal-gpio.h"
+#if defined (ESP32)
 
   struct spi_struct_t {
       spi_dev_t * dev;
@@ -389,7 +388,7 @@ inline void PxMATRIX::init(uint16_t width, uint16_t height,uint8_t LATCH, uint8_
 
 }
 
-#ifdef ESP32
+#if defined (ESP32)
 inline void PxMATRIX::fm612xWriteRegister(uint16_t reg_value, uint8_t reg_position)
 {
     spi_t * spi = SPI.bus();
@@ -498,7 +497,7 @@ inline void PxMATRIX::setDriverChip(driver_chips driver_chip)
     // uint16_t b13c=0b0000000001000000;
     // uint16_t b13d=0b0000000001000000;
 
-#ifdef ESP32
+#if defined (ESP32)
     pinMode(_OE_PIN, OUTPUT);
     pinMode(_LATCH_PIN, OUTPUT);
     digitalWrite(_OE_PIN, HIGH);
@@ -984,7 +983,7 @@ void PxMATRIX::begin(uint8_t row_pattern, uint8_t CLK, uint8_t MOSI, uint8_t MIS
 
 void PxMATRIX::spi_init(){
 
-  #ifdef ESP32
+  #if defined (ESP32)
     SPI.begin(_SPI_CLK, _SPI_MISO, _SPI_MOSI, _SPI_SS);
   #else
     SPI.begin();
@@ -1231,7 +1230,7 @@ void PxMATRIX::display(uint16_t show_time) {
   uint16_t latch_time = ((show_time*(1<<_display_color)*_brightness)/255/2);
 
   unsigned long start_time=0;
-#ifdef ESP8266
+#if defined (ESP8266)
   ESP.wdtFeed();
 #endif
 
@@ -1277,7 +1276,7 @@ uint8_t *PxMATRIX_bufferp = PxMATRIX_buffer;
       else
       {
         set_mux(i);
-#ifdef __AVR__
+#if defined (__AVR__)
   uint8_t this_byte;
   for (uint32_t byte_cnt=0; byte_cnt<_send_buffer_size;byte_cnt++)
   {
@@ -1293,7 +1292,7 @@ uint8_t *PxMATRIX_bufferp = PxMATRIX_buffer;
     
     if (_driver_chip == FM6124 || _driver_chip == FM6126A) // _driver_chip == FM6124
     {
-    #ifdef ESP32
+    #if defined (ESP32)
 
       GPIO_REG_CLEAR( 1 << _OE_PIN);
       uint8_t* bf = &PxMATRIX_bufferp[_display_color*_buffer_size+i*_send_buffer_size];
